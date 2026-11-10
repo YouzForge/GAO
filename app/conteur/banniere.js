@@ -1,5 +1,5 @@
 // Bandeau « Hors connexion » : dit pourquoi, et propose de réessayer ou de se reconnecter.
-import { h } from "./ui.js?v=0.21.0";
+import { h } from "./ui.js?v=0.21.1";
 
 export function banniereHorsLigne(ctx, perime = true) {
   if (!perime) return null;

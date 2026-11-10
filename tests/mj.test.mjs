@@ -152,3 +152,17 @@ test("journal des joueurs : comptes rendus visibles ou masqués, notes du MJ jam
   assert.deepEqual(j.map(l => [l.titre, l.visible, l.auCoffre]), [["S3 (coffre)", true, true], ["S2", false, true], ["S1", true, false]]);
   assert.equal(j[0].fichierTable, "Session_3.md");
 });
+
+test("quête terminée et quantité d'objet : la mise à jour porte l'état chez le joueur en gardant ce qu'il a écrit", () => {
+  const q = texteCarte({ type: "quete", titre: "Q", texte: "Trouver la clé." });
+  const chez = texteJoueur(q).replace("## Ce que j'ai fait\n", "## Ce que j'ai fait\nJ'ai fouillé la cave.\n");
+  assert.match(chez, /statut: en cours/);
+  const q2 = modifierCarte(q, { type: "quete", texte: "La clé est retrouvée.", statut: "terminée" });
+  assert.equal(lireCarte(q2, "Q.md", "quete").statut, "terminée");
+  const maj = fusionner(chez, q2, "quete");
+  assert.match(maj, /statut: terminée/);
+  assert.match(maj, /La clé est retrouvée[\s\S]*J'ai fouillé la cave/);
+  const o = modifierCarte(texteCarte({ type: "objet", titre: "Potion", texte: "Soigne." }), { type: "objet", quantite: "3" });
+  assert.match(texteJoueur(o), /quantite: 3/);
+  assert.equal(lireCarte(texteCarte({ type: "objet", titre: "X", quantite: "0" }), "X.md", "objet").quantite, "1");
+});

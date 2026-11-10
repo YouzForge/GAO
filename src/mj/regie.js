@@ -4,16 +4,16 @@
 //
 // RÈGLE DE SÉCURITÉ : le seul chemin par lequel un texte du coffre arrive dans le dossier d'un joueur est `texteJoueur` / `copiePourAutreJoueur` / `fusionner`
 // (src/mj/revelations.js), qui retirent les sections et les champs du coffre et refusent de publier si une marque de secret subsiste.
-import { parseDoc, humanize, norm } from "../md/doc.js?v=0.21.0";
-import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.21.0";
-import { AccesRefuse } from "../depot/depot.js?v=0.21.0";
-import { EcritureInvalide } from "../ecriture/fiche.js?v=0.21.0";
-import { pool } from "../graph/pool.js?v=0.21.0";
+import { parseDoc, humanize, norm } from "../md/doc.js?v=0.21.1";
+import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.21.1";
+import { AccesRefuse } from "../depot/depot.js?v=0.21.1";
+import { EcritureInvalide } from "../ecriture/fiche.js?v=0.21.1";
+import { pool } from "../graph/pool.js?v=0.21.1";
 import { TYPES, typeDe, DOSSIER_REVELATIONS, lireCarte, texteJoueur, copiePourAutreJoueur, fusionner, texteCarte, modifierCarte, poserChamp, nomPublie, nomDepuisTitre,
-  construireCatalogue, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal } from "./revelations.js?v=0.21.0";
-import { lireParcours, ecrireParcours } from "./parcours.js?v=0.21.0";
-import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.21.0";
-import { jaugeDe } from "./seance.js?v=0.21.0";
+  construireCatalogue, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal } from "./revelations.js?v=0.21.1";
+import { lireParcours, ecrireParcours } from "./parcours.js?v=0.21.1";
+import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.21.1";
+import { jaugeDe } from "./seance.js?v=0.21.1";
 
 const MARKDOWN = /^(?!00_|LISEZMOI).+\.md$/i;
 const NOM_DOSSIER = /^(?![._])[^/\\:?*"<>|\u0000-\u001f]{1,80}$/;

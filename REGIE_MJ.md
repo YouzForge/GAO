@@ -1,4 +1,4 @@
-# La régie du MJ (version 0.21.0)
+# La régie du MJ (version 0.21.1)
 
 Ce document décrit les écrans du MJ ajoutés à l'application : ce qu'ils font, où ils écrivent, et ce qui reste à vérifier.
 Il ne contient aucun contenu de jeu.

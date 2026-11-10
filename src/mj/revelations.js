@@ -7,8 +7,8 @@
 //
 // Un élément déjà présent chez des joueurs mais sans carte au coffre (tout ce qui a été publié avant la régie) reste révélable aux autres :
 // on recopie alors la version d'un joueur qui l'a, sans ses sections personnelles (« Ma note », « Ce que j'ai fait »).
-import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize } from "../md/doc.js?v=0.21.0";
-import { masquerPourJoueur } from "../md/masque.js?v=0.21.0";
+import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize } from "../md/doc.js?v=0.21.1";
+import { masquerPourJoueur } from "../md/masque.js?v=0.21.1";
 
 export const DOSSIER_REVELATIONS = "04_Revelations";
 
@@ -80,7 +80,7 @@ export function lireCarte(texte, fichier, type) {
   return {
     texteMJ: ty ? getSection(corps, ty.section) : "",   // ce que le MJ écrit pour les joueurs (la section principale du type), pour le formulaire
     type, fichier, titre, pour: lirePour(m.pour), prevu: t(m.prevu), publieSous: t(m.publie_sous),
-    session: m.session == null ? "" : t(m.session), lieu: t(m.lieu), statut: t(m.statut), portrait: t(m.portrait),
+    session: m.session == null ? "" : t(m.session), lieu: t(m.lieu), statut: t(m.statut), quantite: m.quantite == null ? "" : t(m.quantite), portrait: t(m.portrait),
     corpsJoueur: rendre(publiques), verite: coffre.map(s => s.text.trim()).filter(Boolean).join("\n\n"), texte: String(texte)
   };
 }
@@ -130,14 +130,14 @@ export function fusionner(ancienJoueur, texteCarte, type, { date = "" } = {}) {
 }
 
 /** Texte d'une carte neuve du coffre. `verite` (facultatif) va dans une section « 🔴 Vérité MJ » qui ne sera jamais publiée. */
-export function texteCarte({ type, titre, texte = "", verite = "", pour = "tous", session = "", lieu = "", prevu = "", statut = "" }) {
+export function texteCarte({ type, titre, texte = "", verite = "", pour = "tous", session = "", lieu = "", prevu = "", statut = "", quantite = "" }) {
   const ty = typeDe(type);
   if (!ty) throw new TypeError("Type de carte inconnu : " + type);
   const meta = { titre: t(titre) };
   if (t(session)) meta.session = t(session);
   if (t(lieu)) meta.lieu = t(lieu);
   if (type === "quete") meta.statut = t(statut) || "en cours";
-  if (type === "objet") meta.quantite = 1;
+  if (type === "objet") meta.quantite = Math.max(1, Math.trunc(Number(quantite)) || 1);
   meta.pour = Array.isArray(pour) ? pour.join(", ") : "tous";
   if (t(prevu)) meta.prevu = t(prevu);
   meta.visibilite = "secret";
@@ -148,7 +148,7 @@ export function texteCarte({ type, titre, texte = "", verite = "", pour = "tous"
 }
 
 /** Remplace le texte joueur et la vérité d'une carte existante en gardant le reste de l'en-tête. */
-export function modifierCarte(texteAncien, { titre, texte, verite, pour, session, lieu, prevu, type }) {
+export function modifierCarte(texteAncien, { titre, texte, verite, pour, session, lieu, prevu, statut, quantite, type }) {
   const ty = typeDe(type);
   if (!ty) throw new TypeError("Type de carte inconnu : " + type);
   const d = parseDoc(texteAncien);
@@ -160,6 +160,8 @@ export function modifierCarte(texteAncien, { titre, texte, verite, pour, session
     body = /^\s*#\s+.+$/m.test(body) ? body.replace(/^(\s*)#\s+.+$/m, `$1# ${t(titre)}`) : `\n# ${t(titre)}\n${body}`;
   }
   poser("session", session); poser("lieu", lieu); poser("prevu", prevu);
+  if (type === "quete" && statut !== undefined && t(statut)) meta.statut = t(statut);   // « en cours », « terminée », « abandonnée » : la pastille de la quête chez le joueur
+  if (type === "objet" && quantite !== undefined && t(quantite)) meta.quantite = Math.max(1, Math.trunc(Number(quantite)) || 1);
   if (pour !== undefined) meta.pour = Array.isArray(pour) ? (pour.length ? pour.join(", ") : "tous") : "tous";
   // seules la section du MJ et la vérité changent : les autres sections (« Savoirs liés », sections personnelles…) restent telles quelles
   if (texte !== undefined) body = setSection(body, ty.section, t(texte) ? "\n" + t(texte) : "");

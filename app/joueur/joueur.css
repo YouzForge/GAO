@@ -614,3 +614,4 @@ body.joueur .jr-saisie.se-notes{min-height:220px}
 .rj-bascule.on{background:rgba(47,125,107,.35);border-color:var(--vert)}
 .rj-bascule.on .rj-bascule-rond{transform:translateX(26px);background:var(--vert-vif)}
 @media (max-width:600px){.rj-ligne .rv-etat{display:none}}
+.jr-champ[hidden]{display:none}

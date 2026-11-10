@@ -2,11 +2,11 @@
 // Une ligne par carte, une colonne par joueur : un clic sur une case révèle (ou retire, après confirmation) ; « À tous » révèle aux joueurs prévus.
 // Une carte s'ouvre sur ce que les joueurs liront et, à part, sur ce qui ne sort jamais du coffre.
 // RÈGLE du moteur : jamais de innerHTML ; tout est construit avec le DOM. Rien ne s'écrit si l'interrupteur `ecriture` du JDR est fermé.
-import { parseDoc } from "../../src/md/doc.js?v=0.21.0";
-import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.21.0";
-import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.21.0";
-import { executer, confirmer } from "./edition.js?v=0.21.0";
-import { cadreMJ } from "./ecrans_mj.js?v=0.21.0";
+import { parseDoc } from "../../src/md/doc.js?v=0.21.1";
+import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.21.1";
+import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.21.1";
+import { executer, confirmer } from "./edition.js?v=0.21.1";
+import { cadreMJ } from "./ecrans_mj.js?v=0.21.1";
 
 const enc = encodeURIComponent;
 const nomJoueur = p => String(p).replace(/_/g, " ");
@@ -47,6 +47,12 @@ export function formulaireCarte(ctx, { carte = null, type = "savoir", joueurs = 
   verite.classList.add("rv-secret-champ");
   const session = saisie({ inputmode: "numeric", maxlength: "4", value: carte ? carte.session : defauts.session || "", "aria-label": "Session" });
   const lieu = saisie({ maxlength: "80", value: carte ? carte.lieu : defauts.lieu || "", "aria-label": "Lieu" });
+  // Propres à un type : l'état d'une quête (sa pastille chez le joueur) et la quantité d'un objet. Montrés seulement pour ce type.
+  const statut = h("select", { class: "jr-select", "aria-label": "État de la quête" }, ["en cours", "terminée", "abandonnée"].map(s => h("option", { value: s, selected: s === ((carte && carte.statut) || "en cours") }, s.replace(/^./, c => c.toUpperCase()))));
+  const quantite = saisie({ inputmode: "numeric", maxlength: "4", value: (carte && carte.quantite) || "1", "aria-label": "Quantité" });
+  const champStatut = champ("État de la quête", statut, "« Terminée » ou « Abandonnée » s'affiche sur la quête du joueur."), champQuantite = champ("Quantité", quantite);
+  const propres = () => { champStatut.hidden = selType.value !== "quete"; champQuantite.hidden = selType.value !== "objet"; };
+  selType.addEventListener("change", propres); propres();
   const idListe = "rv-docs-" + Math.random().toString(36).slice(2, 8);
   const prevu = saisie({ maxlength: "140", value: carte ? carte.prevu : defauts.prevu || "", "aria-label": "Prévu pour", list: idListe, placeholder: "Document de session ou de lieu" });
   const pourInitial = carte ? carte.pour : defauts.pour || "tous";
@@ -56,13 +62,13 @@ export function formulaireCarte(ctx, { carte = null, type = "savoir", joueurs = 
   const maintenant = carte ? null : h("button", { class: "jr-bouton gros rv-reveler", type: "button" }, icon("eye", 20), "Enregistrer et révéler maintenant");
   const fermer = feuille(carte ? "Modifier la carte" : "Nouvelle carte", [
     h("div", { class: "rv-grille" }, champ("Type", selType), champ("Session", session, "Numéro, facultatif."), champ("Lieu", lieu, "Facultatif.")),
-    champ("Titre", titre),
+    champ("Titre", titre), champStatut, champQuantite,
     champ("Ce que les joueurs lisent", texte),
     champ("Vérité du MJ (ne sort jamais du coffre)", verite),
     champ("Prévu pour", h("div", null, prevu, h("datalist", { id: idListe }, documents.map(d => h("option", { value: d })))), "Le document où tu comptes la révéler : elle apparaîtra dans l'écran « Séance » de ce document."),
     pour.noeud, msg, h("div", { class: "jr-actions" }, garder, maintenant)], { large: true });
   const envoyer = async reveler => {
-    const champs = { type: selType.value, titre: titre.value, texte: texte.value, verite: verite.value, session: session.value, lieu: lieu.value, prevu: prevu.value, pour: pour.lire() };
+    const champs = { type: selType.value, titre: titre.value, texte: texte.value, verite: verite.value, session: session.value, lieu: lieu.value, prevu: prevu.value, pour: pour.lire(), statut: statut.value, quantite: quantite.value };
     const r = await executer(ctx, () => (carte ? ctx.regie.modifierCarte(carte, champs) : ctx.regie.creerCarte(champs)), { zone: msg, boutons: [garder, maintenant] });
     if (!r.ok) return;
     fermer(); surFini(r.r, reveler);
