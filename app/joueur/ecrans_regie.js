@@ -2,11 +2,11 @@
 // Une ligne par carte, une colonne par joueur : un clic sur une case révèle (ou retire, après confirmation) ; « À tous » révèle aux joueurs prévus.
 // Une carte s'ouvre sur ce que les joueurs liront et, à part, sur ce qui ne sort jamais du coffre.
 // RÈGLE du moteur : jamais de innerHTML ; tout est construit avec le DOM. Rien ne s'écrit si l'interrupteur `ecriture` du JDR est fermé.
-import { parseDoc } from "../../src/md/doc.js?v=0.20.0";
-import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.20.0";
-import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.20.0";
-import { executer, confirmer } from "./edition.js?v=0.20.0";
-import { cadreMJ } from "./ecrans_mj.js?v=0.20.0";
+import { parseDoc } from "../../src/md/doc.js?v=0.20.1";
+import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.20.1";
+import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.20.1";
+import { executer, confirmer } from "./edition.js?v=0.20.1";
+import { cadreMJ } from "./ecrans_mj.js?v=0.20.1";
 
 const enc = encodeURIComponent;
 const nomJoueur = p => String(p).replace(/_/g, " ");
@@ -229,7 +229,7 @@ export async function ecranRevelationsMJ(ctx, typeId = "savoir") {
 
   const contenu = [
     h("div", { class: "mj-doc-tete" }, h("h2", { class: "mj-doc-titre" }, "Révélations"),
-      h("p", { class: "jr-meta" }, "Un clic sur une case donne la carte à ce joueur ; elle apparaît dans son application en quelques secondes. Le titre ouvre la carte.")),
+      h("p", { class: "jr-meta" }, "Un clic sur une case donne la carte à ce joueur ; elle apparaît dans son application ouverte en moins d'une demi-minute. Le titre ouvre la carte.")),
     h("nav", { class: "jr-souslignes", "aria-label": "Types de cartes" }, TYPES.map(t => h("a", { class: "jr-pastille" + (t.id === ty.id ? " on" : ""), href: `#/mj/revelations/${enc(t.id)}`, "aria-current": t.id === ty.id ? "page" : null }, t.libelle))),
     !ecrire ? message("Lecture seule : l'écriture est fermée pour ce JDR (réglage « ecriture » de la configuration). Tu vois qui sait quoi, sans pouvoir révéler.", "alerte") : null,
     h("div", { class: "rv-barre" },

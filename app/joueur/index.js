@@ -2,27 +2,28 @@
 // Lancée par app.js quand profil.application === "joueur" et que la session est prête (connexion, dossier relié).
 // Lecture partout ; l'écriture (tranche 2 : étiquettes, notes, sac, points de vie, bourse) n'existe que pour un JOUEUR et seulement si l'interrupteur `ecriture` du JDR est ouvert.
 // Le MJ qui « voit comme » un joueur ne peut rien modifier.
-import { creerDonneesJoueur } from "../../src/joueur/donnees.js?v=0.20.0";
-import { nature, issue } from "../../src/joueur/geste.js?v=0.20.0";
-import { reglesD100 } from "../../src/joueur/d100.js?v=0.20.0";
-import { h, icon, attente, message, urlImage, viderImages, feuille, feuilleOuverte } from "./ui.js?v=0.20.0";
-import { ouvrirJet } from "./jet.js?v=0.20.0";
-import { ecranFiche, ecranCompetences } from "./ecrans_fiche.js?v=0.20.0";
-import { ecranSacDossiers, ecranSacTout, ecranSacDossier } from "./ecrans_sac.js?v=0.20.0";
-import { ecranSavoirs, ecranQuetes, ecranNotes, ecranJournal, ecranRencontres, ecranRencontre } from "./ecrans_savoirs.js?v=0.20.0";
-import { ecranCarte } from "./ecrans_carte.js?v=0.20.0";
-import { ecranRecherche } from "./ecrans_recherche.js?v=0.20.0";
-import { ecranAccueilMJ, ecranDocumentMJ, ecranJoueursMJ, ecranJoueurMJ } from "./ecrans_mj.js?v=0.20.0";
-import { ecranRevelationsMJ } from "./ecrans_regie.js?v=0.20.0";
-import { ecranParcoursMJ } from "./ecrans_parcours.js?v=0.20.0";
-import { ecranSeanceMJ } from "./ecrans_seance.js?v=0.20.0";
-import { creerRegie } from "../../src/mj/regie.js?v=0.20.0";
-import { creerNouveautes } from "../../src/joueur/nouveautes.js?v=0.20.0";
-import { creerStockageImages } from "./stockage_images.js?v=0.20.0";
+import { creerDonneesJoueur } from "../../src/joueur/donnees.js?v=0.20.1";
+import { nature, issue } from "../../src/joueur/geste.js?v=0.20.1";
+import { reglesD100 } from "../../src/joueur/d100.js?v=0.20.1";
+import { h, icon, attente, message, urlImage, viderImages, feuille, feuilleOuverte } from "./ui.js?v=0.20.1";
+import { ouvrirJet } from "./jet.js?v=0.20.1";
+import { ecranFiche, ecranCompetences } from "./ecrans_fiche.js?v=0.20.1";
+import { ecranSacDossiers, ecranSacTout, ecranSacDossier } from "./ecrans_sac.js?v=0.20.1";
+import { ecranSavoirs, ecranQuetes, ecranNotes, ecranJournal, ecranRencontres, ecranRencontre } from "./ecrans_savoirs.js?v=0.20.1";
+import { ecranCarte } from "./ecrans_carte.js?v=0.20.1";
+import { ecranRecherche } from "./ecrans_recherche.js?v=0.20.1";
+import { ecranAccueilMJ, ecranDocumentMJ, ecranJoueursMJ, ecranJoueurMJ } from "./ecrans_mj.js?v=0.20.1";
+import { ecranRevelationsMJ } from "./ecrans_regie.js?v=0.20.1";
+import { ecranParcoursMJ } from "./ecrans_parcours.js?v=0.20.1";
+import { ecranSeanceMJ } from "./ecrans_seance.js?v=0.20.1";
+import { creerRegie } from "../../src/mj/regie.js?v=0.20.1";
+import { creerNouveautes } from "../../src/joueur/nouveautes.js?v=0.20.1";
+import { creerStockageImages } from "./stockage_images.js?v=0.20.1";
 
 const dec = decodeURIComponent;
 const FRAICHEUR_MS = 60_000;   // une lecture est réutilisée une minute en mémoire de page ; « Actualiser » (menu du nom) et le retour au premier plan la rafraîchissent
 const ATTENTE_REDESSIN_MS = 1_000;
+const VEILLE_MS = 20_000;       // toutes les 20 secondes, l'application ouverte regarde si le MJ a révélé quelque chose
 
 /** Les quatre onglets. `portee` : écrans qui allument l'onglet. */
 const ONGLETS = [
@@ -72,7 +73,7 @@ const ROUTES_MJ = [
 
 export function demarrerJoueur({ profil, session, auth, deconnecter, versMoteur, surErreur, ecriture = false }) {
   document.body.classList.add("joueur");
-  if (!document.getElementById("css-joueur")) document.head.append(h("link", { id: "css-joueur", rel: "stylesheet", href: "./joueur/joueur.css?v=0.20.0" }));
+  if (!document.getElementById("css-joueur")) document.head.append(h("link", { id: "css-joueur", rel: "stylesheet", href: "./joueur/joueur.css?v=0.20.1" }));
   let themeMeta = document.querySelector('meta[name="theme-color"]');
   if (!themeMeta) { themeMeta = h("meta", { name: "theme-color", content: "#1d1b1a" }); document.head.append(themeMeta); } else themeMeta.setAttribute("content", "#1d1b1a");
   const racine = document.getElementById("app-joueur") || document.body.appendChild(h("div", { id: "app-joueur" }));
@@ -271,6 +272,24 @@ export function demarrerJoueur({ profil, session, auth, deconnecter, versMoteur,
     }
     if (enAttente) planifierRedessin();
   });
+  /* Veille : pendant que l'application est à l'écran, elle revérifie toute seule ce que le MJ peut avoir révélé (savoirs, quêtes, rencontres, sac, récits, fiche).
+     Une requête par dossier ; rien n'est retéléchargé si rien n'a changé. Un changement redessine l'écran (surMiseAJour), jamais pendant une saisie.
+     En pause quand l'application est en arrière-plan (le retour au premier plan revérifie déjà) et sur les écrans du MJ, qui relisent à chaque action. */
+  let veilleEnCours = false;
+  const veille = setInterval(async () => {
+    const d = ctx.donnees;
+    if (veilleEnCours || document.hidden || !d || !d.pseudo || location.hash.startsWith("#/mj")) return;
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+    veilleEnCours = true;
+    try {
+      d.invalider();
+      for (const lire of [d.savoirs, d.quetes, d.rencontres, d.sac, d.journal, d.fiche]) {
+        if (d !== ctx.donnees) break;   // le MJ a changé de joueur entre-temps
+        try { await lire(); } catch (e) { if (e && (e.status === 401 || e.auth)) { surErreur(e); break; } }
+      }
+    } finally { veilleEnCours = false; }
+  }, VEILLE_MS);
+
   afficher();
-  return { ctx, afficher, arreter() { arreterRedessin(); window.removeEventListener("hashchange", surChangementDeRoute); document.body.classList.remove("joueur"); racine.replaceChildren(); } };
+  return { ctx, afficher, arreter() { clearInterval(veille); arreterRedessin(); window.removeEventListener("hashchange", surChangementDeRoute); document.body.classList.remove("joueur"); racine.replaceChildren(); } };
 }

@@ -1,4 +1,4 @@
-# La régie du MJ (version 0.20.0)
+# La régie du MJ (version 0.20.1)
 
 Ce document décrit les écrans du MJ ajoutés à l'application : ce qu'ils font, où ils écrivent, et ce qui reste à vérifier.
 Il ne contient aucun contenu de jeu.
@@ -15,7 +15,7 @@ Il ne contient aucun contenu de jeu.
 ## Révéler une information
 
 1. **Préparer** (avant la séance) : *Révélations* → *Nouvelle carte*. On écrit le titre, le texte que les joueurs liront, et si besoin la **vérité du MJ**, qui ne sort jamais du coffre. Le champ *Prévu pour* rattache la carte à un document : elle attendra dans l'outil *Révéler* de l'écran *Séance* de ce document.
-2. **Révéler** (pendant ou après la séance) : un clic sur *Révéler* (ou sur une case de la matrice). Le fichier est écrit dans le dossier de chaque joueur choisi ; son application le montre à la prochaine vérification (quelques secondes si elle est ouverte), en tête de liste, avec la pastille **Nouveau**.
+2. **Révéler** (pendant ou après la séance) : un clic sur *Révéler* (ou sur une case de la matrice). Le fichier est écrit dans le dossier de chaque joueur choisi ; son application ouverte le montre toute seule en moins d'une demi-minute (elle vérifie toutes les 20 secondes), en tête de liste, avec la pastille **Nouveau**.
 3. **Improviser** : *Séance* → *Révéler* → *Nouvelle révélation* → *Enregistrer et révéler maintenant*.
 4. **Corriger** : ouvrir la carte → *Modifier*, puis *Mettre à jour chez eux*. Ce que le joueur a écrit lui-même (sa note sur une rencontre, « Ce que j'ai fait » d'une quête) est gardé.
 5. **Annuler** : le bandeau qui suit une révélation propose *Annuler* ; plus tard, un clic sur la case cochée retire la carte à ce joueur.
