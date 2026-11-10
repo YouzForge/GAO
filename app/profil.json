@@ -4,6 +4,7 @@
   "nom": "Le Monde de GAO",
   "dossier": "JDR - GAO",
   "public": "adulte",
+  "application": "joueur",
   "langue": "fr",
   "ton": "Adulte, riche, précis. Critique directe et sans filtre sur les idées créatives quand elle sert le projet.",
   "vocabulaire": {
@@ -14,8 +15,7 @@
     "campagne": "campagne"
   },
   "theme": {
-    "palette": "parchemin-sombre",
-    "note": "Palette et polices à décider avec le questionnaire (bloc H). Le moteur lit ces valeurs."
+    "palette": "cendre"
   },
   "securite": {
     "mode": "separe",
