@@ -421,3 +421,179 @@ body.joueur .jr-ajout .jr-saisie{min-height:44px}
 .mj-total.tous{color:var(--vert-vif);font-weight:600}
 .mj-matrice tr.tous .mj-savoir{box-shadow:inset 3px 0 0 var(--vert)}
 @media (min-width:700px){.mj-matrice th,.mj-matrice td{padding:10px 14px}.mj-joueur-col{min-width:110px}}
+
+/* ================= Régie du MJ : révélations, parcours, séance (même charte : cartes sombres, rouge braise, orange, Cinzel) ================= */
+.mj.large .mj-panneau{max-width:1640px}
+.mj.large .mj-bandeau{padding-left:max(16px,calc((100% - 1640px)/2 + 16px));padding-right:max(16px,calc((100% - 1640px)/2 + 16px))}
+@media (min-width:700px){.mj-onglet{flex:0 0 150px}}
+
+/* ---- Révélations ---- */
+.rv-barre{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.rv-barre .mj-recherche{flex:1 1 260px}
+.rv-nouvelle{background:var(--rouge);border-color:var(--rouge)}
+.jr-bouton.rv-reveler{background:var(--rouge);border-color:var(--rouge)}
+.rv-matrice{max-height:none}
+.rv-titre{padding:0 !important;min-width:240px !important;max-width:420px !important}
+.rv-ouvrir{width:100%;min-height:52px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;padding:8px 12px;border:0;background:none;text-align:left;color:var(--texte)}
+.rv-ouvrir:hover{background:var(--sol)}
+.rv-ouvrir-titre{font-weight:600;overflow-wrap:anywhere}
+.rv-ouvrir-meta{display:flex;flex-wrap:wrap;gap:4px 6px}
+.rv-ouvrir-meta:empty{display:none}
+.rv-marque{display:inline-flex;align-items:center;gap:3px;padding:0 7px;border-radius:999px;border:1px solid var(--trait);font-size:11.5px;font-weight:500;color:var(--voile);white-space:nowrap}
+.rv-marque.secret{border-color:var(--rouge);color:#f3b8ad}
+.mj-matrice tr.a_reveler .rv-titre{box-shadow:inset 3px 0 0 var(--orange)}
+.mj-matrice tr.partiel .rv-titre{box-shadow:inset 3px 0 0 #8f857b}
+.mj-matrice tr.tous .rv-titre{box-shadow:inset 3px 0 0 var(--vert)}
+.rv-case-td{padding:4px !important}
+.rv-coche{width:44px;height:44px;margin:0 auto;display:grid;place-items:center;border-radius:12px;border:1px dashed var(--trait);background:none;color:var(--voile);transition:background .12s,border-color .12s}
+.rv-coche svg{margin:0}
+.rv-coche:hover:not(:disabled){border-style:solid;border-color:var(--orange);color:var(--orange);background:rgba(239,138,62,.12)}
+.rv-coche.on{border:1px solid var(--vert);background:rgba(47,125,107,.28);color:var(--vert-vif)}
+.rv-coche.on:hover:not(:disabled){border-color:var(--rouge);color:#f3b8ad;background:rgba(194,59,37,.2)}
+.rv-coche:disabled{cursor:default;opacity:.75}
+.rv-case-td.hors .rv-coche{opacity:.38}
+tbody.occupe .rv-coche,tbody.occupe .rv-a-tous{pointer-events:none;opacity:.5}
+.rv-tous{white-space:nowrap}
+.rv-a-tous{background:var(--rouge);border-color:var(--rouge);color:var(--texte);font-weight:600}
+.rv-point{width:9px;height:9px;border-radius:50%;flex:none;background:#8f857b}
+.rv-point.a_reveler{background:var(--orange)}
+.rv-point.tous{background:var(--vert-vif)}
+.rv-etat{display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:999px;border:1px solid var(--trait);font-size:12px;font-weight:600;color:var(--voile);white-space:nowrap}
+.rv-etat.a_reveler{border-color:var(--orange);color:var(--orange)}
+.rv-etat.tous{border-color:var(--vert-vif);color:var(--vert-vif)}
+.rv-fiche{display:flex;flex-direction:column;gap:14px}
+.rv-bloc{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:14px;border:1px solid var(--trait);background:var(--sol)}
+.rv-bloc h3{display:flex;align-items:center;gap:6px;font-size:12.5px}
+.rv-bloc.secret{border-color:var(--rouge);background:rgba(194,59,37,.1)}
+.rv-bloc.secret h3{color:#f3b8ad}
+.rv-pour{margin:0;padding:12px 14px;border:1px solid var(--trait);border-radius:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.rv-pour legend{padding:0 6px;font-size:13px;color:var(--voile)}
+.rv-pour-cases{display:flex;flex-wrap:wrap;gap:4px 18px}
+.rv-case.inactif{opacity:.6}
+.rv-grille{display:grid;grid-template-columns:1.2fr 1fr 1.4fr;gap:10px}
+.rv-grille.deux{grid-template-columns:2fr 1fr}
+body.joueur .jr-saisie.rv-secret-champ{min-height:90px;border-color:var(--rouge)}
+.jr-feuille.large{max-width:760px}
+.rv-journal{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--voile)}
+.rv-journal li{padding:8px 10px;border-radius:10px;background:var(--sol)}
+.rv-annonce{position:fixed;z-index:120;left:50%;bottom:calc(20px + var(--s-b,0px));transform:translateX(-50%);max-width:min(680px,calc(100% - 24px));display:flex;align-items:center;gap:12px;padding:10px 12px 10px 18px;border-radius:16px;border:1px solid var(--vert-vif);background:#22302c;color:var(--texte);box-shadow:0 8px 30px rgba(0,0,0,.55);font-size:14.5px;animation:jr-monte .22s ease-out}
+.rv-annonce-x{width:32px;height:32px;display:grid;place-items:center;border:0;background:none;color:var(--voile);border-radius:50%}
+@media (max-width:600px){.rv-grille,.rv-grille.deux{grid-template-columns:1fr}.rv-titre{min-width:170px !important}}
+
+/* ---- Parcours ---- */
+.pc-etat{margin-left:auto;color:var(--vert-vif)}
+.pc-sep{margin:0 2px}
+.pc-tableau{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
+.pc-colonne{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:16px;border:1px solid var(--trait);border-top:4px solid var(--trait);background:var(--creux);min-height:160px}
+.pc-colonne.c-prochaine{border-top-color:var(--rouge)}
+.pc-colonne.c-suivre{border-top-color:var(--orange)}
+.pc-colonne.c-lointain{border-top-color:#8f857b}
+.pc-colonne.c-joue{border-top-color:var(--vert-vif)}
+.pc-colonne.cible{outline:2px dashed var(--orange);outline-offset:-4px}
+.pc-colonne-tete{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pc-colonne-tete h3{font-family:"Cinzel",serif;font-size:16px;color:var(--texte);text-transform:none;letter-spacing:.01em}
+.pc-aide{margin:0;font-size:12.5px;color:var(--voile);min-height:2.6em}
+.pc-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;flex:1}
+.pc-vide{padding:18px 8px;border:1px dashed var(--trait);border-radius:12px;text-align:center;color:var(--voile);font-size:13.5px}
+.pc-carte{display:flex;align-items:stretch;gap:0;border-radius:12px;border:1px solid var(--trait);background:var(--sol);overflow:hidden;position:relative}
+.pc-carte[draggable=true]{cursor:grab}
+.pc-carte.glisse{opacity:.4}
+.pc-carte.dessus{box-shadow:0 -3px 0 var(--orange)}
+.pc-genre{flex:none;width:34px;display:grid;place-items:center;background:var(--panneau);color:var(--voile)}
+.pc-carte.g-session .pc-genre{color:var(--orange)}
+.pc-carte-corps{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;padding:9px 10px;min-height:50px;justify-content:center}
+.pc-carte-corps:hover{background:#352f2c}
+.pc-carte-titre{font-weight:600;font-size:14.5px;line-height:1.25;overflow-wrap:anywhere}
+.pc-carte-sous{font-size:12px;color:var(--voile);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc-poignee{flex:none;width:40px;display:grid;place-items:center;border:0;border-left:1px solid var(--trait);background:none;color:var(--voile)}
+.pc-poignee:hover{color:var(--orange);background:var(--creux)}
+.c-joue .pc-carte{opacity:.78}
+@media (max-width:1100px){.pc-tableau{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.pc-tableau{grid-template-columns:1fr}.pc-aide{min-height:0}}
+
+/* ---- Séance ---- */
+.se{display:grid;grid-template-columns:230px minmax(0,1fr) minmax(340px,440px);gap:22px;align-items:start}
+.se-sommaire{position:sticky;top:12px;max-height:calc(100dvh - 24px);overflow:auto;padding:12px;border:1px solid var(--trait);border-radius:16px;background:var(--sol);display:flex;flex-direction:column;gap:8px}
+.se-sommaire ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.se-sommaire li button{width:100%;text-align:left;padding:7px 8px;border:0;background:none;color:var(--texte);border-radius:10px;font-size:13.5px;line-height:1.3}
+.se-sommaire li.n2 button{font-weight:600;color:var(--orange)}
+.se-sommaire li button:hover{background:var(--panneau)}
+.se-legende{display:flex;flex-wrap:wrap;gap:5px;padding-top:8px;border-top:1px solid var(--trait)}
+.se-legende-item{display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border-radius:999px;font-size:11px;border:1px solid var(--c,var(--trait));color:var(--c,var(--voile))}
+.se-doc{min-width:0;display:flex;flex-direction:column;gap:6px;font-size:16.5px}
+.se-scene{display:flex;flex-direction:column;gap:10px;scroll-margin-top:12px;padding-bottom:14px}
+.se-scene-titre{margin:.6em 0 .2em;padding-bottom:.3em;font-size:21px;border-bottom:1px solid var(--trait)}
+.se-soustitre{margin:.5em 0 0;font-family:"Cinzel",serif;font-size:16.5px;color:var(--orange)}
+.se-prose{color:var(--texte)}
+.b-lire{--c:#e6c98a}.b-dialogue{--c:#8fc2e8}.b-note{--c:#b3a798}.b-secret{--c:#f08a78}.b-combat{--c:var(--orange)}.b-alerte{--c:var(--vert-vif)}.b-recompense{--c:#d9b84f}.b-lettre{--c:#cbb6e6}
+.se-bloc{display:flex;flex-direction:column;gap:6px;padding:10px 14px;border-radius:12px;border:1px solid var(--trait);border-left:4px solid var(--c,var(--trait));background:var(--sol)}
+.se-bloc-tete{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c,var(--voile))}
+.se-bloc-note{margin-left:auto;font-weight:500;text-transform:none;letter-spacing:0;color:var(--voile)}
+.se-bloc.b-lire,.se-bloc.a-lire{background:#3a3327}
+.se-bloc.b-lire .jr-md,.se-bloc.a-lire .jr-md{font-family:Georgia,"Times New Roman",serif;font-size:17.5px;line-height:1.55;color:#f6ecd6}
+.se-bloc.b-note{background:var(--creux)}
+.se-bloc.b-note .jr-md{font-size:15px;color:#d8cdbd}
+.se-bloc.b-secret{background:rgba(194,59,37,.12);border-color:var(--rouge)}
+.se-bloc.b-combat{background:rgba(239,138,62,.08)}
+.se-panneau{position:sticky;top:12px;max-height:calc(100dvh - 24px);display:flex;flex-direction:column;border:1px solid var(--trait);border-radius:16px;background:var(--sol);overflow:hidden}
+.se-onglets{flex:none;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;padding:8px;border-bottom:1px solid var(--trait);background:var(--panneau)}
+.se-onglet{min-height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:2px;border:0;border-radius:10px;background:none;color:var(--voile);font-size:11px;font-weight:600}
+.se-onglet:hover{background:var(--sol);color:var(--texte)}
+.se-onglet.on{background:var(--orange);color:var(--creux)}
+.se-outil{flex:1;min-height:0;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.se-titre-outil{margin:6px 0 0;display:flex;align-items:center;gap:6px;font-family:"Inter",system-ui,sans-serif;font-size:12.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--voile)}
+.se-titre-outil.secret{color:#f3b8ad}.se-titre-outil.alerte{color:var(--vert-vif)}
+.se-pli{border:1px solid var(--trait);border-radius:12px;background:var(--creux)}
+.se-pli summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:46px;padding:0 12px;cursor:pointer;font-weight:600;font-size:14px}
+.se-pli summary::-webkit-details-marker{display:none}
+.se-pli[open] summary svg{transform:rotate(180deg)}
+.se-pli-corps{display:flex;flex-direction:column;gap:8px;padding:0 12px 12px;font-size:14.5px}
+.se-pli-corps .se-bloc .jr-md,.se-items .jr-md{font-size:14.5px}
+.se-items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.se-item{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:12px;border:1px solid var(--trait);border-left:4px solid var(--c,var(--trait));background:var(--creux)}
+.se-vers{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;padding:0;border:0;background:none;color:var(--voile);font-size:12px;text-align:left}
+.se-vers:hover{color:var(--orange)}
+.se-cartes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.se-carte{display:flex;align-items:stretch;gap:8px;padding:6px;border-radius:14px;border:1px solid var(--trait);border-left:4px solid var(--orange);background:var(--creux)}
+.se-carte.tous{border-left-color:var(--vert);opacity:.8}
+.se-carte-corps{flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:6px 8px;border:0;background:none;text-align:left;border-radius:10px}
+.se-carte-corps:hover{background:var(--sol)}
+.se-carte-type{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--voile)}
+.se-carte-titre{font-family:"Cinzel",serif;font-weight:600;font-size:15.5px;overflow-wrap:anywhere}
+.se-carte-go{flex:none;align-self:center;min-height:44px;padding:0 14px;background:var(--rouge);border-color:var(--rouge)}
+.se-carte .rv-etat{align-self:center;margin-right:6px}
+.se-tuiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.se-tuiles.serre{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+.se-tuile{display:flex;align-items:center;gap:8px;min-height:46px;padding:6px 10px 6px 6px;border-radius:12px;border:1px solid var(--trait);background:var(--creux);text-align:left}
+.se-tuile:hover{border-color:var(--orange);background:var(--panneau)}
+.se-tuile-ic{flex:none;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--panneau);color:var(--c,var(--voile))}
+.se-tuile.g-pnj{--c:#8fc2e8}.se-tuile.g-lieu{--c:var(--vert-vif)}.se-tuile.g-quete{--c:var(--orange)}.se-tuile.g-faction{--c:#f08a78}.se-tuile.g-divinite{--c:#e6c98a}.se-tuile.g-creature{--c:#cbb6e6}.se-tuile.g-objet{--c:#d9b84f}
+.se-tuile-nom{flex:1;min-width:0;font-size:13.5px;font-weight:600;line-height:1.2;overflow-wrap:anywhere}
+.se-tuile-n{flex:none;font-size:11px;color:var(--voile);font-variant-numeric:tabular-nums}
+.se-fiche{display:flex;flex-direction:column;gap:14px}
+.se-liens{display:flex;flex-direction:column;gap:6px}
+.se-joueurs,.se-jauges{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.se-joueur{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;border:1px solid var(--trait);background:var(--creux)}
+.se-joueur-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.se-joueur-nom{font-family:"Cinzel",serif;font-weight:600;font-size:15px}
+.se-joueur-pv{flex:none;display:flex;flex-direction:column;align-items:flex-end;font-family:"Cinzel",serif;font-weight:700;font-size:17px;font-variant-numeric:tabular-nums;line-height:1.1}
+.se-joueur-pv small{font-family:"Inter",system-ui,sans-serif;font-size:10.5px;font-weight:500;color:var(--voile)}
+.se-jauge{display:flex;flex-direction:column;gap:7px;padding:10px 12px;border-radius:12px;border:1px solid var(--rouge);background:rgba(194,59,37,.08)}
+.se-jauge-tete{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.se-jauge-nom{flex:1;min-width:0;font-weight:600;font-size:14.5px}
+.se-jauge-val{font-family:"Cinzel",serif;font-size:14px;color:var(--voile);font-variant-numeric:tabular-nums}
+.se-jauge-val strong{font-size:20px;color:var(--texte)}
+.se-jauge-barre{height:8px;border-radius:4px;background:var(--creux);overflow:hidden}
+.se-jauge-barre div{height:100%;background:linear-gradient(90deg,var(--orange),var(--rouge));transition:width .25s}
+.se-jauge-pas{display:flex;gap:6px}
+.se-pas{flex:1;min-height:40px;border-radius:10px;border:1px solid var(--trait);background:var(--creux);color:var(--texte);font-weight:600;font-variant-numeric:tabular-nums}
+.se-pas:hover:not(:disabled){border-color:var(--orange)}
+.se-pas:disabled{opacity:.5}
+body.joueur .jr-saisie.se-notes{min-height:220px}
+@media (max-width:1280px){.se{grid-template-columns:minmax(0,1fr) minmax(320px,400px)}.se-sommaire{display:none}}
+@media (max-width:900px){.se{grid-template-columns:minmax(0,1fr)}.se-panneau{position:static;max-height:none;order:-1}.se-outil{max-height:60dvh}}
+
+/* ---- Joueur : ce que le MJ vient de révéler ---- */
+.jr-nouveau{flex:none;padding:1px 9px;border-radius:999px;background:var(--rouge);color:var(--texte);font-family:"Inter",system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.jr-carte.nouveau{border-color:var(--rouge)}
+.jr-pastille .jr-pastille-n{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--rouge);color:var(--texte);font-size:11.5px;font-weight:700;display:grid;place-items:center}

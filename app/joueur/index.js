@@ -2,18 +2,23 @@
 // Lancée par app.js quand profil.application === "joueur" et que la session est prête (connexion, dossier relié).
 // Lecture partout ; l'écriture (tranche 2 : étiquettes, notes, sac, points de vie, bourse) n'existe que pour un JOUEUR et seulement si l'interrupteur `ecriture` du JDR est ouvert.
 // Le MJ qui « voit comme » un joueur ne peut rien modifier.
-import { creerDonneesJoueur } from "../../src/joueur/donnees.js?v=0.19.0";
-import { nature, issue } from "../../src/joueur/geste.js?v=0.19.0";
-import { reglesD100 } from "../../src/joueur/d100.js?v=0.19.0";
-import { h, icon, attente, message, urlImage, viderImages, feuille, feuilleOuverte } from "./ui.js?v=0.19.0";
-import { ouvrirJet } from "./jet.js?v=0.19.0";
-import { ecranFiche, ecranCompetences } from "./ecrans_fiche.js?v=0.19.0";
-import { ecranSacDossiers, ecranSacTout, ecranSacDossier } from "./ecrans_sac.js?v=0.19.0";
-import { ecranSavoirs, ecranQuetes, ecranNotes, ecranJournal, ecranRencontres, ecranRencontre } from "./ecrans_savoirs.js?v=0.19.0";
-import { ecranCarte } from "./ecrans_carte.js?v=0.19.0";
-import { ecranRecherche } from "./ecrans_recherche.js?v=0.19.0";
-import { ecranAccueilMJ, ecranDocumentMJ, ecranJoueursMJ, ecranJoueurMJ, ecranSavoirsMJ } from "./ecrans_mj.js?v=0.19.0";
-import { creerStockageImages } from "./stockage_images.js?v=0.19.0";
+import { creerDonneesJoueur } from "../../src/joueur/donnees.js?v=0.20.0";
+import { nature, issue } from "../../src/joueur/geste.js?v=0.20.0";
+import { reglesD100 } from "../../src/joueur/d100.js?v=0.20.0";
+import { h, icon, attente, message, urlImage, viderImages, feuille, feuilleOuverte } from "./ui.js?v=0.20.0";
+import { ouvrirJet } from "./jet.js?v=0.20.0";
+import { ecranFiche, ecranCompetences } from "./ecrans_fiche.js?v=0.20.0";
+import { ecranSacDossiers, ecranSacTout, ecranSacDossier } from "./ecrans_sac.js?v=0.20.0";
+import { ecranSavoirs, ecranQuetes, ecranNotes, ecranJournal, ecranRencontres, ecranRencontre } from "./ecrans_savoirs.js?v=0.20.0";
+import { ecranCarte } from "./ecrans_carte.js?v=0.20.0";
+import { ecranRecherche } from "./ecrans_recherche.js?v=0.20.0";
+import { ecranAccueilMJ, ecranDocumentMJ, ecranJoueursMJ, ecranJoueurMJ } from "./ecrans_mj.js?v=0.20.0";
+import { ecranRevelationsMJ } from "./ecrans_regie.js?v=0.20.0";
+import { ecranParcoursMJ } from "./ecrans_parcours.js?v=0.20.0";
+import { ecranSeanceMJ } from "./ecrans_seance.js?v=0.20.0";
+import { creerRegie } from "../../src/mj/regie.js?v=0.20.0";
+import { creerNouveautes } from "../../src/joueur/nouveautes.js?v=0.20.0";
+import { creerStockageImages } from "./stockage_images.js?v=0.20.0";
 
 const dec = decodeURIComponent;
 const FRAICHEUR_MS = 60_000;   // une lecture est réutilisée une minute en mémoire de page ; « Actualiser » (menu du nom) et le retour au premier plan la rafraîchissent
@@ -52,17 +57,22 @@ const ROUTES = [
 
 /** Écrans du MJ (D47) : hors de la coque du joueur (pas de portrait ni d'onglets). Chaque écran renvoie { page }. */
 const ROUTES_MJ = [
-  [/^\/mj$/, ctx => ecranAccueilMJ(ctx)],
+  [/^\/mj$/, ctx => ecranParcoursMJ(ctx)],
+  [/^\/mj\/lieux$/, ctx => ecranAccueilMJ(ctx)],
+  [/^\/mj\/seance$/, ctx => ecranSeanceMJ(ctx)],
+  [/^\/mj\/seance\/(session|lieu)\/(.+)$/, (ctx, g, f) => ecranSeanceMJ(ctx, g, dec(f))],
+  [/^\/mj\/revelations$/, ctx => ecranRevelationsMJ(ctx)],
+  [/^\/mj\/revelations\/([a-z]+)$/, (ctx, t) => ecranRevelationsMJ(ctx, t)],
   [/^\/mj\/lieu\/(.+)$/, (ctx, f) => ecranDocumentMJ(ctx, "lieu", dec(f))],
   [/^\/mj\/session\/(.+)$/, (ctx, f) => ecranDocumentMJ(ctx, "session", dec(f))],
   [/^\/mj\/joueurs$/, ctx => ecranJoueursMJ(ctx)],
   [/^\/mj\/joueur\/(.+)$/, (ctx, p) => ecranJoueurMJ(ctx, dec(p))],
-  [/^\/mj\/savoirs$/, ctx => ecranSavoirsMJ(ctx)]
+  [/^\/mj\/savoirs$/, ctx => ecranRevelationsMJ(ctx)]   // ancienne adresse de la matrice « qui sait quoi » : elle est devenue l'écran des révélations
 ];
 
 export function demarrerJoueur({ profil, session, auth, deconnecter, versMoteur, surErreur, ecriture = false }) {
   document.body.classList.add("joueur");
-  if (!document.getElementById("css-joueur")) document.head.append(h("link", { id: "css-joueur", rel: "stylesheet", href: "./joueur/joueur.css?v=0.19.0" }));
+  if (!document.getElementById("css-joueur")) document.head.append(h("link", { id: "css-joueur", rel: "stylesheet", href: "./joueur/joueur.css?v=0.20.0" }));
   let themeMeta = document.querySelector('meta[name="theme-color"]');
   if (!themeMeta) { themeMeta = h("meta", { name: "theme-color", content: "#1d1b1a" }); document.head.append(themeMeta); } else themeMeta.setAttribute("content", "#1d1b1a");
   const racine = document.getElementById("app-joueur") || document.body.appendChild(h("div", { id: "app-joueur" }));
@@ -130,6 +140,10 @@ export function demarrerJoueur({ profil, session, auth, deconnecter, versMoteur,
     caches.clear(); viderImages(); arreterRedessin();
     ctx.donnees = creerDonneesJoueur({ profil, depot: ctx.session.depot, role: estMJ() ? "mj" : "joueur", pseudo, ecriture: ecriture === true, images: imagesLocales });
     ctx.donnees.surMiseAJour(surMiseAJour);
+    ctx.regie = estMJ() ? creerRegie({ profil, depot: ctx.session.depot }) : null;   // la régie (révélations, parcours, séance) n'existe que pour le MJ
+    // « Nouveau » : repère d'affichage du joueur, gardé sur son appareil. Le MJ qui « voit comme » un joueur ne marque rien comme vu à sa place.
+    let ls = null; try { ls = window.localStorage; } catch { /* stockage refusé */ }
+    ctx.nouveautes = estMJ() ? null : creerNouveautes(ls, `jdr:${profil.id}:vus:${pseudo || ""}`);
     // Les autres onglets se lisent pendant que le joueur regarde le premier : le changement d'onglet est alors immédiat.
     if (typeof ctx.donnees.prechauffer === "function") setTimeout(() => { ctx.donnees.prechauffer().catch(e => { if (e && (e.status === 401 || e.auth)) surErreur(e); }); }, 300);
   }

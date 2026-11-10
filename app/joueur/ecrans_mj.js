@@ -1,13 +1,13 @@
 // Écrans du MJ (D47, lecture seule) : l'accueil avec la liste des lieux et la session de jeu à venir, la lecture d'un document du coffre, le tableau de bord des joueurs et leurs notes MJ, la matrice « qui sait quoi ».
 // Même charte que les écrans du joueur : bandeau dégradé, panneau qui monte, onglets rouges (orange = écran actif), cartes sombres à bord arrondi, titres en Cinzel.
 // Pensés pour l'ordinateur (deux colonnes, large) et lisibles sur téléphone (une colonne). Seule exception : les compétences spéciales d'un joueur (écran « Joueur », si l'écriture est ouverte).
-import { parseDoc, norm } from "../../src/md/doc.js?v=0.19.0";
-import { ETATS_LIEU, STATUTS_SESSION, filtrerLieux, compterEtats } from "../../src/mj/accueil.js?v=0.19.0";
-import { construireMatrice, filtrerSavoirs, compterFiltres, FILTRES_SAVOIRS } from "../../src/mj/matrice.js?v=0.19.0";
-import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.19.0";
-import { executer, confirmer } from "./edition.js?v=0.19.0";
-import { EcritureInvalide } from "../../src/ecriture/fiche.js?v=0.19.0";
-import { MAX_COMPETENCE_NOM, MAX_COMPETENCE_LIENS, MAX_COMPETENCE_NOTE, MAX_COMPETENCE_TOTAL } from "../../src/joueur/ecriture.js?v=0.19.0";
+import { parseDoc, norm } from "../../src/md/doc.js?v=0.20.0";
+import { ETATS_LIEU, STATUTS_SESSION, filtrerLieux, compterEtats } from "../../src/mj/accueil.js?v=0.20.0";
+import { construireMatrice, filtrerSavoirs, compterFiltres, FILTRES_SAVOIRS } from "../../src/mj/matrice.js?v=0.20.0";
+import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.20.0";
+import { executer, confirmer } from "./edition.js?v=0.20.0";
+import { EcritureInvalide } from "../../src/ecriture/fiche.js?v=0.20.0";
+import { MAX_COMPETENCE_NOM, MAX_COMPETENCE_LIENS, MAX_COMPETENCE_NOTE, MAX_COMPETENCE_TOTAL } from "../../src/joueur/ecriture.js?v=0.20.0";
 
 const enc = encodeURIComponent;
 const COPIE_ANCIENNE = "Copie enregistrée sur cet appareil : la connexion ne répond pas.";
@@ -33,17 +33,19 @@ const chip = texte => h("span", { class: "jr-puce" }, texte);
  * Cadre commun des écrans du MJ : bandeau (nom du JDR, actualiser, menu), panneau avec onglets, puis le contenu.
  * `actif` : "accueil" | "joueurs" | "savoirs". Le panneau « monte » sur le bandeau comme sur l'application du joueur.
  */
-export function cadreMJ(ctx, { actif = "accueil", titre } = {}, ...contenu) {
+export function cadreMJ(ctx, { actif = "accueil", titre, large = false } = {}, ...contenu) {
   const a = ctx.actions;
   const nom = titre || ctx.profil.nom || "Ton JDR";
   const menu = () => {
     const fermer = feuille("Menu du MJ", h("div", { class: "jr-menu" },
-      h("p", { class: "jr-meta" }, "Écran du MJ : lecture seule pour l'instant."),
+      h("p", { class: "jr-meta" }, ctx.donnees && ctx.donnees.peutEcrireMJ ? "Écran du MJ : tu peux révéler, ranger et noter." : "Écran du MJ : lecture seule (l'écriture est fermée pour ce JDR)."),
       h("button", { class: "jr-bouton", type: "button", onclick: () => { fermer(); a.actualiser(); } }, icon("clock", 18), "Actualiser"),
+      h("a", { class: "jr-bouton", href: "#/mj/lieux", onclick: () => fermer() }, icon("pin", 18), "Tous les lieux"),
+      a.versMoteur ? h("button", { class: "jr-bouton", type: "button", onclick: () => { fermer(); a.versMoteur(); } }, icon("scroll", 18), "Listes du coffre") : null,
       h("button", { class: "jr-bouton", type: "button", onclick: () => { fermer(); a.deconnecter(); } }, icon("lock", 18), "Se déconnecter")));
   };
   const onglet = (id, ic, libelle, { href, onclick } = {}) => h(href ? "a" : "button", { class: "mj-onglet" + (id === actif ? " on" : ""), href, type: href ? null : "button", onclick, "aria-current": id === actif ? "page" : null }, icon(ic, 20), h("span", null, libelle));
-  return h("div", { class: "mj" },
+  return h("div", { class: "mj" + (large ? " large" : "") },
     h("div", { class: "mj-bandeau" },
       h("div", { class: "mj-nom" }, h("span", { class: "mj-kicker" }, "Écran du MJ"), h("h1", null, nom)),
       h("div", { class: "mj-ronds" },
@@ -51,10 +53,10 @@ export function cadreMJ(ctx, { actif = "accueil", titre } = {}, ...contenu) {
         h("button", { class: "jr-rond", type: "button", "aria-label": "Menu", title: "Menu", onclick: menu }, icon("dots", 22)))),
     h("div", { class: "mj-panneau" },
       h("nav", { class: "mj-onglets", "aria-label": "Écrans du MJ" },
-        onglet("accueil", "book", "Accueil", { href: "#/mj" }),
-        onglet("joueurs", "friends", "Joueurs", { href: "#/mj/joueurs" }),
-        onglet("savoirs", "bulb", "Savoirs", { href: "#/mj/savoirs" }),
-        a.versMoteur ? onglet("moteur", "scroll", "Listes", { onclick: () => a.versMoteur() }) : null),
+        onglet("accueil", "map", "Parcours", { href: "#/mj" }),
+        onglet("seance", "dice", "Séance", { href: "#/mj/seance" }),
+        onglet("revelations", "eye", "Révélations", { href: "#/mj/revelations" }),
+        onglet("joueurs", "friends", "Joueurs", { href: "#/mj/joueurs" })),
       h("div", { class: "mj-contenu" }, contenu)));
 }
 
