@@ -1,4 +1,4 @@
-# La régie du MJ (version 0.20.1)
+# La régie du MJ (version 0.21.0)
 
 Ce document décrit les écrans du MJ ajoutés à l'application : ce qu'ils font, où ils écrivent, et ce qui reste à vérifier.
 Il ne contient aucun contenu de jeu.
@@ -24,6 +24,15 @@ Une carte destinée à un seul joueur (quête personnelle, objet clé, part de b
 
 Ce qui a été publié avant la régie n'a pas de carte au coffre : ces lignes restent visibles et révélables case par case, mais l'application ne propose jamais de les donner « à tous » d'un clic (un savoir personnel partirait chez toute la table). *Modifier* crée leur carte.
 
+## Le journal des joueurs (comptes rendus de session)
+
+*Révélations* → pastille *Journal*. Chaque compte rendu de session y figure avec un interrupteur :
+
+- **Visible** : le fichier est dans la table (`Table/Resumes_de_session`) ; tous les joueurs le lisent dans leur application (onglet *Savoirs*, puis *Journal*).
+- **Masqué** : le fichier est retiré de la table ; son texte reste au coffre (`MJ/04_Revelations/Resumes`), d'où il peut être remontré, corrigé ou supprimé.
+
+*Nouveau compte rendu* en écrit un (gardé masqué, ou montré tout de suite). *Corriger* modifie le texte ; si le compte rendu est visible, les joueurs voient la correction. Les *Notes du MJ* d'un compte rendu ne quittent jamais le coffre.
+Il n'y a pas de visibilité par joueur : la table est commune, un compte rendu est visible pour tous ou pour personne.
 ## Où tout est écrit (OneDrive du MJ)
 
 | Quoi | Où |
@@ -34,7 +43,8 @@ Ce qui a été publié avant la régie n'a pas de carte au coffre : ces lignes r
 | Jauges cachées des objets | champ `jauge_actuelle` de la fiche de l'objet, dans `MJ/01_Univers/Objets` |
 | Notes de séance | `MJ/05_Fin_de_seance/A_traiter/AAAA-MM-JJ_Notes_de_seance.md` |
 | Ce qu'un joueur reçoit | `Joueurs/<Pseudo>/Savoirs`, `Quetes`, `Rencontres`, `Inventaire` |
-| Résumé public d'une séance | `Table/Resumes_de_session` |
+| Compte rendu visible (journal des joueurs) | `Table/Resumes_de_session` |
+| Compte rendu masqué, et notes du MJ de chaque compte rendu | `MJ/04_Revelations/Resumes` |
 
 ## Garde-fous
 

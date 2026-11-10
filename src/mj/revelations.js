@@ -7,8 +7,8 @@
 //
 // Un élément déjà présent chez des joueurs mais sans carte au coffre (tout ce qui a été publié avant la régie) reste révélable aux autres :
 // on recopie alors la version d'un joueur qui l'a, sans ses sections personnelles (« Ma note », « Ce que j'ai fait »).
-import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize } from "../md/doc.js?v=0.20.1";
-import { masquerPourJoueur } from "../md/masque.js?v=0.20.1";
+import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize } from "../md/doc.js?v=0.21.0";
+import { masquerPourJoueur } from "../md/masque.js?v=0.21.0";
 
 export const DOSSIER_REVELATIONS = "04_Revelations";
 
@@ -245,4 +245,50 @@ export function ajouterAuJournal(texte, ligne) {
   const base = texte == null || !String(texte).trim()
     ? "---\ncollection: journal_revelations\nvisibilite: secret\n---\n\n# Journal des révélations\n\nUne ligne par action de la régie : date, action, type, titre, joueurs.\n\n" : String(texte).trimEnd() + "\n";
   return base + ligne + "\n";
+}
+
+// ------------------------------------------------------------------ Comptes rendus de session (journal des joueurs)
+// Un compte rendu visible est un fichier de la table (lu par TOUS les joueurs, dans leur journal). Le masquer = le retirer de la table ; son texte reste
+// au coffre (`MJ/04_Revelations/Resumes`), d'où il peut être remontré, corrigé ou supprimé. Il n'y a pas de visibilité par joueur : la table est commune.
+export const DOSSIER_RESUMES = "Resumes";
+export const SECTION_RESUME = "Ce que tout le monde sait";
+
+/** Texte d'un compte rendu au coffre. `notes` (facultatif) : une section « 🔴 Notes MJ » qui ne sera jamais publiée. */
+export function texteResume({ titre, session = "", texte = "", notes = "" }) {
+  const meta = { titre: t(titre) };
+  if (t(session)) meta.session = t(session);
+  meta.visibilite = "secret";
+  let corps = `\n# ${t(titre)}\n\n## ${SECTION_RESUME}\n\n${t(texte)}\n`;
+  if (t(notes)) corps += `\n## 🔴 Notes MJ\n\n${t(notes)}\n`;
+  return serializeDoc(meta, corps);
+}
+
+/** Lit un compte rendu (du coffre ou de la table). → { fichier, titre, session, texte, notes } ; `texte` : ce que les joueurs lisent. */
+export function lireResume(contenu, fichier) {
+  const d = parseDoc(contenu);
+  const corps = d.body.replace(/^\s*#\s+.+\n?/, "");
+  const publiques = [], coffre = [];
+  for (const s of sections(corps)) (s.title && SECTION_COFFRE.test(s.title) ? coffre : publiques).push(s);
+  const principal = getSection(corps, SECTION_RESUME);
+  return {
+    fichier, titre: t(d.meta.titre) || d.title || humanize(fichier), session: d.meta.session == null ? "" : t(d.meta.session),
+    texte: principal || publiques.map(s => (s.title ? `## ${s.title}\n${s.text}` : s.text)).join("\n").trim(),
+    notes: coffre.map(s => s.text.trim()).filter(Boolean).join("\n\n")
+  };
+}
+
+/**
+ * La liste des comptes rendus : ceux de la table (visibles) et ceux qui ne sont qu'au coffre (masqués).
+ * @param {{fichier:string, titre:string, session:string}[]} table   @param {{fichier:string, titre:string, session:string}[]} coffre
+ * @returns {{cle, fichier, titre, session, visible:boolean, auCoffre:boolean}[]}  rangés par numéro de session décroissant (comme le journal des joueurs), puis par titre
+ */
+export function construireJournal(table, coffre) {
+  const m = new Map();
+  for (const r of coffre || []) m.set(cleFichier(r.fichier), { cle: cleFichier(r.fichier), fichier: r.fichier, titre: r.titre, session: r.session, visible: false, auCoffre: true });
+  for (const r of table || []) {
+    const k = cleFichier(r.fichier), l = m.get(k);
+    if (l) { l.visible = true; l.fichierTable = r.fichier; } else m.set(k, { cle: k, fichier: r.fichier, fichierTable: r.fichier, titre: r.titre, session: r.session, visible: true, auCoffre: false });
+  }
+  const num = l => { const x = String(l.session || "").match(/\d+/g); return x ? Number(x[x.length - 1]) + (x.length > 1 ? Number(x[0]) * 1000 : 0) : -1; };
+  return [...m.values()].sort((a, b) => (num(b) - num(a)) || a.titre.localeCompare(b.titre, "fr", { numeric: true }));
 }

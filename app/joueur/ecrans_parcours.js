@@ -2,10 +2,10 @@
 // (Prochaine session, À suivre, Lointain, Joué) qu'il réordonne en glissant les cartes, selon là où vont les personnages.
 // Le rangement est un fichier du coffre (`Parcours.md`) : il suit le MJ d'un appareil à l'autre. Sur téléphone ou au clavier, le bouton « déplacer » remplace le glisser.
 // RÈGLE du moteur : jamais de innerHTML.
-import { COLONNES, rangerParcours, parcoursDepuisRangement, deplacer, decaler } from "../../src/mj/parcours.js?v=0.20.1";
-import { h, icon, message, feuille } from "./ui.js?v=0.20.1";
-import { executer } from "./edition.js?v=0.20.1";
-import { cadreMJ } from "./ecrans_mj.js?v=0.20.1";
+import { COLONNES, rangerParcours, parcoursDepuisRangement, deplacer, decaler } from "../../src/mj/parcours.js?v=0.21.0";
+import { h, icon, message, feuille } from "./ui.js?v=0.21.0";
+import { executer } from "./edition.js?v=0.21.0";
+import { cadreMJ } from "./ecrans_mj.js?v=0.21.0";
 
 const enc = encodeURIComponent;
 const lienDoc = d => `#/mj/${d.genre}/${enc(d.fichier)}`;

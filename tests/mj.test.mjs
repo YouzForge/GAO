@@ -1,7 +1,7 @@
 // Tests de la régie du MJ (révélations, parcours, séance). Textes inventés : aucun contenu de jeu.   node --test tests/
 import test from "node:test";
 import assert from "node:assert/strict";
-import { texteCarte, lireCarte, texteJoueur, fusionner, copiePourAutreJoueur, nomPublie, nomDepuisTitre, construireCatalogue, filtrerCatalogue, compterCatalogue, lirePour, modifierCarte, poserChamp, ajouterAuJournal, ligneJournal } from "../src/mj/revelations.js";
+import { texteCarte, lireCarte, texteJoueur, fusionner, copiePourAutreJoueur, nomPublie, nomDepuisTitre, construireCatalogue, filtrerCatalogue, compterCatalogue, lirePour, modifierCarte, poserChamp, ajouterAuJournal, ligneJournal, texteResume, lireResume, construireJournal } from "../src/mj/revelations.js";
 import { lireParcours, ecrireParcours, rangerParcours, deplacer, decaler, parcoursDepuisRangement } from "../src/mj/parcours.js";
 import { decouper, ficheMJ, blocsDe, entitesCitees, jaugeDe } from "../src/mj/seance.js";
 import { parseDoc, getSection } from "../src/md/doc.js";
@@ -133,4 +133,22 @@ test("séance : fiches citées et jauges", () => {
   assert.deepEqual(r.map(x => [x.nom, x.n]), [["Mira", 2], ["Sir Bran", 1], ["Tom Garde", 1]]);
   assert.deepEqual(jaugeDe({ jauge_max: 100, jauge_actuelle: 130 }), { actuelle: 100, max: 100 });
   assert.equal(jaugeDe({ nom: "x" }), null);
+});
+
+test("journal des joueurs : comptes rendus visibles ou masqués, notes du MJ jamais publiées", () => {
+  const c = texteResume({ titre: "Session 3 : le phare", session: "3", texte: "Nous avons rallumé le phare.", notes: "Ils ont raté l'indice du gardien." });
+  const lu = lireResume(c, "Session_3.md");
+  assert.equal(lu.titre, "Session 3 : le phare");
+  assert.equal(lu.session, "3");
+  assert.equal(lu.texte, "Nous avons rallumé le phare.");
+  assert.match(lu.notes, /indice du gardien/);
+  const pub = texteJoueur(c);
+  assert.doesNotMatch(pub, /indice du gardien|Notes MJ/);
+  assert.match(pub, /visibilite: accessible/);
+  assert.equal(lireResume(pub, "Session_3.md").texte, "Nous avons rallumé le phare.");
+  const j = construireJournal(
+    [{ fichier: "Session_1.md", titre: "S1", session: "1" }, { fichier: "Session_3.md", titre: "S3", session: "3" }],
+    [{ fichier: "session_3.md", titre: "S3 (coffre)", session: "3" }, { fichier: "Session_2.md", titre: "S2", session: "2" }]);
+  assert.deepEqual(j.map(l => [l.titre, l.visible, l.auCoffre]), [["S3 (coffre)", true, true], ["S2", false, true], ["S1", true, false]]);
+  assert.equal(j[0].fichierTable, "Session_3.md");
 });

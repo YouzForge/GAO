@@ -4,16 +4,16 @@
 //
 // RÈGLE DE SÉCURITÉ : le seul chemin par lequel un texte du coffre arrive dans le dossier d'un joueur est `texteJoueur` / `copiePourAutreJoueur` / `fusionner`
 // (src/mj/revelations.js), qui retirent les sections et les champs du coffre et refusent de publier si une marque de secret subsiste.
-import { parseDoc, humanize, norm } from "../md/doc.js?v=0.20.1";
-import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.20.1";
-import { AccesRefuse } from "../depot/depot.js?v=0.20.1";
-import { EcritureInvalide } from "../ecriture/fiche.js?v=0.20.1";
-import { pool } from "../graph/pool.js?v=0.20.1";
+import { parseDoc, humanize, norm } from "../md/doc.js?v=0.21.0";
+import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.21.0";
+import { AccesRefuse } from "../depot/depot.js?v=0.21.0";
+import { EcritureInvalide } from "../ecriture/fiche.js?v=0.21.0";
+import { pool } from "../graph/pool.js?v=0.21.0";
 import { TYPES, typeDe, DOSSIER_REVELATIONS, lireCarte, texteJoueur, copiePourAutreJoueur, fusionner, texteCarte, modifierCarte, poserChamp, nomPublie, nomDepuisTitre,
-  construireCatalogue, cleFichier, ligneJournal, ajouterAuJournal } from "./revelations.js?v=0.20.1";
-import { lireParcours, ecrireParcours } from "./parcours.js?v=0.20.1";
-import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.20.1";
-import { jaugeDe } from "./seance.js?v=0.20.1";
+  construireCatalogue, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal } from "./revelations.js?v=0.21.0";
+import { lireParcours, ecrireParcours } from "./parcours.js?v=0.21.0";
+import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.21.0";
+import { jaugeDe } from "./seance.js?v=0.21.0";
 
 const MARKDOWN = /^(?!00_|LISEZMOI).+\.md$/i;
 const NOM_DOSSIER = /^(?![._])[^/\\:?*"<>|\u0000-\u001f]{1,80}$/;
@@ -35,6 +35,10 @@ export function creerRegie({ profil, depot, maintenant = () => new Date() }) {
   const zones = Object.fromEntries(((profil.joueur_modele || {}).dossiers || []).map(d => [d.id, d.dossier]));
   const racineCartes = `${coffre}/${DOSSIER_REVELATIONS}`;
   const cheminJournal = `${racineCartes}/Journal_des_revelations.md`;
+  const dossierResumes = `${racineCartes}/${DOSSIER_RESUMES}`;
+  const dossierTable = () => { const c = (profil.collections || []).find(x => x.id === "resume"); if (!c) throw new AccesRefuse("Ce JDR n'a pas de résumés de session", "zone_absente"); return c.dossier; };
+  /** Version d'un compte rendu pour la table : sans notes du MJ, visible, datée ; refusée si une marque de secret subsiste. */
+  const versionTable = texte => { const p = texteJoueur(texte); if (p == null) throw new EcritureInvalide("Ce compte rendu contient encore une marque de secret (🔴, 🔒, 🎲, ⚔️, 🆕) : il n'est pas montré. Corrige-le.", "marque_secrete"); return poserChamp(p, "publie_le", jourDe(maintenant())); };
   const cheminParcours = `${(dossierCol("session") || `${coffre}/02_Campagne/Sessions`).split("/").slice(0, -1).join("/")}/Parcours.md`;
   const refus = (m, r) => { throw new AccesRefuse(m, r); };
   const exigerType = type => typeDe(type) || refus("Type inconnu", "zone_refusee");
@@ -303,23 +307,78 @@ export function creerRegie({ profil, depot, maintenant = () => new Date() }) {
       const corps = `---\ndate: ${jour}\n${seance ? `seance: ${String(seance).replace(/\s*\n\s*/g, " ")}\n` : ""}visibilite: secret\n---\n\n# Notes de séance du ${jour}\n\n${String(texte).trim()}\n`;
       return surFichier(api.cheminNotes(jour), () => corps, { creerSiAbsent: true });
     },
-    /** Publie le résumé public d'une session dans la table (lisible par tous les joueurs : leur journal). Jamais d'écrasement. → { fichier } */
-    async publierResume({ titre, session = "", texte }) {
-      const d = dossierCol("resume");
-      if (!d) refus("Ce JDR n'a pas de résumés de session", "zone_absente");
+    // ------------------------------------------------------------ Journal des joueurs : comptes rendus de session
+    // Visible = le fichier est dans la table (lu par TOUS les joueurs, dans leur journal). Masqué = il n'est qu'au coffre (`04_Revelations/Resumes`).
+    /** Les comptes rendus, visibles ou masqués. → [{ cle, fichier, fichierTable?, titre, session, visible, auCoffre }] */
+    async comptesRendus() {
+      const dT = dossierTable();
+      const lireTous = async d => (await pool(nomsMd(await lister(d)), async n => { const t = await lire(`${d}/${n}`); return t == null ? null : lireResume(t, n); }, 6)).filter(Boolean);
+      const [table, auCoffre] = await Promise.all([lireTous(dT), lireTous(dossierResumes)]);
+      return construireJournal(table, auCoffre);
+    },
+    /** Un compte rendu ouvert : la version du coffre si elle existe (elle porte les notes du MJ), sinon celle de la table. → { titre, session, texte, notes } ou null */
+    async compteRendu(l) {
+      if (!NOM_SIMPLE.test(String(l.fichier))) refus("Nom de fichier invalide", "nom_invalide");
+      const t = l.auCoffre ? await lire(`${dossierResumes}/${l.fichier}`) : await lire(`${dossierTable()}/${l.fichierTable || l.fichier}`);
+      return t == null ? null : lireResume(t, l.fichier);
+    },
+    /** Masque un compte rendu : son texte est d'abord mis au coffre (s'il n'y est pas), puis le fichier est retiré de la table (corbeille OneDrive). */
+    async masquerCompteRendu(l) {
+      const chemin = `${dossierTable()}/${l.fichierTable || l.fichier}`;
+      const f = await depot.lireFiche(chemin);
+      if (!f) return false;
+      if (!l.auCoffre) {
+        const r = lireResume(f.texte, l.fichier);
+        try { await depot.creer(`${dossierResumes}/${l.fichier}`, texteResume(r)); } catch (e) { if (!(e instanceof FicheExiste)) throw e; }
+      }
+      await depot.supprimer(chemin, f.etag);
+      await journal("compte rendu masqué", "journal", l.titre, ["toute la table"]);
+      return true;
+    },
+    /** Montre un compte rendu du coffre à toute la table (sans ses notes du MJ). Jamais d'écrasement. */
+    async montrerCompteRendu(l) {
+      if (!NOM_SIMPLE.test(String(l.fichier))) refus("Nom de fichier invalide", "nom_invalide");
+      const t = await lire(`${dossierResumes}/${l.fichier}`);
+      if (t == null) throw new ConflitEcriture(l.fichier, "disparue");
+      const pub = versionTable(t);
+      try { await depot.creer(`${dossierTable()}/${l.fichier}`, pub); } catch (e) { if (!(e instanceof FicheExiste)) throw e; return false; }
+      await journal("compte rendu montré", "journal", l.titre, ["toute la table"]);
+      return true;
+    },
+    /**
+     * Crée (`l` absent) ou corrige un compte rendu. Le texte du coffre est écrit d'abord ; s'il est visible, la table est mise à jour ensuite.
+     * Un texte qui garde une marque de secret est refusé AVANT toute écriture. → { fichier, titre, session, visible, auCoffre:true }
+     */
+    async enregistrerCompteRendu(l, { titre, session = "", texte = "", notes = "" }) {
       if (!String(titre || "").trim() || !String(texte || "").trim()) throw new EcritureInvalide("Il faut un titre et un texte", "titre_vide");
-      const brut = `---\ntitre: ${String(titre).replace(/\s*\n\s*/g, " ").trim()}\n${String(session).trim() ? `session: ${String(session).trim()}\n` : ""}visibilite: accessible\npublie_le: ${jourDe(maintenant())}\n---\n\n# ${String(titre).trim()}\n\n## Ce que tout le monde sait\n\n${String(texte).trim()}\n`;
-      const publiable = texteJoueur(brut);
-      if (publiable == null) throw new EcritureInvalide("Ce résumé contient une marque de secret : il n'est pas publié.", "marque_secrete");
-      const d2 = parseDoc(publiable);
-      const final = `---\n${Object.entries({ ...d2.meta, publie_le: jourDe(maintenant()) }).map(([k, v]) => `${k}: ${v}`).join("\n")}\n---\n${d2.body}`;
-      const pris = new Set(nomsMd(await lister(d)).map(cleFichier));
-      const base = nomDepuisTitre(titre);
-      let nom = `${base}.md`;
-      for (let i = 2; pris.has(cleFichier(nom)); i++) nom = `${base}_${i}.md`;
-      await depot.creer(`${d}/${nom}`, final);
-      await journal("résumé publié", "résumé", titre, ["toute la table"]);
-      return { fichier: nom };
+      const neuf = texteResume({ titre, session, texte, notes });
+      const pub = versionTable(neuf);
+      if (!l) {
+        const pris = new Set([...nomsMd(await lister(dossierResumes)), ...nomsMd(await lister(dossierTable()))].map(cleFichier));
+        const base = nomDepuisTitre(titre);
+        let nom = `${base}.md`;
+        for (let i = 2; pris.has(cleFichier(nom)); i++) nom = `${base}_${i}.md`;
+        await depot.creer(`${dossierResumes}/${nom}`, neuf);
+        return { cle: cleFichier(nom), fichier: nom, titre: String(titre).trim(), session: String(session).trim(), visible: false, auCoffre: true };
+      }
+      if (!NOM_SIMPLE.test(String(l.fichier))) refus("Nom de fichier invalide", "nom_invalide");
+      await surFichier(`${dossierResumes}/${l.fichier}`, () => neuf, { creerSiAbsent: true });
+      if (l.visible) await surFichier(`${dossierTable()}/${l.fichierTable || l.fichier}`, () => pub);
+      await journal(l.visible ? "compte rendu corrigé (visible)" : "compte rendu corrigé", "journal", titre, l.visible ? ["toute la table"] : []);
+      return { ...l, titre: String(titre).trim(), session: String(session).trim(), auCoffre: true };
+    },
+    /** Supprime un compte rendu MASQUÉ (corbeille OneDrive). Un compte rendu visible doit d'abord être masqué. */
+    async supprimerCompteRendu(l) {
+      if (l.visible) throw new EcritureInvalide("Ce compte rendu est visible par les joueurs : masque-le d'abord", "carte_publiee");
+      const chemin = `${dossierResumes}/${l.fichier}`;
+      const f = await depot.lireFiche(chemin);
+      if (f) await depot.supprimer(chemin, f.etag);
+    },
+    /** Écrit un compte rendu et le montre tout de suite à la table (bouton de l'écran « Séance »). → { fichier } */
+    async publierResume({ titre, session = "", texte }) {
+      const l = await api.enregistrerCompteRendu(null, { titre, session, texte });
+      await api.montrerCompteRendu(l);
+      return { fichier: l.fichier };
     },
     /** Écrit le statut d'une session de jeu (« jouée », « prête », « idée ») dans sa fiche. */
     async changerStatutSession(fichier, statut) {

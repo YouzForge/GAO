@@ -1,9 +1,9 @@
 // Textes écrits par le joueur (tranche 2) : étiquettes, notes, note de rencontre, points de vie, bourse. Sans DOM, sans réseau.
 // Tout passe par l'édition fidèle du moteur (`modifierFiche`, `creerFiche`) : seul ce qui est demandé change, le reste du fichier
 // reste identique à l'octet près. Une valeur refusée lève `EcritureInvalide` (jamais corrigée en silence).
-import { modifierFiche, creerFiche, verifierValeur, EcritureInvalide, nomFichier } from "../ecriture/fiche.js?v=0.20.1";
-import { norm, parseDoc, getSection } from "../md/doc.js?v=0.20.1";
-import { lireTableau } from "./tableaux.js?v=0.20.1";
+import { modifierFiche, creerFiche, verifierValeur, EcritureInvalide, nomFichier } from "../ecriture/fiche.js?v=0.21.0";
+import { norm, parseDoc, getSection } from "../md/doc.js?v=0.21.0";
+import { lireTableau } from "./tableaux.js?v=0.21.0";
 
 export const MAX_ETIQUETTE = 30;
 export const MAX_ETIQUETTES_PAR_ELEMENT = 12;

@@ -2,11 +2,11 @@
 // Une ligne par carte, une colonne par joueur : un clic sur une case révèle (ou retire, après confirmation) ; « À tous » révèle aux joueurs prévus.
 // Une carte s'ouvre sur ce que les joueurs liront et, à part, sur ce qui ne sort jamais du coffre.
 // RÈGLE du moteur : jamais de innerHTML ; tout est construit avec le DOM. Rien ne s'écrit si l'interrupteur `ecriture` du JDR est fermé.
-import { parseDoc } from "../../src/md/doc.js?v=0.20.1";
-import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.20.1";
-import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.20.1";
-import { executer, confirmer } from "./edition.js?v=0.20.1";
-import { cadreMJ } from "./ecrans_mj.js?v=0.20.1";
+import { parseDoc } from "../../src/md/doc.js?v=0.21.0";
+import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.21.0";
+import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.21.0";
+import { executer, confirmer } from "./edition.js?v=0.21.0";
+import { cadreMJ } from "./ecrans_mj.js?v=0.21.0";
 
 const enc = encodeURIComponent;
 const nomJoueur = p => String(p).replace(/_/g, " ");
@@ -144,6 +144,7 @@ async function nomsDocuments(ctx) {
 }
 
 export async function ecranRevelationsMJ(ctx, typeId = "savoir") {
+  if (typeId === "journal") return ecranJournalMJ(ctx);
   const ty = typeDe(typeId) || TYPES[0];
   const ecrire = peutEcrire(ctx);
   let cat = await ctx.regie.catalogue(ty.id);
@@ -230,7 +231,7 @@ export async function ecranRevelationsMJ(ctx, typeId = "savoir") {
   const contenu = [
     h("div", { class: "mj-doc-tete" }, h("h2", { class: "mj-doc-titre" }, "Révélations"),
       h("p", { class: "jr-meta" }, "Un clic sur une case donne la carte à ce joueur ; elle apparaît dans son application ouverte en moins d'une demi-minute. Le titre ouvre la carte.")),
-    h("nav", { class: "jr-souslignes", "aria-label": "Types de cartes" }, TYPES.map(t => h("a", { class: "jr-pastille" + (t.id === ty.id ? " on" : ""), href: `#/mj/revelations/${enc(t.id)}`, "aria-current": t.id === ty.id ? "page" : null }, t.libelle))),
+    navRevelations(ty.id),
     !ecrire ? message("Lecture seule : l'écriture est fermée pour ce JDR (réglage « ecriture » de la configuration). Tu vois qui sait quoi, sans pouvoir révéler.", "alerte") : null,
     h("div", { class: "rv-barre" },
       h("label", { class: "mj-recherche" }, icon("search", 20), champRecherche),
@@ -241,5 +242,103 @@ export async function ecranRevelationsMJ(ctx, typeId = "savoir") {
     !cat.joueurs.length ? message("Aucun dossier de joueur pour l'instant.", "info")
       : h("div", { class: "mj-matrice-defile rv-matrice", tabindex: "0", role: "region", "aria-label": "Qui a reçu quoi" }, h("table", { class: "mj-matrice" }, tete, corps))];
   if (cat.joueurs.length) dessiner();
+  return { page: cadreMJ(ctx, { actif: "revelations" }, ...contenu.filter(Boolean)) };
+}
+
+/* ------------------------------------------------------------------ Journal des joueurs : les comptes rendus de session */
+/** Les pastilles de l'écran : les quatre types de cartes, puis le journal. */
+const navRevelations = actif => h("nav", { class: "jr-souslignes", "aria-label": "Types de cartes" },
+  TYPES.map(t => h("a", { class: "jr-pastille" + (t.id === actif ? " on" : ""), href: `#/mj/revelations/${enc(t.id)}`, "aria-current": t.id === actif ? "page" : null }, t.libelle)),
+  h("a", { class: "jr-pastille" + (actif === "journal" ? " on" : ""), href: "#/mj/revelations/journal", "aria-current": actif === "journal" ? "page" : null }, icon("book", 16), "Journal"));
+
+/** Formulaire d'un compte rendu : création (`ligne` absente) ou correction. `surFini(ligne, montrer:boolean)`. */
+function formulaireCompteRendu(ctx, { ligne = null, contenu = null, surFini = () => {} } = {}) {
+  const titre = saisie({ maxlength: "120", value: contenu ? contenu.titre : "", "aria-label": "Titre", placeholder: "Session 12 : le titre que liront les joueurs" });
+  const session = saisie({ maxlength: "40", value: contenu ? contenu.session : "", "aria-label": "Session", placeholder: "12" });
+  const texte = zoneTexte(contenu ? contenu.texte : "", { rows: "12", "aria-label": "Texte pour les joueurs", placeholder: "Ce que tout le groupe sait après cette séance. Aucun secret." });
+  const notes = zoneTexte(contenu ? contenu.notes : "", { rows: "3", "aria-label": "Notes du MJ", placeholder: "Facultatif : ce que tu gardes pour toi sur cette séance." });
+  notes.classList.add("rv-secret-champ");
+  const msg = h("div", { class: "jr-retour-action" });
+  const garder = h("button", { class: "jr-bouton", type: "button" }, icon("check", 18), ligne ? (ligne.visible ? "Enregistrer (les joueurs verront la correction)" : "Enregistrer") : "Garder masqué pour l'instant");
+  const montrer = ligne ? null : h("button", { class: "jr-bouton gros rv-reveler", type: "button" }, icon("eye", 20), "Enregistrer et montrer aux joueurs");
+  const fermer = feuille(ligne ? "Corriger le compte rendu" : "Nouveau compte rendu", [
+    h("div", { class: "rv-grille deux" }, champ("Titre", titre), champ("Session", session, "Le numéro range le compte rendu dans le journal.")),
+    champ("Ce que les joueurs lisent", texte),
+    champ("Notes du MJ (ne sortent jamais du coffre)", notes),
+    msg, h("div", { class: "jr-actions" }, garder, montrer)], { large: true });
+  const envoyer = async voir => {
+    const champs = { titre: titre.value, session: session.value, texte: texte.value, notes: notes.value };
+    const r = await executer(ctx, async () => { const l = await ctx.regie.enregistrerCompteRendu(ligne, champs); if (voir) await ctx.regie.montrerCompteRendu(l); return l; }, { zone: msg, boutons: [garder, montrer] });
+    if (!r.ok) return;
+    fermer(); surFini(r.r, voir);
+  };
+  garder.addEventListener("click", () => envoyer(false));
+  if (montrer) montrer.addEventListener("click", () => envoyer(true));
+  setTimeout(() => titre.focus(), 50);
+}
+
+/** Onglet « Journal » : chaque compte rendu de session, visible par toute la table ou masqué (gardé au coffre). */
+export async function ecranJournalMJ(ctx) {
+  const ecrire = peutEcrire(ctx);
+  let lignes = await ctx.regie.comptesRendus();
+  const zone = h("div", { class: "jr-retour-action" }), listeN = h("ul", { class: "rj-liste" }), compte = h("span", { class: "jr-meta mj-compte" });
+  let occupe = false;
+  const recharger = async () => { lignes = await ctx.regie.comptesRendus(); dessiner(); };
+  const agir = async (action, apres) => {
+    if (occupe) return;
+    occupe = true; listeN.classList.add("occupe");
+    const r = await executer(ctx, action, { zone });
+    occupe = false; listeN.classList.remove("occupe");
+    try { await recharger(); } catch (e) { if (e && (e.status === 401 || e.auth)) return ctx.surErreur(e); }
+    if (r.ok && apres) apres(r.r);
+  };
+  const masquer = l => agir(() => ctx.regie.masquerCompteRendu(l), () => annoncer(`« ${l.titre} » est masqué : les joueurs ne le voient plus.`, { action: () => agir(() => ctx.regie.montrerCompteRendu({ ...l, auCoffre: true }), () => annoncer(`« ${l.titre} » est de nouveau visible.`)) }));
+  const montrer = l => agir(() => ctx.regie.montrerCompteRendu(l), () => annoncer(`« ${l.titre} » est visible dans le journal des joueurs.`, { action: () => agir(() => ctx.regie.masquerCompteRendu({ ...l, visible: true, fichierTable: l.fichier }), () => annoncer(`« ${l.titre} » est masqué.`)) }));
+  const ouvrir = async l => {
+    const corps = h("div", { class: "rv-fiche" }, message("Lecture…", "info"));
+    const z = h("div", { class: "jr-retour-action" });
+    const fermer = feuille(l.titre, corps, { large: true });
+    let c = null;
+    try { c = await ctx.regie.compteRendu(l); } catch (e) { if (e && (e.status === 401 || e.auth)) { fermer(); return ctx.surErreur(e); } }
+    if (!c) return corps.replaceChildren(message("Ce compte rendu n'existe plus.", "erreur"));
+    const supprimer = async () => {
+      if (!await confirmer("Supprimer ce compte rendu ?", "Il est masqué : aucun joueur ne le voit. Il ira dans la corbeille OneDrive.", "Supprimer")) return;
+      const r = await executer(ctx, () => ctx.regie.supprimerCompteRendu(l), { zone: z });
+      if (r.ok) { fermer(); recharger().catch(e => ctx.surErreur(e)); }
+    };
+    corps.replaceChildren(...[
+      h("div", { class: "jr-puces" }, c.session ? h("span", { class: "jr-puce" }, `Session ${c.session}`) : null, h("span", { class: "rv-etat " + (l.visible ? "tous" : "a_reveler") }, icon(l.visible ? "eye" : "lock", 14), l.visible ? "Visible par les joueurs" : "Masqué")),
+      h("section", { class: "rv-bloc" }, h("h3", null, icon("eye", 16), "Ce que les joueurs lisent"), h("div", { class: "jr-md" }, rendreMarkdown(c.texte || ""))),
+      c.notes ? h("section", { class: "rv-bloc secret" }, h("h3", null, icon("lock", 16), "Ne sort jamais du coffre"), h("div", { class: "jr-md" }, rendreMarkdown(c.notes))) : null,
+      z,
+      ecrire ? h("div", { class: "jr-actions" },
+        h("button", { class: "jr-bouton", type: "button", onclick: () => { fermer(); formulaireCompteRendu(ctx, { ligne: l, contenu: c, surFini: () => { annoncer(`« ${l.titre} » corrigé.`); recharger().catch(e => ctx.surErreur(e)); } }); } }, icon("pen", 18), "Corriger"),
+        l.visible ? h("button", { class: "jr-bouton", type: "button", onclick: () => { fermer(); masquer(l); } }, icon("lock", 18), "Masquer aux joueurs")
+          : h("button", { class: "jr-bouton rv-reveler", type: "button", onclick: () => { fermer(); montrer(l); } }, icon("eye", 18), "Montrer aux joueurs"),
+        !l.visible ? h("button", { class: "jr-bouton danger", type: "button", onclick: supprimer }, icon("trash", 18), "Supprimer") : null) : null
+    ].flat(Infinity).filter(Boolean));
+  };
+  const ligne = l => h("li", { class: "rj-ligne " + (l.visible ? "visible" : "masque") },
+    h("button", { class: "rj-corps", type: "button", onclick: () => ouvrir(l) },
+      h("span", { class: "rj-num" }, (n => (n ? (n.length > 1 ? `S${n[0]}·${n[n.length - 1]}` : n[0]) : "·"))(String(l.session || "").match(/\d+/g))),
+      h("span", { class: "rj-titre" }, l.titre)),
+    h("span", { class: "rv-etat " + (l.visible ? "tous" : "a_reveler") }, l.visible ? "Visible" : "Masqué"),
+    ecrire ? h("button", { class: "rj-bascule" + (l.visible ? " on" : ""), type: "button", role: "switch", "aria-checked": String(l.visible), "aria-label": l.visible ? `Masquer « ${l.titre} » aux joueurs` : `Montrer « ${l.titre} » aux joueurs`,
+      title: l.visible ? "Masquer aux joueurs" : "Montrer aux joueurs", onclick: () => (l.visible ? masquer(l) : montrer(l)) }, h("span", { class: "rj-bascule-rond" }, icon(l.visible ? "eye" : "lock", 14))) : null);
+  function dessiner() {
+    const v = lignes.filter(l => l.visible).length;
+    compte.textContent = `${lignes.length} compte${lignes.length > 1 ? "s" : ""} rendu${lignes.length > 1 ? "s" : ""} · ${v} visible${v > 1 ? "s" : ""} · ${lignes.length - v} masqué${lignes.length - v > 1 ? "s" : ""}`;
+    listeN.replaceChildren(...lignes.map(ligne));
+    if (!lignes.length) listeN.append(h("li", { class: "jr-vide" }, "Aucun compte rendu pour l'instant."));
+  }
+  dessiner();
+  const nouveau = () => formulaireCompteRendu(ctx, { surFini: (l, voir) => { annoncer(voir ? `« ${l.titre} » est visible dans le journal des joueurs.` : `« ${l.titre} » est gardé au coffre, masqué.`); recharger().catch(e => ctx.surErreur(e)); } });
+  const contenu = [
+    h("div", { class: "mj-doc-tete" }, h("h2", { class: "mj-doc-titre" }, "Révélations"),
+      h("p", { class: "jr-meta" }, "Le journal des joueurs : chaque compte rendu de session est lu par toute la table (onglet Savoirs, puis Journal de leur application). L'interrupteur le montre ou le masque pour tout le monde.")),
+    navRevelations("journal"),
+    !ecrire ? message("Lecture seule : l'écriture est fermée pour ce JDR.", "alerte") : null,
+    h("div", { class: "rv-barre" }, compte, ecrire ? h("button", { class: "jr-bouton rv-nouvelle", type: "button", onclick: nouveau }, icon("plus", 18), "Nouveau compte rendu") : null),
+    zone, listeN];
   return { page: cadreMJ(ctx, { actif: "revelations" }, ...contenu.filter(Boolean)) };
 }

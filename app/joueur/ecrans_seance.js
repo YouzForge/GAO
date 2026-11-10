@@ -1,14 +1,14 @@
 // Écran « Séance » du MJ : la table de jeu. Le document de la prochaine session au centre (scènes, blocs colorés : à lire, dialogue, note MJ, secret, combat),
 // le sommaire des scènes à gauche, et à droite un panneau d'outils : fiche MJ, secrets, cartes à révéler, tuiles (PNJ, lieux, quêtes cités), joueurs et jauges, notes.
 // Pensé pour l'ordinateur (trois colonnes) ; sur téléphone tout s'empile. RÈGLE du moteur : jamais de innerHTML.
-import { parseDoc } from "../../src/md/doc.js?v=0.20.1";
-import { rangerParcours, deplacer, parcoursDepuisRangement } from "../../src/mj/parcours.js?v=0.20.1";
-import { decouper, ficheMJ, blocsDe, entitesCitees } from "../../src/mj/seance.js?v=0.20.1";
-import { TYPES, typeDe } from "../../src/mj/revelations.js?v=0.20.1";
-import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.20.1";
-import { executer, confirmer } from "./edition.js?v=0.20.1";
-import { cadreMJ } from "./ecrans_mj.js?v=0.20.1";
-import { formulaireCarte, ouvrirCarte, annoncer } from "./ecrans_regie.js?v=0.20.1";
+import { parseDoc } from "../../src/md/doc.js?v=0.21.0";
+import { rangerParcours, deplacer, parcoursDepuisRangement } from "../../src/mj/parcours.js?v=0.21.0";
+import { decouper, ficheMJ, blocsDe, entitesCitees } from "../../src/mj/seance.js?v=0.21.0";
+import { TYPES, typeDe } from "../../src/mj/revelations.js?v=0.21.0";
+import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.21.0";
+import { executer, confirmer } from "./edition.js?v=0.21.0";
+import { cadreMJ } from "./ecrans_mj.js?v=0.21.0";
+import { formulaireCarte, ouvrirCarte, annoncer } from "./ecrans_regie.js?v=0.21.0";
 
 const enc = encodeURIComponent;
 const estAuth = e => e && (e.status === 401 || e.auth);
