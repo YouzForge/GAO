@@ -1,0 +1,966 @@
+{
+  "schema": 2,
+  "id": "gao",
+  "nom": "Le Monde de GAO",
+  "dossier": "JDR - GAO",
+  "public": "adulte",
+  "langue": "fr",
+  "ton": "Adulte, riche, précis. Critique directe et sans filtre sur les idées créatives quand elle sert le projet.",
+  "vocabulaire": {
+    "mj": "MJ",
+    "joueur": "joueur",
+    "pj": "PJ",
+    "session": "session",
+    "campagne": "campagne"
+  },
+  "theme": {
+    "palette": "parchemin-sombre",
+    "note": "Palette et polices à décider avec le questionnaire (bloc H). Le moteur lit ces valeurs."
+  },
+  "securite": {
+    "mode": "separe",
+    "coffre": "MJ",
+    "table": "Table",
+    "joueurs": "Joueurs",
+    "masque": {
+      "sections": [
+        "🔴",
+        "Secret MJ",
+        "Notes MJ",
+        "Suivi MJ"
+      ],
+      "champs": [
+        "secret_mj",
+        "jauge_cachee",
+        "jauge_actuelle",
+        "jauge_max",
+        "notes_mj",
+        "visibilite_interne"
+      ],
+      "visibilites_publiables": [
+        "accessible"
+      ]
+    },
+    "visibilites": {
+      "accessible": "📢 Accessible : les joueurs concernés peuvent le voir",
+      "conditionnel": "🔒 Conditionnel : visible seulement quand une condition est remplie (écrite dans la fiche)",
+      "secret": "🔴 Secret MJ : ne quitte jamais le coffre MJ"
+    }
+  },
+  "joueur_modele": {
+    "dossier": "Joueurs/{pseudo}",
+    "fichier_fiche": "Fiche.md",
+    "dossiers": [
+      {
+        "id": "inventaire",
+        "dossier": "Inventaire",
+        "label": "Inventaire et butin"
+      },
+      {
+        "id": "quetes",
+        "dossier": "Quetes",
+        "label": "Mes quêtes (en cours, terminées)"
+      },
+      {
+        "id": "journal",
+        "dossier": "Journal",
+        "label": "Mon journal : ce que j'ai vécu, session par session"
+      },
+      {
+        "id": "rencontres",
+        "dossier": "Rencontres",
+        "label": "Les personnages rencontrés"
+      },
+      {
+        "id": "savoirs",
+        "dossier": "Savoirs",
+        "label": "Ce que mon personnage sait"
+      },
+      {
+        "id": "notes",
+        "dossier": "Notes",
+        "label": "Mes notes personnelles"
+      }
+    ],
+    "miroir_mj": "MJ/03_Joueurs/{pseudo}"
+  },
+  "collections": [
+    {
+      "id": "lieu",
+      "label": "Lieux",
+      "singular": "lieu",
+      "icone": "pin",
+      "zone": "mj",
+      "dossier": "MJ/01_Univers/Lieux",
+      "champs": [
+        {
+          "k": "nom",
+          "l": "Nom",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "type",
+          "l": "Type",
+          "t": "enum:ville|lieu|donjon|région|route|autre"
+        },
+        {
+          "k": "region",
+          "l": "Région",
+          "t": "text"
+        },
+        {
+          "k": "etat",
+          "l": "État (écran MJ : idée, à venir, en cours, joué)",
+          "t": "enum:idée|à venir|en cours|joué"
+        },
+        {
+          "k": "carte",
+          "l": "Position sur la carte (x,y de 0 à 100)",
+          "t": "text"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Description",
+        "Ambiance",
+        "Points d'intérêt",
+        "PNJ présents",
+        "Quêtes liées",
+        "🔴 Secret MJ"
+      ]
+    },
+    {
+      "id": "pnj",
+      "label": "PNJ",
+      "singular": "PNJ",
+      "icone": "friends",
+      "zone": "mj",
+      "dossier": "MJ/01_Univers/PNJ",
+      "champs": [
+        {
+          "k": "nom",
+          "l": "Nom",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "role",
+          "l": "Rôle",
+          "t": "text"
+        },
+        {
+          "k": "faction",
+          "l": "Faction",
+          "t": "ref:faction"
+        },
+        {
+          "k": "lieu",
+          "l": "Lieu habituel",
+          "t": "ref:lieu"
+        },
+        {
+          "k": "statut",
+          "l": "Statut",
+          "t": "enum:vivant|mort|disparu|inconnu"
+        },
+        {
+          "k": "photo",
+          "l": "Photo / illustration",
+          "t": "image"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Apparence",
+        "Personnalité",
+        "Motivations",
+        "Dettes ouvertes",
+        "Statistiques",
+        "🔴 Secret MJ"
+      ]
+    },
+    {
+      "id": "faction",
+      "label": "Factions",
+      "singular": "faction",
+      "icone": "flag",
+      "zone": "mj",
+      "dossier": "MJ/01_Univers/Factions",
+      "champs": [
+        {
+          "k": "nom",
+          "l": "Nom",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "attitude",
+          "l": "Attitude envers les PJ",
+          "t": "enum:alliée|neutre|hostile|inconnue"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Description",
+        "Objectifs",
+        "Membres connus",
+        "Ressources",
+        "🔴 Secret MJ"
+      ]
+    },
+    {
+      "id": "divinite",
+      "label": "Divinités",
+      "singular": "divinité",
+      "icone": "star",
+      "zone": "mj",
+      "dossier": "MJ/01_Univers/Divinites",
+      "champs": [
+        {
+          "k": "nom",
+          "l": "Nom",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "domaine",
+          "l": "Domaine",
+          "t": "text"
+        },
+        {
+          "k": "culte",
+          "l": "Culte principal",
+          "t": "ref:faction"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Description",
+        "Dogmes et rites",
+        "Symboles",
+        "Attitude envers les mortels",
+        "🔴 Secret MJ"
+      ]
+    },
+    {
+      "id": "creature",
+      "label": "Bestiaire",
+      "singular": "créature",
+      "icone": "monster",
+      "zone": "mj",
+      "dossier": "MJ/01_Univers/Bestiaire",
+      "champs": [
+        {
+          "k": "nom",
+          "l": "Nom",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "pv",
+          "l": "Points de vie",
+          "t": "int"
+        },
+        {
+          "k": "armure",
+          "l": "Armure",
+          "t": "int"
+        },
+        {
+          "k": "habitat",
+          "l": "Habitat",
+          "t": "text"
+        },
+        {
+          "k": "photo",
+          "l": "Illustration",
+          "t": "image"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Description",
+        "Comportement",
+        "Attaques et compétences",
+        "Butin",
+        "🔴 Secret MJ"
+      ]
+    },
+    {
+      "id": "objet",
+      "label": "Objets",
+      "singular": "objet",
+      "icone": "sword",
+      "zone": "mj",
+      "dossier": "MJ/01_Univers/Objets",
+      "champs": [
+        {
+          "k": "nom",
+          "l": "Nom",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "type",
+          "l": "Type",
+          "t": "enum:magique|arme|armure|outil|clé|banal"
+        },
+        {
+          "k": "porteur",
+          "l": "Porteur actuel",
+          "t": "ref:joueur"
+        },
+        {
+          "k": "jauge_cachee",
+          "l": "A une jauge cachée",
+          "t": "bool"
+        },
+        {
+          "k": "jauge_actuelle",
+          "l": "Jauge actuelle",
+          "t": "int"
+        },
+        {
+          "k": "jauge_max",
+          "l": "Jauge maximale",
+          "t": "int"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Description",
+        "Fonctionnement",
+        "Règles d'utilisation",
+        "Suivi MJ",
+        "🔴 Paliers de la jauge",
+        "🔴 Réductions de la jauge"
+      ]
+    },
+    {
+      "id": "lore",
+      "label": "Lore et recherches",
+      "singular": "document",
+      "icone": "book",
+      "zone": "mj",
+      "dossier": "MJ/01_Univers/Lore",
+      "champs": [
+        {
+          "k": "titre",
+          "l": "Titre",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "theme",
+          "l": "Thème",
+          "t": "text"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Résumé",
+        "Contenu"
+      ]
+    },
+    {
+      "id": "quete",
+      "label": "Quêtes",
+      "singular": "quête",
+      "icone": "scroll",
+      "zone": "mj",
+      "dossier": "MJ/02_Campagne/Quetes",
+      "champs": [
+        {
+          "k": "titre",
+          "l": "Titre",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "type",
+          "l": "Type",
+          "t": "enum:principale|secondaire|personnelle|annexe"
+        },
+        {
+          "k": "statut",
+          "l": "Statut",
+          "t": "enum:idée|prête|en cours|terminée|abandonnée"
+        },
+        {
+          "k": "pj",
+          "l": "PJ concerné(s) (pour une quête personnelle)",
+          "t": "list:ref:joueur"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Résumé joueurs",
+        "Objectif",
+        "Étapes",
+        "Récompenses",
+        "🔴 Vérité (MJ)",
+        "🔴 Conséquences"
+      ]
+    },
+    {
+      "id": "session",
+      "label": "Sessions",
+      "singular": "session",
+      "icone": "moon",
+      "zone": "mj",
+      "dossier": "MJ/02_Campagne/Sessions",
+      "champs": [
+        {
+          "k": "titre",
+          "l": "Titre",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "saison",
+          "l": "Saison",
+          "t": "int"
+        },
+        {
+          "k": "numero",
+          "l": "Numéro dans la saison",
+          "t": "int"
+        },
+        {
+          "k": "table",
+          "l": "Table",
+          "t": "text"
+        },
+        {
+          "k": "date",
+          "l": "Date jouée",
+          "t": "text"
+        },
+        {
+          "k": "lieu",
+          "l": "Lieu joué (nom du lieu, écran MJ)",
+          "t": "text"
+        },
+        {
+          "k": "statut",
+          "l": "Statut (la session « prête » est la prochaine)",
+          "t": "enum:idée|prête|jouée"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Résumé joueurs",
+        "Déroulé des scènes",
+        "Moments pivots",
+        "Fins possibles",
+        "Ce qui s'est passé",
+        "🔴 Notes MJ"
+      ]
+    },
+    {
+      "id": "evenement",
+      "label": "Événements et rencontres",
+      "singular": "événement",
+      "icone": "dice",
+      "zone": "mj",
+      "dossier": "MJ/02_Campagne/Evenements",
+      "champs": [
+        {
+          "k": "titre",
+          "l": "Titre",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "declencheur",
+          "l": "Déclencheur (voyage, lieu, condition)",
+          "t": "text"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Mise en scène",
+        "Résolution",
+        "Conséquences"
+      ]
+    },
+    {
+      "id": "resume",
+      "label": "Résumés de session (publics)",
+      "singular": "résumé",
+      "icone": "book",
+      "zone": "table",
+      "dossier": "Table/Resumes_de_session",
+      "champs": [
+        {
+          "k": "titre",
+          "l": "Titre",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "session",
+          "l": "Session",
+          "t": "text"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Ce que tout le monde sait"
+      ]
+    },
+    {
+      "id": "pj_inventaire",
+      "label": "Inventaire",
+      "singular": "objet possédé",
+      "icone": "sword",
+      "zone": "joueur",
+      "dossier": "Inventaire",
+      "champs": [
+        {
+          "k": "nom",
+          "l": "Nom",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "origine",
+          "l": "Origine (objet de l'univers)",
+          "t": "ref:objet"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Ce que je sais de cet objet"
+      ]
+    },
+    {
+      "id": "pj_quete",
+      "label": "Mes quêtes",
+      "singular": "quête",
+      "icone": "scroll",
+      "zone": "joueur",
+      "dossier": "Quetes",
+      "champs": [
+        {
+          "k": "titre",
+          "l": "Titre",
+          "t": "text",
+          "req": true
+        },
+        {
+          "k": "statut",
+          "l": "Statut",
+          "t": "enum:en cours|terminée|abandonnée"
+        },
+        {
+          "k": "origine",
+          "l": "Quête de l'univers",
+          "t": "ref:quete"
+        },
+        {
+          "k": "visibilite",
+          "l": "Visibilité",
+          "t": "visibilite",
+          "req": true
+        }
+      ],
+      "sections": [
+        "Ce que je sais",
+        "Ce que j'ai fait"
+      ]
+    }
+  ],
+  "modules": {
+    "d100": {
+      "actif": true,
+      "caracteristiques": [
+        {
+          "id": "for",
+          "nom": "Force"
+        },
+        {
+          "id": "dex",
+          "nom": "Dextérité"
+        },
+        {
+          "id": "end",
+          "nom": "Endurance"
+        },
+        {
+          "id": "int",
+          "nom": "Intelligence"
+        },
+        {
+          "id": "cha",
+          "nom": "Charisme"
+        }
+      ],
+      "creation": {
+        "budget_caracteristiques": 60,
+        "min": 8,
+        "max": 16,
+        "pourcentage": "valeur × 5",
+        "modificateurs": [
+          {
+            "valeurs": [
+              8,
+              9
+            ],
+            "pct": -5
+          },
+          {
+            "valeurs": [
+              10,
+              11
+            ],
+            "pct": 0
+          },
+          {
+            "valeurs": [
+              12,
+              13
+            ],
+            "pct": 5
+          },
+          {
+            "valeurs": [
+              14,
+              15
+            ],
+            "pct": 10
+          },
+          {
+            "valeurs": [
+              16
+            ],
+            "pct": 15
+          }
+        ],
+        "budget_competences": 300,
+        "budget_competences_mage": 250,
+        "plafond_competence_pct": 75,
+        "formule_score": "Base + Bonus Liens + Points dépensés",
+        "notation_liens": "« - » : même groupe, on garde le meilleur modificateur ; « / » : sépare deux groupes, si tout est positif on garde le meilleur, si mixte on additionne",
+        "cases_speciales": 4
+      },
+      "derivees": [
+        {
+          "id": "pv",
+          "nom": "PV",
+          "formule": "End (sur 20)"
+        },
+        {
+          "id": "chance",
+          "nom": "Chance",
+          "formule": "End + Int + Dex (sur 20 chacune)"
+        },
+        {
+          "id": "idee",
+          "nom": "Idée",
+          "formule": "Int × 5 (sur 100)"
+        },
+        {
+          "id": "armure",
+          "nom": "Armure",
+          "formule": "selon équipement"
+        }
+      ],
+      "competences": [
+        {
+          "nom": "Combat Rapproché",
+          "liens": "For / Dex",
+          "base": 25
+        },
+        {
+          "nom": "Combat à Distance",
+          "liens": "Dex",
+          "base": 20
+        },
+        {
+          "nom": "Artisanat / Construire",
+          "liens": "Dex / Int",
+          "base": 5
+        },
+        {
+          "nom": "Connaissance de la Nature",
+          "liens": "Dex / Int-End",
+          "base": 10
+        },
+        {
+          "nom": "Connaissance des Secrets",
+          "liens": "Int / Cha",
+          "base": 0
+        },
+        {
+          "nom": "Courir / Sauter",
+          "liens": "Dex-For / End",
+          "base": 25
+        },
+        {
+          "nom": "Discrétion",
+          "liens": "Dex / Cha",
+          "base": 15
+        },
+        {
+          "nom": "Commerce",
+          "liens": "Int / Cha",
+          "base": 15
+        },
+        {
+          "nom": "Esquive",
+          "liens": "Dex / Int",
+          "base": 25
+        },
+        {
+          "nom": "Intimider",
+          "liens": "For / Cha",
+          "base": 0
+        },
+        {
+          "nom": "Lire / Écrire",
+          "liens": "Int / Cha-End",
+          "base": 0
+        },
+        {
+          "nom": "Mentir / Convaincre",
+          "liens": "Int / Cha",
+          "base": 15
+        },
+        {
+          "nom": "Perception",
+          "liens": "Int / Cha",
+          "base": 15
+        },
+        {
+          "nom": "Piloter",
+          "liens": "Dex / End",
+          "base": 5
+        },
+        {
+          "nom": "Psychologie",
+          "liens": "Int / Cha",
+          "base": 15
+        },
+        {
+          "nom": "Réflexes",
+          "liens": "Dex / End",
+          "base": 15
+        },
+        {
+          "nom": "Serrures et Pièges",
+          "liens": "Dex / End",
+          "base": 5
+        },
+        {
+          "nom": "Soigner",
+          "liens": "Int / Cha",
+          "base": 20
+        },
+        {
+          "nom": "Survie",
+          "liens": "End / Int",
+          "base": 10
+        },
+        {
+          "nom": "Voler",
+          "liens": "Dex / Int",
+          "base": 5
+        }
+      ],
+      "mage": {
+        "remplace": [
+          "Combat Rapproché",
+          "Combat à Distance"
+        ],
+        "par": [
+          {
+            "nom": "Magie Runique",
+            "base": 50
+          },
+          {
+            "nom": "Découverte Magique",
+            "base": 50
+          }
+        ],
+        "int_minimale": 12,
+        "utilisations_par_jour": [
+          {
+            "valeurs": [
+              12,
+              13
+            ],
+            "n": 1
+          },
+          {
+            "valeurs": [
+              14,
+              15
+            ],
+            "n": 2
+          },
+          {
+            "valeurs": [
+              16
+            ],
+            "n": 3
+          }
+        ],
+        "recharge": "chaque lever de soleil"
+      },
+      "reussite": {
+        "comparaison": "inferieur_ou_egal",
+        "critique_reussite_max": 5,
+        "critique_echec_min": 95
+      },
+      "multiplicateur_total": 5,
+      "note": "Création lue dans « GAO_Regles_Creation_Personnage ». Réussite (D35, dite par le MJ le 8 novembre 2026) : jet d100 inférieur ou égal à la valeur ; réussite critique de 1 à 5 et échec critique de 95 à 100, quelle que soit la valeur ; caractéristiques affichées en total sur 100 (valeur × 5) et sur 20."
+    },
+    "jauges": {
+      "actif": true,
+      "pj": [
+        {
+          "id": "pv",
+          "nom": "PV",
+          "max": "derivee:pv",
+          "visible": true
+        },
+        {
+          "id": "chance",
+          "nom": "Chance",
+          "max": "derivee:chance",
+          "visible": true
+        }
+      ],
+      "objet": {
+        "cachee_par_defaut": false,
+        "structure_paliers": [
+          "de",
+          "a",
+          "nom",
+          "effet",
+          "narration"
+        ],
+        "exemple": "Codex Magicae Signum (Merlin) : jauge « Arcane Magique » 0 à 100, 7 paliers, montée 1d6 à la réussite et 2d6 à l'échec, 5 méthodes de purification"
+      },
+      "compteurs": [
+        {
+          "id": "temple",
+          "nom": "Progression d'un temple",
+          "unite": "%",
+          "visible": "mj"
+        }
+      ],
+      "suivi_externe": "Suivi_Jauge_PJs.xlsx (existant, à importer)"
+    },
+    "savoirs": {
+      "actif": true,
+      "niveaux": [
+        "accessible",
+        "conditionnel",
+        "secret"
+      ],
+      "matrice": "Ce que les PJ savent : une ligne par information, une colonne par PJ, 3 états (ignore / sait en partie / sait)"
+    },
+    "des": {
+      "actif": true,
+      "types": [
+        "d100",
+        "d20",
+        "d12",
+        "d10",
+        "d8",
+        "d6",
+        "d4"
+      ],
+      "historique": true,
+      "jet_competence": "d100 inférieur ou égal au score de la compétence (voir « reussite » du module d100)"
+    },
+    "notes_mj": {
+      "actif": true,
+      "inbox": "MJ/06_Notes_MJ/Inbox_Idees.md"
+    },
+    "photos": {
+      "actif": true,
+      "dossier": "MJ/08_Photos"
+    },
+    "carte": {
+      "actif": true,
+      "images": [
+        "Carte globale GAO.png",
+        "Carte GAO Final.jpg"
+      ]
+    },
+    "recap": {
+      "actif": true
+    },
+    "jouer": {
+      "actif": false,
+      "note": "Le mode Jouer pas à pas n'est pas prévu pour GAO ; à rediscuter (fiche de table du MJ)."
+    },
+    "importation": {
+      "actif": true
+    }
+  }
+}
