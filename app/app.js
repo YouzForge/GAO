@@ -35,7 +35,10 @@ if (/[?&]perf=1(&|$)/.test(location.search)) { try { (await import("./mesure.js?
 const profilEnCours = chargerLeProfil();
 profilEnCours.catch(() => { /* l'erreur est rendue par demarrer() */ });
 const stockage = await ouvrirStockage();
+// Banc d'essai local (outils/serveur_local.mjs) : faux OneDrive et fausse connexion, sur « localhost » seulement et si la configuration locale le déclare.
+const DEV = ["localhost", "127.0.0.1"].includes(location.hostname) && window.JDR_DEV ? (await import("./dev_local.js?v=0.19.0")).creerDev(window) : null;
 const connexionEnCours = (async () => {
+  if (DEV) return DEV.auth;
   const { auth: a } = await creerAuthNavigateur(window, window.JDR_APP, { stockage });
   await a.init();
   return a;
@@ -319,7 +322,8 @@ function gerer(e) {
 
 async function lancer(liens = [], message) {
   try {
-    session = await ouvrirSession({ auth, client, profil, allowed, stockage, liens, cheminMJ: window.JDR_APP.racineMJ || undefined, ecriture: ecritureActive() });
+    session = DEV && DEV.pseudo ? DEV.sessionJoueur({ client, profil, stockage, ecriture: ecritureActive() })
+      : await ouvrirSession({ auth, client, profil, allowed, stockage, liens, cheminMJ: window.JDR_APP.racineMJ || undefined, ecriture: ecritureActive() });
     // un accès retiré efface aussi les images gardées sur l'appareil (D46, T6)
     if (session.problemes.some(p => p.type === "acces_retire" || p.type === "marqueur_change")) purgerImages(window, auth.empreinte()).catch(() => { /* rien à effacer */ });
     entete();
@@ -374,7 +378,7 @@ async function demarrer() {
     precharger(profil.application);
     allowed = validerAutorisations(window.JDR_APP.allowed);
     auth = await connexionEnCours;
-    client = creerClientGraph({ fetch: (...a) => window.fetch(...a), getToken: () => auth.getToken() });
+    client = creerClientGraph({ fetch: DEV ? DEV.fetch : (...a) => window.fetch(...a), getToken: () => auth.getToken() });
   } catch (e) { return montrer(bandeau("Impossible de démarrer : " + (e && e.message ? e.message : "erreur"), "erreur")); }
   $("btnDeconnexion").onclick = () => sortir();
   window.addEventListener("hashchange", route);
