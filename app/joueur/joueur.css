@@ -425,7 +425,7 @@ body.joueur .jr-ajout .jr-saisie{min-height:44px}
 /* ================= Régie du MJ : révélations, parcours, séance (même charte : cartes sombres, rouge braise, orange, Cinzel) ================= */
 .mj.large .mj-panneau{max-width:1640px}
 .mj.large .mj-bandeau{padding-left:max(16px,calc((100% - 1640px)/2 + 16px));padding-right:max(16px,calc((100% - 1640px)/2 + 16px))}
-@media (min-width:700px){.mj-onglet{flex:0 0 150px}}
+@media (min-width:700px){.mj-onglet{flex:0 1 150px}}
 
 /* ---- Révélations ---- */
 .rv-barre{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -615,3 +615,52 @@ body.joueur .jr-saisie.se-notes{min-height:220px}
 .rj-bascule.on .rj-bascule-rond{transform:translateX(26px);background:var(--vert-vif)}
 @media (max-width:600px){.rj-ligne .rv-etat{display:none}}
 .jr-champ[hidden]{display:none}
+
+/* ---- Guide du MJ (onglet tout à droite) ---- */
+.mj-onglet.droite{margin-left:auto}
+.gd-recherche{max-width:none}
+.gd{display:grid;grid-template-columns:250px minmax(0,1fr);gap:24px;align-items:start}
+.gd-sommaire{position:sticky;top:12px;padding:8px;border:1px solid var(--trait);border-radius:16px;background:var(--sol)}
+.gd-nav{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.gd-nav-b{width:100%;display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 10px;border:0;border-radius:10px;background:none;color:var(--texte);text-align:left;font-size:14px;line-height:1.25}
+.gd-nav-b:hover{background:var(--panneau)}
+.gd-nav-b.on{background:var(--orange);color:var(--creux);font-weight:600}
+.gd-nav-n{flex:none;min-width:30px;font-family:"Cinzel",serif;font-weight:700;color:var(--orange);text-align:center}
+.gd-nav-b.on .gd-nav-n{color:var(--creux)}
+.gd-zone{min-width:0}
+.gd-corps{display:flex;flex-direction:column;gap:10px;font-size:15.5px;line-height:1.5}
+.gd-corps[hidden]{display:none}
+.gd-corps p{margin:0}
+.gd-titre{font-size:24px;margin-bottom:4px}
+.gd-h2{margin:14px 0 0;font-family:"Cinzel",serif;font-size:17px;color:var(--texte);text-transform:none;letter-spacing:.01em}
+.gd-h3{margin:8px 0 0;font-family:"Inter",system-ui,sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--orange)}
+.gd-corps code,.gd-trouvee code{padding:1px 6px;border-radius:6px;background:var(--creux);font-family:ui-monospace,Consolas,monospace;font-size:.9em;overflow-wrap:anywhere}
+.gd-ou{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-radius:10px;background:var(--creux);color:var(--voile);font-size:14.5px}
+.gd-ou svg{margin-top:3px;color:var(--orange)}
+.gd-ou strong{color:var(--texte)}
+.gd-liste{margin:0;padding-left:1.3em}
+.gd-etapes{margin:0;padding:0;list-style:none;counter-reset:etape;display:flex;flex-direction:column;gap:8px}
+.gd-etapes li{counter-increment:etape;position:relative;padding-left:40px;min-height:28px}
+.gd-etapes li::before{content:counter(etape);position:absolute;left:0;top:-1px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--rouge);color:var(--texte);font-family:"Cinzel",serif;font-weight:700;font-size:14px}
+.gd-boite{display:flex;flex-direction:column;gap:5px;padding:10px 14px;border-radius:12px;border:1px solid var(--trait);border-left:4px solid var(--c,var(--trait));background:var(--sol);font-size:14.5px}
+.gd-boite-tete{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--c,var(--voile))}
+.gd-boite.g-astuce{--c:#8fc2e8}.gd-boite.g-attention{--c:#f08a78;background:rgba(194,59,37,.1)}.gd-boite.g-limite{--c:var(--orange);background:rgba(239,138,62,.08)}.gd-boite.g-resultat{--c:var(--vert-vif)}.gd-boite.g-cowork{--c:#e6c98a;background:#3a3327;font-style:italic}
+.gd-vide{line-height:.6}
+.gd-col1{font-weight:600;min-width:150px}
+.gd-fiche{border:1px solid var(--trait);border-radius:14px;background:var(--sol)}
+.gd-fiche summary,.gd-trouvee{list-style:none;display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 14px;cursor:pointer}
+.gd-fiche summary::-webkit-details-marker{display:none}
+.gd-fiche summary svg{flex:none;margin-left:auto;color:var(--voile);transition:transform .2s}
+.gd-fiche[open] summary svg{transform:rotate(180deg)}
+.gd-fiche[open]{border-color:var(--orange)}
+.gd-fiche-n{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--creux);color:var(--orange);font-family:"Cinzel",serif;font-weight:700}
+.gd-fiche-q{flex:1;min-width:0;font-family:"Cinzel",serif;font-weight:600;font-size:16px;line-height:1.3;overflow-wrap:anywhere}
+.gd-fiche-corps{display:flex;flex-direction:column;gap:10px;padding:4px 16px 16px;border-top:1px solid var(--trait);padding-top:14px}
+.gd-resultats{display:flex;flex-direction:column;gap:10px}
+.gd-resultats:empty{display:none}
+.gd-trouvees{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.gd-trouvee{width:100%;border:1px solid var(--trait);border-radius:14px;background:var(--sol);color:var(--texte);text-align:left}
+.gd-trouvee:hover{border-color:var(--orange)}
+.gd-trouvee svg{flex:none;margin-left:auto;color:var(--voile)}
+@media (max-width:900px){.gd{grid-template-columns:minmax(0,1fr)}.gd-sommaire{position:static}.gd-nav{flex-direction:row;flex-wrap:wrap}.gd-nav li{flex:1 1 150px}}
+@media (max-width:700px){.mj-onglet.droite{margin-left:0}}

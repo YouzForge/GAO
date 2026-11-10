@@ -1,13 +1,13 @@
 // Écrans du MJ (D47, lecture seule) : l'accueil avec la liste des lieux et la session de jeu à venir, la lecture d'un document du coffre, le tableau de bord des joueurs et leurs notes MJ, la matrice « qui sait quoi ».
 // Même charte que les écrans du joueur : bandeau dégradé, panneau qui monte, onglets rouges (orange = écran actif), cartes sombres à bord arrondi, titres en Cinzel.
 // Pensés pour l'ordinateur (deux colonnes, large) et lisibles sur téléphone (une colonne). Seule exception : les compétences spéciales d'un joueur (écran « Joueur », si l'écriture est ouverte).
-import { parseDoc, norm } from "../../src/md/doc.js?v=0.21.1";
-import { ETATS_LIEU, STATUTS_SESSION, filtrerLieux, compterEtats } from "../../src/mj/accueil.js?v=0.21.1";
-import { construireMatrice, filtrerSavoirs, compterFiltres, FILTRES_SAVOIRS } from "../../src/mj/matrice.js?v=0.21.1";
-import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.21.1";
-import { executer, confirmer } from "./edition.js?v=0.21.1";
-import { EcritureInvalide } from "../../src/ecriture/fiche.js?v=0.21.1";
-import { MAX_COMPETENCE_NOM, MAX_COMPETENCE_LIENS, MAX_COMPETENCE_NOTE, MAX_COMPETENCE_TOTAL } from "../../src/joueur/ecriture.js?v=0.21.1";
+import { parseDoc, norm } from "../../src/md/doc.js?v=0.22.0";
+import { ETATS_LIEU, STATUTS_SESSION, filtrerLieux, compterEtats } from "../../src/mj/accueil.js?v=0.22.0";
+import { construireMatrice, filtrerSavoirs, compterFiltres, FILTRES_SAVOIRS } from "../../src/mj/matrice.js?v=0.22.0";
+import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.22.0";
+import { executer, confirmer } from "./edition.js?v=0.22.0";
+import { EcritureInvalide } from "../../src/ecriture/fiche.js?v=0.22.0";
+import { MAX_COMPETENCE_NOM, MAX_COMPETENCE_LIENS, MAX_COMPETENCE_NOTE, MAX_COMPETENCE_TOTAL } from "../../src/joueur/ecriture.js?v=0.22.0";
 
 const enc = encodeURIComponent;
 const COPIE_ANCIENNE = "Copie enregistrée sur cet appareil : la connexion ne répond pas.";
@@ -44,7 +44,7 @@ export function cadreMJ(ctx, { actif = "accueil", titre, large = false } = {}, .
       a.versMoteur ? h("button", { class: "jr-bouton", type: "button", onclick: () => { fermer(); a.versMoteur(); } }, icon("scroll", 18), "Listes du coffre") : null,
       h("button", { class: "jr-bouton", type: "button", onclick: () => { fermer(); a.deconnecter(); } }, icon("lock", 18), "Se déconnecter")));
   };
-  const onglet = (id, ic, libelle, { href, onclick } = {}) => h(href ? "a" : "button", { class: "mj-onglet" + (id === actif ? " on" : ""), href, type: href ? null : "button", onclick, "aria-current": id === actif ? "page" : null }, icon(ic, 20), h("span", null, libelle));
+  const onglet = (id, ic, libelle, { href, onclick, classe = "" } = {}) => h(href ? "a" : "button", { class: "mj-onglet" + (classe ? " " + classe : "") + (id === actif ? " on" : ""), href, type: href ? null : "button", onclick, "aria-current": id === actif ? "page" : null }, icon(ic, 20), h("span", null, libelle));
   return h("div", { class: "mj" + (large ? " large" : "") },
     h("div", { class: "mj-bandeau" },
       h("div", { class: "mj-nom" }, h("span", { class: "mj-kicker" }, "Écran du MJ"), h("h1", null, nom)),
@@ -56,7 +56,8 @@ export function cadreMJ(ctx, { actif = "accueil", titre, large = false } = {}, .
         onglet("accueil", "map", "Parcours", { href: "#/mj" }),
         onglet("seance", "dice", "Séance", { href: "#/mj/seance" }),
         onglet("revelations", "eye", "Révélations", { href: "#/mj/revelations" }),
-        onglet("joueurs", "friends", "Joueurs", { href: "#/mj/joueurs" })),
+        onglet("joueurs", "friends", "Joueurs", { href: "#/mj/joueurs" }),
+        onglet("guide", "question", "Guide", { href: "#/mj/guide", classe: "droite" })),   // le mode d'emploi, toujours accessible, tout à droite
       h("div", { class: "mj-contenu" }, contenu)));
 }
 
