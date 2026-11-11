@@ -7,8 +7,8 @@
 //
 // Un élément déjà présent chez des joueurs mais sans carte au coffre (tout ce qui a été publié avant la régie) reste révélable aux autres :
 // on recopie alors la version d'un joueur qui l'a, sans ses sections personnelles (« Ma note », « Ce que j'ai fait »).
-import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize } from "../md/doc.js?v=0.25.0";
-import { masquerPourJoueur } from "../md/masque.js?v=0.25.0";
+import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize } from "../md/doc.js?v=0.26.0";
+import { masquerPourJoueur } from "../md/masque.js?v=0.26.0";
 
 export const DOSSIER_REVELATIONS = "04_Revelations";
 
@@ -22,7 +22,7 @@ export const TYPES = [
 export const typeDe = id => TYPES.find(t => t.id === id) || null;
 
 /** Champs d'en-tête qui ne quittent jamais le coffre. */
-export const CHAMPS_COFFRE = ["pour", "prevu", "publie_sous", "secret_mj", "notes_mj", "visibilite_interne", "jauge_cachee", "jauge_actuelle", "jauge_max", "collection"];
+export const CHAMPS_COFFRE = ["pour", "prevu", "publie_sous", "secret_mj", "notes_mj", "visibilite_interne", "jauge_cachee", "jauge_actuelle", "jauge_max", "collection", "fiche_source"];
 /** Une section dont le titre contient l'un de ces mots (ou une marque) ne quitte jamais le coffre. */
 const SECTION_COFFRE = /🔴|🔒|🎲|⚔️|🆕|secret mj|notes? mj|suivi mj|v[ée]rit[ée]|r[ée]serv[ée] mj/i;
 
@@ -80,7 +80,7 @@ export function lireCarte(texte, fichier, type) {
   return {
     texteMJ: ty ? getSection(corps, ty.section) : "",   // ce que le MJ écrit pour les joueurs (la section principale du type), pour le formulaire
     type, fichier, titre, pour: lirePour(m.pour), prevu: t(m.prevu), publieSous: t(m.publie_sous),
-    session: m.session == null ? "" : t(m.session), lieu: t(m.lieu), statut: t(m.statut), quantite: m.quantite == null ? "" : t(m.quantite), portrait: t(m.portrait),
+    session: m.session == null ? "" : t(m.session), lieu: t(m.lieu), statut: t(m.statut), ficheSource: t(m.fiche_source), quantite: m.quantite == null ? "" : t(m.quantite), portrait: t(m.portrait),
     corpsJoueur: rendre(publiques), verite: coffre.map(s => s.text.trim()).filter(Boolean).join("\n\n"), texte: String(texte)
   };
 }
@@ -130,7 +130,7 @@ export function fusionner(ancienJoueur, texteCarte, type, { date = "" } = {}) {
 }
 
 /** Texte d'une carte neuve du coffre. `verite` (facultatif) va dans une section « 🔴 Vérité MJ » qui ne sera jamais publiée. */
-export function texteCarte({ type, titre, texte = "", verite = "", pour = "tous", session = "", lieu = "", prevu = "", statut = "", quantite = "" }) {
+export function texteCarte({ type, titre, texte = "", verite = "", pour = "tous", session = "", lieu = "", prevu = "", statut = "", quantite = "", ficheSource = "" }) {
   const ty = typeDe(type);
   if (!ty) throw new TypeError("Type de carte inconnu : " + type);
   const meta = { titre: t(titre) };
@@ -140,11 +140,54 @@ export function texteCarte({ type, titre, texte = "", verite = "", pour = "tous"
   if (type === "objet") meta.quantite = Math.max(1, Math.trunc(Number(quantite)) || 1);
   meta.pour = Array.isArray(pour) ? pour.join(", ") : "tous";
   if (t(prevu)) meta.prevu = t(prevu);
+  if (t(ficheSource)) meta.fiche_source = t(ficheSource);
   meta.visibilite = "secret";
   let corps = `\n# ${t(titre)}\n\n## ${ty.section}\n\n${t(texte)}\n`;
   for (const p of ty.perso) corps += `\n## ${p}\n`;
   if (t(verite)) corps += `\n## 🔴 Vérité MJ\n\n${t(verite)}\n`;
   return serializeDoc(meta, corps);
+}
+
+// ------------------------------------------------------------------ Carte préparée depuis une fiche du coffre
+// Une fiche de PNJ, de quête ou d'objet donne une carte de rencontre, de quête ou d'objet. RÈGLE : tout le texte de la fiche va dans la vérité du MJ,
+// le texte des joueurs reste VIDE ; seul le nom devient le titre. Une carte créée sans rien toucher ne laisse donc rien sortir : c'est le MJ qui fait
+// remonter ce que les joueurs peuvent savoir. Le lien vers la fiche (`fiche_source`) est un champ du coffre : il n'est jamais publié.
+export const TYPE_DE_GENRE = { pnj: "rencontre", quete: "quete", objet: "objet" };
+const CHAMPS_FICHE_IGNORES = ["nom", "titre", "visibilite", "photo", "carte", "portrait"];
+
+/** Les titres « # » à « ###### » deviennent du gras : dans la vérité, un « ## Apparence » ouvrirait une section que les joueurs liraient. */
+export const aplatirTitres = texte => String(texte || "").split("\n")
+  .map(l => { const m = l.match(/^\s*#{1,6}\s+(.*?)[\s#]*$/) || l.match(/^\s*#{1,6}\s*$/); return m ? (m[1] ? `**${m[1]}**` : "") : l; }).join("\n");
+
+/** Texte de la fiche pour la vérité du MJ : ses champs utiles, puis ses sections non vides, titres aplatis. */
+function veriteDeFiche(d, fichier) {
+  const champs = Object.entries(d.meta).filter(([k, v]) => !CHAMPS_FICHE_IGNORES.includes(k) && t(v)).map(([k, v]) => `- ${k.replace(/_/g, " ")} : ${t(v).replace(/\s*\n\s*/g, " ")}`);
+  const corps = d.body.replace(/^\s*#\s+.+\n?/, "");
+  const parts = sections(corps).filter(s => t(s.text)).map(s => (s.title ? `**${s.title}**\n\n${t(s.text)}` : t(s.text)));
+  return aplatirTitres([`*Fiche du coffre : ${humanize(fichier)}*`, champs.join("\n"), ...parts].filter(Boolean).join("\n\n")).replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/**
+ * Champs d'une carte neuve préparée depuis une fiche du coffre (pour `formulaireCarte` ou `creerCarte`). → null si ce genre ne donne pas de carte.
+ * `genre` : pnj, quete ou objet ; `fichier` : nom du fichier de la fiche ; `prevu` : le document où la révéler.
+ */
+export function carteDepuisFiche(genre, texte, fichier, { prevu = "" } = {}) {
+  const type = TYPE_DE_GENRE[genre];
+  if (!type || texte == null) return null;
+  const d = parseDoc(texte);
+  const titre = t(d.meta.nom) || t(d.meta.titre) || t(d.title) || humanize(fichier);
+  return { type, titre, texte: "", verite: veriteDeFiche(d, fichier), prevu: t(prevu), pour: "tous", session: "", lieu: "", ficheSource: `${genre}:${fichier}` };
+}
+
+/**
+ * La ligne du catalogue qui correspond déjà à une fiche (pour ne jamais créer de doublon) : d'abord la carte qui porte son `fiche_source`,
+ * puis une carte ou un élément déjà publié du même nom. → la ligne, ou null.
+ */
+export function ligneDeFiche(lignes, genre, fichier, nom = "") {
+  const src = `${genre}:${fichier}`;
+  const k = norm(nom || humanize(fichier)), kf = norm(humanize(fichier));
+  const memeNom = l => norm(l.titre) === k || norm(humanize(l.carte ? l.carte.fichier : l.fichier || "")) === kf || (l.fichier && norm(humanize(l.fichier)) === kf);
+  return (lignes || []).find(l => l.carte && l.carte.ficheSource === src) || (lignes || []).find(memeNom) || null;
 }
 
 /** Remplace le texte joueur et la vérité d'une carte existante en gardant le reste de l'en-tête. */

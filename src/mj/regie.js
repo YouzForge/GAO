@@ -4,18 +4,19 @@
 //
 // RÈGLE DE SÉCURITÉ : le seul chemin par lequel un texte du coffre arrive dans le dossier d'un joueur est `texteJoueur` / `copiePourAutreJoueur` / `fusionner`
 // (src/mj/revelations.js), qui retirent les sections et les champs du coffre et refusent de publier si une marque de secret subsiste.
-import { parseDoc, humanize, norm } from "../md/doc.js?v=0.25.0";
-import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.25.0";
-import { AccesRefuse } from "../depot/depot.js?v=0.25.0";
-import { EcritureInvalide } from "../ecriture/fiche.js?v=0.25.0";
-import { pool } from "../graph/pool.js?v=0.25.0";
+import { parseDoc, humanize, norm } from "../md/doc.js?v=0.26.0";
+import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.26.0";
+import { AccesRefuse } from "../depot/depot.js?v=0.26.0";
+import { EcritureInvalide } from "../ecriture/fiche.js?v=0.26.0";
+import { pool } from "../graph/pool.js?v=0.26.0";
 import { TYPES, typeDe, DOSSIER_REVELATIONS, lireCarte, texteJoueur, copiePourAutreJoueur, fusionner, texteCarte, modifierCarte, poserChamp, nomPublie, nomDepuisTitre,
-  construireCatalogue, plusGrandNumero, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal } from "./revelations.js?v=0.25.0";
-import { texteDocumentImporte } from "../import/docx.js?v=0.25.0";
-import { texteFiche } from "../import/fiches.js?v=0.25.0";
-import { lireParcours, ecrireParcours } from "./parcours.js?v=0.25.0";
-import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.25.0";
-import { DOSSIER_JAUGES, FICHIER_RANGEMENT, lireJauge, texteJauge, modifierJauge, changerValeur, palierDe, franchissement, lireRangement, ecrireRangement, rangerJauges, rangementDepuis } from "./jauges.js?v=0.25.0";
+  construireCatalogue, plusGrandNumero, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal,
+  TYPE_DE_GENRE, carteDepuisFiche, ligneDeFiche } from "./revelations.js?v=0.26.0";
+import { texteDocumentImporte } from "../import/docx.js?v=0.26.0";
+import { texteFiche } from "../import/fiches.js?v=0.26.0";
+import { lireParcours, ecrireParcours } from "./parcours.js?v=0.26.0";
+import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.26.0";
+import { DOSSIER_JAUGES, FICHIER_RANGEMENT, lireJauge, texteJauge, modifierJauge, changerValeur, palierDe, franchissement, lireRangement, ecrireRangement, rangerJauges, rangementDepuis } from "./jauges.js?v=0.26.0";
 
 const MARKDOWN = /^(?!00_|LISEZMOI).+\.md$/i;
 const NOM_DOSSIER = /^(?![._])[^/\\:?*"<>|\u0000-\u001f]{1,80}$/;
@@ -443,6 +444,28 @@ export function creerRegie({ profil, depot, maintenant = () => new Date() }) {
         const nom = `${nomDepuisTitre(c.nom)}.md`;
         try { await depot.creer(`${d}/${nom}`, texteFiche(c, { source, lieu, date })); creees.push({ genre: c.genre, fichier: nom, nom: c.nom }); }
         catch (e) { if (e instanceof FicheExiste) deja.push(c.nom); else throw e; }
+      }
+      return { creees, deja };
+    },
+    /**
+     * Prépare les cartes à révéler de fiches du coffre (PNJ → rencontre, quête → quête, objet → carte d'objet), NON révélées.
+     * Même règle que le bouton « Créer la carte » : texte des joueurs vide, tout le texte de la fiche dans la vérité du MJ.
+     * Une fiche qui a déjà sa carte (ou un élément publié du même nom) est sautée : jamais de doublon.
+     * `fiches` : [{ genre, fichier }] ; `prevu` : le document où les révéler. → { creees:[cartes], deja:[titres] }
+     */
+    async creerCartesDepuisFiches(fiches, { prevu = "" } = {}) {
+      const creees = [], deja = [], cats = {};
+      for (const f of fiches || []) {
+        const type = TYPE_DE_GENRE[f.genre];
+        if (!type) continue;
+        if (!cats[type]) cats[type] = await api.catalogue(type);
+        const texte = await api.fiche(f.genre, f.fichier);
+        const champs = carteDepuisFiche(f.genre, texte, f.fichier, { prevu });
+        if (!champs) continue;
+        if (ligneDeFiche(cats[type].lignes, f.genre, f.fichier, champs.titre)) { deja.push(champs.titre); continue; }
+        const c = await api.creerCarte(champs);
+        cats[type].lignes.push({ type, titre: c.titre, fichier: "", carte: c, chez: {} });   // deux fiches du même lot ne donnent pas deux cartes
+        creees.push(c);
       }
       return { creees, deja };
     },

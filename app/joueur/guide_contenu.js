@@ -1,6 +1,6 @@
 // Contenu du guide du MJ (onglet « Guide »). FICHIER GÉNÉRÉ : ne pas le modifier à la main.
 // Source : le générateur du guide Word (guide_mj_generer.js), converti par guide_mj_donnees.js. Aucun contenu de jeu.
-export const VERSION_GUIDE = "0.25.0";
+export const VERSION_GUIDE = "0.26.0";
 export const GUIDE = [
  {
   "num": "",
@@ -262,7 +262,8 @@ export const GUIDE = [
     "items": [
      "Chaque ligne a une **case à cocher**, un **nom** et un **type** que tu peux corriger.",
      "« **déjà au coffre** » : la fiche existe, elle ne sera pas recréée. « **nom voisin au coffre** » : une fiche au nom proche existe (décochée par prudence : vérifie que ce n'est pas la même). « **type à vérifier** » : l'application n'a pas su dire si c'est un objet ou un personnage.",
-     "Coche ce que tu veux créer. Le bouton devient **Importer le document et créer N fiches**."
+     "Coche ce que tu veux créer. Le bouton devient **Importer le document et créer N fiches**.",
+     "Si tu veux, coche aussi **Préparer aussi les cartes à révéler** (sous la liste) : chaque personnage, quête ou objet créé reçoit sa carte, **non révélée**, prévue pour ce document. Tout le texte de la fiche y est rangé dans « Vérité du MJ » ; le texte des joueurs reste vide, c'est toi qui l'écris (fiche 4)."
     ]
    },
    {
@@ -286,14 +287,15 @@ export const GUIDE = [
     "genre": "limite",
     "lignes": [
      "L'application lit la **structure** du document, pas son sens : un personnage décrit au fil d'un paragraphe, sans sous-titre ni fiche, n'est pas repéré. Crée-le à la main (fiche 6).",
-     "Les **cartes à révéler** (ce que les joueurs liront) ne sont pas créées par l'import : c'est un texte à écrire du point de vue des personnages, sans secret. Fais-les à la main (fiche 4) ou demande-les à Claude."
+     "Les cartes préparées par l'import n'ont **pas de texte pour les joueurs** : l'application ne sait pas ce qu'ils peuvent savoir. Écris-le toi-même avant de révéler (fiche 4), ou demande-le à Claude.",
+     "Une carte n'est préparée que pour une fiche **créée** dans cette fenêtre. Pour une fiche « déjà au coffre » : Séance → Tuiles → la fiche → **Créer la carte**."
     ]
    },
    {
     "t": "boite",
     "genre": "cowork",
     "lignes": [
-     "Le document « … » est importé dans le coffre avec ses fiches. Propose-moi les cartes à révéler dans MJ/04_Revelations avec « prevu » sur ce document (R23). Rien chez les joueurs."
+     "Le document « … » est importé avec ses fiches et leurs cartes (texte joueurs vide). Propose-moi, pour chaque carte de MJ/04_Revelations prévue pour ce document, le texte « Ce que les joueurs lisent », écrit du point de vue des personnages, sans rien de non joué (R19, R20, R23). Rien chez les joueurs."
     ]
    },
    {
@@ -340,7 +342,7 @@ export const GUIDE = [
     "genre": "limite",
     "lignes": [
      "Une fiche créée par l'import contient le passage du document, pas un résumé : les rubriques « Apparence », « Personnalité », « Motivations » restent vides. Complète-les si tu veux, ou laisse : la fiche est lisible telle quelle.",
-     "Les cartes à révéler de ce lieu (rencontres, quêtes vues par les joueurs) restent à écrire : fiche 4, ou Claude."
+     "Les cartes à révéler de ce lieu peuvent être préparées par la case « Préparer aussi les cartes à révéler », mais leur texte pour les joueurs reste à écrire : fiche 4, ou Claude."
     ]
    },
    {
@@ -382,6 +384,48 @@ export const GUIDE = [
     "genre": "attention",
     "lignes": [
      "N'écris aucune marque 🔴 🔒 🎲 ⚔️ 🆕 dans le texte des joueurs : l'application refuse alors de publier la carte, par sécurité. Tout secret va dans « Vérité du MJ »."
+    ]
+   },
+   {
+    "t": "h3",
+    "x": "Créer la carte d'un personnage, d'une quête ou d'un objet depuis sa fiche"
+   },
+   {
+    "t": "p",
+    "x": "Le texte existe déjà dans ta fiche : tu n'as pas à le retaper."
+   },
+   {
+    "t": "ou",
+    "x": "**Séance** → outil **Tuiles** → clique la tuile du personnage, de la quête ou de l'objet → **Créer la carte**"
+   },
+   {
+    "t": "etapes",
+    "items": [
+     "Le formulaire de carte s'ouvre, déjà rempli : le **titre** (le nom de la fiche), le **type** (rencontre pour un personnage, quête, objet) et **Prévu pour** (le document ouvert dans Séance).",
+     "Toute la fiche est dans **Vérité du MJ**. **Ce que les joueurs lisent** est vide : recopie-y seulement ce qu'ils peuvent savoir (son apparence, ce qu'il leur a dit…).",
+     "Clique **Garder pour plus tard** (ou **Enregistrer et révéler maintenant**)."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "resultat",
+    "lignes": [
+     "La carte attend dans Révélations et dans l'outil « Révéler » de la séance. Sur la fiche, le bouton devient **Ouvrir la carte**, avec son état (pas encore révélée, révélée en partie, révélée) : tu ne peux pas créer de doublon."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "astuce",
+    "lignes": [
+     "Sécurité : si tu enregistres sans rien toucher, seul le **titre** partira chez les joueurs le jour où tu révèles. La vérité ne sort jamais du coffre.",
+     "Si les joueurs connaissent déjà ce personnage (une rencontre publiée avant la régie, au même nom), le bouton est directement **Ouvrir la carte**."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "limite",
+    "lignes": [
+     "Une rencontre publiée sous un autre nom (« Mira et Tom ») n'est pas reconnue comme la carte de la fiche « Mira » : vérifie dans Révélations → Rencontres avant de créer."
     ]
    },
    {
@@ -1101,7 +1145,8 @@ export const GUIDE = [
     "t": "boite",
     "genre": "astuce",
     "lignes": [
-     "Quand les joueurs en apprennent plus sur lui : **Modifier** la carte, puis **Mettre à jour chez eux**."
+     "Quand les joueurs en apprennent plus sur lui : **Modifier** la carte, puis **Mettre à jour chez eux**.",
+     "S'il a une fiche au coffre : Séance → Tuiles → sa tuile → **Créer la carte** remplit le titre et range toute sa fiche dans la vérité (fiche 4)."
     ]
    },
    {
@@ -1538,7 +1583,11 @@ export const GUIDE = [
      ],
      [
       "2. Découper un document en fiches",
-      "FAIT depuis la version 0.25 : l'import propose les personnages, quêtes, objets, lieux, factions et créatures du document (fiches 2 et 3).  →  Reste à prévoir : repérer un personnage décrit sans sous-titre, remplir les rubriques de la fiche, et préparer les cartes à révéler."
+      "FAIT depuis la version 0.25 : l'import propose les personnages, quêtes, objets, lieux, factions et créatures du document (fiches 2 et 3).  →  Reste à prévoir : repérer un personnage décrit sans sous-titre, et remplir les rubriques de la fiche."
+     ],
+     [
+      "2 bis. Cartes à révéler depuis les fiches",
+      "FAIT depuis la version 0.26 : « Créer la carte » sur une fiche (fiche 4) et case « Préparer aussi les cartes à révéler » à l'import.  →  Reste à prévoir : proposer un texte joueur sûr (aujourd'hui vide par sécurité), et reconnaître une rencontre publiée sous un autre nom."
      ],
      [
       "3. Des notes aux cartes",
@@ -1638,6 +1687,10 @@ export const GUIDE = [
      [
       "Créer les fiches d'un document déjà au coffre",
       "Séance → Tuiles → Créer les fiches de ce document"
+     ],
+     [
+      "Créer la carte d'un PNJ, d'une quête, d'un objet",
+      "Séance → Tuiles → la tuile → Créer la carte"
      ],
      [
       "Choisir ce que je joue",

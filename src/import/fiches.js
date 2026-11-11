@@ -8,8 +8,8 @@
 //  - un bloc 🆕 dont le libellé ou la première ligne parle de quête : une quête, titrée d'après « Quête débloquée — Titre » ou, à défaut, le sous-titre qui le précède ;
 //  - un bloc de fiche dont la première ligne commence par 📦, hors d'une scène de personnages : un objet.
 // Ce qui ne l'est PAS : un personnage décrit au fil d'un paragraphe, sans sous-titre. Le MJ relit toujours la proposition avant de créer quoi que ce soit.
-import { norm } from "../md/doc.js?v=0.25.0";
-import { decouper } from "../mj/seance.js?v=0.25.0";
+import { norm } from "../md/doc.js?v=0.26.0";
+import { decouper } from "../mj/seance.js?v=0.26.0";
 
 export const GENRES = [
   { id: "pnj", libelle: "Personnage", pluriel: "Personnages" }, { id: "lieu", libelle: "Lieu", pluriel: "Lieux" }, { id: "quete", libelle: "Quête", pluriel: "Quêtes" },

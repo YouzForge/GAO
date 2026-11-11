@@ -2,11 +2,11 @@
 // Une ligne par carte, une colonne par joueur : un clic sur une case révèle (ou retire, après confirmation) ; « À tous » révèle aux joueurs prévus.
 // Une carte s'ouvre sur ce que les joueurs liront et, à part, sur ce qui ne sort jamais du coffre.
 // RÈGLE du moteur : jamais de innerHTML ; tout est construit avec le DOM. Rien ne s'écrit si l'interrupteur `ecriture` du JDR est fermé.
-import { parseDoc } from "../../src/md/doc.js?v=0.25.0";
-import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.25.0";
-import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.25.0";
-import { executer, confirmer } from "./edition.js?v=0.25.0";
-import { cadreMJ } from "./ecrans_mj.js?v=0.25.0";
+import { parseDoc } from "../../src/md/doc.js?v=0.26.0";
+import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.26.0";
+import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.26.0";
+import { executer, confirmer } from "./edition.js?v=0.26.0";
+import { cadreMJ } from "./ecrans_mj.js?v=0.26.0";
 
 const enc = encodeURIComponent;
 const nomJoueur = p => String(p).replace(/_/g, " ");
@@ -43,7 +43,7 @@ export function formulaireCarte(ctx, { carte = null, type = "savoir", joueurs = 
   const selType = h("select", { class: "jr-select", "aria-label": "Type de carte", disabled: !!carte }, TYPES.map(t => h("option", { value: t.id, selected: t.id === ty0 }, t.singulier.replace(/^./, c => c.toUpperCase()))));
   const titre = saisie({ maxlength: "120", value: carte ? carte.titre : defauts.titre || "", "aria-label": "Titre", placeholder: "Titre lu par les joueurs" });
   const texte = zoneTexte(carte ? (carte.texteMJ || carte.corpsJoueur) : defauts.texte || "", { rows: "7", "aria-label": "Texte pour les joueurs", placeholder: "Ce que les personnages apprennent, écrit comme ils le noteraient." });
-  const verite = zoneTexte(carte ? carte.verite : defauts.verite || "", { rows: "3", "aria-label": "Vérité du MJ", placeholder: "Facultatif : ce que tu sais et qu'ils ignorent." });
+  const verite = zoneTexte(carte ? carte.verite : defauts.verite || "", { rows: !carte && defauts.verite ? "10" : "3", "aria-label": "Vérité du MJ", placeholder: "Facultatif : ce que tu sais et qu'ils ignorent." });
   verite.classList.add("rv-secret-champ");
   const session = saisie({ inputmode: "numeric", maxlength: "4", value: carte ? carte.session : defauts.session || "", "aria-label": "Session" });
   const lieu = saisie({ maxlength: "80", value: carte ? carte.lieu : defauts.lieu || "", "aria-label": "Lieu" });
@@ -60,15 +60,19 @@ export function formulaireCarte(ctx, { carte = null, type = "savoir", joueurs = 
   const msg = h("div", { class: "jr-retour-action" });
   const garder = h("button", { class: "jr-bouton", type: "button" }, icon("check", 18), carte ? "Enregistrer" : "Garder pour plus tard");
   const maintenant = carte ? null : h("button", { class: "jr-bouton gros rv-reveler", type: "button" }, icon("eye", 20), "Enregistrer et révéler maintenant");
+  // Carte préparée depuis une fiche du coffre : tout son texte est dans la vérité, rien n'est encore écrit pour les joueurs.
+  const depuisFiche = !carte && defauts.ficheSource ? message("Tout le texte de la fiche est dans « Vérité du MJ ». Rien n'est écrit pour les joueurs : recopie dans « Ce que les joueurs lisent » seulement ce qu'ils peuvent savoir.", "info") : null;
   const fermer = feuille(carte ? "Modifier la carte" : "Nouvelle carte", [
+    depuisFiche,
     h("div", { class: "rv-grille" }, champ("Type", selType), champ("Session", session, "Numéro, facultatif."), champ("Lieu", lieu, "Facultatif.")),
     champ("Titre", titre), champStatut, champQuantite,
     champ("Ce que les joueurs lisent", texte),
     champ("Vérité du MJ (ne sort jamais du coffre)", verite),
     champ("Prévu pour", h("div", null, prevu, h("datalist", { id: idListe }, documents.map(d => h("option", { value: d })))), "Le document où tu comptes la révéler : elle apparaîtra dans l'écran « Séance » de ce document."),
-    pour.noeud, msg, h("div", { class: "jr-actions" }, garder, maintenant)], { large: true });
+    pour.noeud, msg, h("div", { class: "jr-actions" }, garder, maintenant)].filter(Boolean), { large: true });
   const envoyer = async reveler => {
     const champs = { type: selType.value, titre: titre.value, texte: texte.value, verite: verite.value, session: session.value, lieu: lieu.value, prevu: prevu.value, pour: pour.lire(), statut: statut.value, quantite: quantite.value };
+    if (!carte && defauts.ficheSource) champs.ficheSource = defauts.ficheSource;
     const r = await executer(ctx, () => (carte ? ctx.regie.modifierCarte(carte, champs) : ctx.regie.creerCarte(champs)), { zone: msg, boutons: [garder, maintenant] });
     if (!r.ok) return;
     fermer(); surFini(r.r, reveler);

@@ -1,10 +1,10 @@
 // Fiches proposées à la création à partir d'un document (à l'import d'un fichier Word, ou depuis l'écran « Séance » pour un document déjà au coffre).
 // L'application propose, le MJ décide : chaque fiche a une case à cocher, un type et un nom modifiables. Ce qui existe déjà au coffre n'est jamais recréé.
 // RÈGLE du moteur : jamais de innerHTML.
-import { GENRES, detecterFiches, rapprocher } from "../../src/import/fiches.js?v=0.25.0";
-import { h, icon, message, feuille } from "./ui.js?v=0.25.0";
-import { executer } from "./edition.js?v=0.25.0";
-import { annoncer } from "./ecrans_regie.js?v=0.25.0";
+import { GENRES, detecterFiches, rapprocher } from "../../src/import/fiches.js?v=0.26.0";
+import { h, icon, message, feuille } from "./ui.js?v=0.26.0";
+import { executer } from "./edition.js?v=0.26.0";
+import { annoncer } from "./ecrans_regie.js?v=0.26.0";
 
 const ICONES = { pnj: "user", lieu: "pin", quete: "scroll", objet: "gem", faction: "flag", creature: "monster" };
 const pluriel = (n, un, plus) => `${n} ${n > 1 ? plus : un}`;
@@ -56,16 +56,24 @@ export function zoneFiches(candidats, existants, { surChangement = () => {} } = 
   return { noeud, choisies, nombre: candidats.length };
 }
 
-/** Résumé d'une création : « 3 personnages, 1 quête créés ». */
+/** Résumé d'une création : « 3 personnages, 1 quête : 4 fiches créées · 3 cartes à révéler préparées ». `r.cartes` : résultat de `creerCartesDepuisFiches`, s'il y en a. */
 export function resumeCreation(r) {
   const par = {};
   for (const f of r.creees) par[f.genre] = (par[f.genre] || 0) + 1;
   const morceaux = GENRES.filter(g => par[g.id]).map(g => `${par[g.id]} ${(par[g.id] > 1 ? g.pluriel : g.libelle).toLowerCase()}`);
-  return (morceaux.length ? `${morceaux.join(", ")} : ${pluriel(r.creees.length, "fiche créée", "fiches créées")}` : "Aucune fiche créée") + (r.deja.length ? ` · ${r.deja.length} déjà au coffre` : "") + ".";
+  const cartes = r.cartes ? ` · ${pluriel(r.cartes.creees.length, "carte à révéler préparée", "cartes à révéler préparées")}${r.cartes.deja.length ? ` (${pluriel(r.cartes.deja.length, "existait", "existaient")} déjà)` : ""}` : "";
+  return (morceaux.length ? `${morceaux.join(", ")} : ${pluriel(r.creees.length, "fiche créée", "fiches créées")}` : "Aucune fiche créée") + (r.deja.length ? ` · ${r.deja.length} déjà au coffre` : "") + cartes + ".";
 }
 
-/** Fenêtre « Fiches de ce document » pour un document déjà au coffre (écran « Séance »). */
-export async function fenetreFiches(ctx, { markdown, titre, source = "", lieu = "", surFini = () => {} }) {
+/** Case « Préparer aussi les cartes à révéler » (décochée au départ). → { noeud, coche } */
+export function caseCartes() {
+  const coche = h("input", { type: "checkbox" });
+  return { coche, noeud: h("label", { class: "jr-case fi-cartes" }, coche, h("span", null, "Préparer aussi les cartes à révéler"),
+    h("small", { class: "jr-aide" }, "Pour chaque personnage, quête ou objet créé : une carte non révélée, prévue pour ce document. Tout le texte de la fiche va dans la vérité du MJ ; rien n'est écrit pour les joueurs.")) };
+}
+
+/** Fenêtre « Fiches de ce document » pour un document déjà au coffre (écran « Séance »). `prevu` : le document, pour les cartes préparées. */
+export async function fenetreFiches(ctx, { markdown, titre, source = "", lieu = "", prevu = "", surFini = () => {} }) {
   const corps = h("div", { class: "rv-fiche" }, message("Lecture du document…", "info"));
   const fermer = feuille(`Fiches de « ${titre} »`, corps, { large: true });
   let existants;
@@ -75,10 +83,16 @@ export async function fenetreFiches(ctx, { markdown, titre, source = "", lieu = 
   const zone = zoneFiches(detecterFiches(markdown), existants, { surChangement: () => libelle() });
   const libelle = () => { const n = zone.choisies().length; ok.replaceChildren(icon("check", 20), n ? `Créer ${pluriel(n, "fiche", "fiches")} dans le coffre` : "Rien à créer"); ok.disabled = !n; };
   libelle();
+  const cartes = caseCartes();
   ok.addEventListener("click", async () => {
-    const r = await executer(ctx, () => ctx.regie.creerFiches(zone.choisies(), { source, lieu }), { zone: msg, boutons: [ok] });
+    const r = await executer(ctx, async () => {
+      const res = await ctx.regie.creerFiches(zone.choisies(), { source, lieu });
+      // les cartes après les fiches : si l'une échoue, les fiches sont déjà au coffre et rien n'est perdu
+      if (cartes.coche.checked && res.creees.length) res.cartes = await ctx.regie.creerCartesDepuisFiches(res.creees, { prevu });
+      return res;
+    }, { zone: msg, boutons: [ok] });
     if (!r.ok) return;
-    fermer(); annoncer(resumeCreation(r.r)); surFini(r.r);
+    fermer(); annoncer(resumeCreation(r.r), { duree: 12000 }); surFini(r.r);
   });
-  corps.replaceChildren(...[zone.noeud, ctx.donnees && ctx.donnees.peutEcrireMJ ? [msg, zone.nombre ? ok : null] : message("Lecture seule : l'écriture est fermée pour ce JDR.", "info")].flat(Infinity).filter(Boolean));
+  corps.replaceChildren(...[zone.noeud, ctx.donnees && ctx.donnees.peutEcrireMJ ? [zone.nombre ? cartes.noeud : null, msg, zone.nombre ? ok : null] : message("Lecture seule : l'écriture est fermée pour ce JDR.", "info")].flat(Infinity).filter(Boolean));
 }

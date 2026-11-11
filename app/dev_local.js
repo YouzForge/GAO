@@ -2,7 +2,7 @@
 // Ce module n'est chargé que si la page est servie par « localhost » ET que la configuration locale déclare `window.JDR_DEV` : jamais sur le site publié.
 //   …/app/                 → MJ
 //   …/app/?comme=<Pseudo>  → le joueur <Pseudo> (dossier Joueurs/<Pseudo> et Table, exactement ce que OneDrive lui partagerait)
-import { creerCache, creerDepot, GRAPH } from "../src/index.js?v=0.25.0";
+import { creerCache, creerDepot, GRAPH } from "../src/index.js?v=0.26.0";
 
 export function estDev(fen) { return ["localhost", "127.0.0.1"].includes(fen.location.hostname) && !!fen.JDR_DEV; }
 

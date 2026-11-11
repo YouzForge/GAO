@@ -1,17 +1,17 @@
 // Écran « Séance » du MJ : la table de jeu. Le document de la prochaine session au centre (scènes, blocs colorés : à lire, dialogue, note MJ, secret, combat),
 // le sommaire des scènes à gauche, et à droite un panneau d'outils : fiche MJ, secrets, cartes à révéler, tuiles (PNJ, lieux, quêtes cités), joueurs et jauges, notes.
 // Pensé pour l'ordinateur (trois colonnes) ; sur téléphone tout s'empile. RÈGLE du moteur : jamais de innerHTML.
-import { parseDoc } from "../../src/md/doc.js?v=0.25.0";
-import { rangerParcours, deplacer, parcoursDepuisRangement } from "../../src/mj/parcours.js?v=0.25.0";
-import { decouper, ficheMJ, blocsDe, entitesCitees } from "../../src/mj/seance.js?v=0.25.0";
-import { TYPES, typeDe } from "../../src/mj/revelations.js?v=0.25.0";
-import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.25.0";
-import { executer, confirmer } from "./edition.js?v=0.25.0";
-import { cadreMJ } from "./ecrans_mj.js?v=0.25.0";
-import { formulaireCarte, ouvrirCarte, annoncer } from "./ecrans_regie.js?v=0.25.0";
-import { annoncerPalier } from "./ecrans_jauges.js?v=0.25.0";
-import { fenetreFiches } from "./ecrans_fiches.js?v=0.25.0";
-import { palierDe } from "../../src/mj/jauges.js?v=0.25.0";
+import { parseDoc } from "../../src/md/doc.js?v=0.26.0";
+import { rangerParcours, deplacer, parcoursDepuisRangement } from "../../src/mj/parcours.js?v=0.26.0";
+import { decouper, ficheMJ, blocsDe, entitesCitees } from "../../src/mj/seance.js?v=0.26.0";
+import { TYPES, typeDe, TYPE_DE_GENRE, carteDepuisFiche, ligneDeFiche } from "../../src/mj/revelations.js?v=0.26.0";
+import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.26.0";
+import { executer, confirmer } from "./edition.js?v=0.26.0";
+import { cadreMJ } from "./ecrans_mj.js?v=0.26.0";
+import { formulaireCarte, ouvrirCarte, annoncer } from "./ecrans_regie.js?v=0.26.0";
+import { annoncerPalier } from "./ecrans_jauges.js?v=0.26.0";
+import { fenetreFiches } from "./ecrans_fiches.js?v=0.26.0";
+import { palierDe } from "../../src/mj/jauges.js?v=0.26.0";
 
 const enc = encodeURIComponent;
 const estAuth = e => e && (e.status === 401 || e.auth);
@@ -31,8 +31,41 @@ function noeudBloc(b) {
     h("div", { class: "jr-md" }, rendreMarkdown(b.texte)));
 }
 
+const ETAT_CARTE = { a_reveler: "pas encore révélée", partiel: "révélée en partie", tous: "révélée" };
+
+/**
+ * Bouton de la carte à révéler d'une fiche de PNJ, de quête ou d'objet : « Ouvrir la carte » si elle existe déjà (jamais de doublon),
+ * sinon « Créer la carte », qui ouvre le formulaire prérempli (titre, type, document prévu ; tout le texte de la fiche dans la vérité du MJ).
+ */
+async function boutonCarte(ctx, e, texte, seance, place) {
+  const type = TYPE_DE_GENRE[e.genre];
+  if (!type) return;
+  const ecrire = !!(ctx.donnees && ctx.donnees.peutEcrireMJ);
+  let cat;
+  try { cat = await ctx.regie.catalogue(type); } catch (err) { if (estAuth(err)) return ctx.surErreur(err); place.replaceChildren(); return; }
+  const champs = carteDepuisFiche(e.genre, texte, e.fichier, { prevu: seance.doc ? seance.doc.fichier : "" });
+  const l = ligneDeFiche(cat.lignes, e.genre, e.fichier, champs.titre);
+  const redessiner = () => boutonCarte(ctx, e, texte, seance, place);
+  if (l) {
+    place.replaceChildren(h("button", { class: "jr-bouton", type: "button", onclick: () => ouvrirCarte(ctx, l, { joueurs: cat.joueurs, documents: seance.documents, surChange: redessiner }) }, icon("eye", 18), "Ouvrir la carte"),
+      h("span", { class: "jr-meta" }, `Carte de ${typeDe(l.type).singulier} « ${l.titre} » · ${ETAT_CARTE[l.etat]}`));
+    return;
+  }
+  if (!ecrire) { place.replaceChildren(); return; }
+  const creer = () => formulaireCarte(ctx, { type, joueurs: cat.joueurs.filter(j => j.lisible), documents: seance.documents, defauts: champs, surFini: async (c, maintenant) => {
+    if (maintenant) {
+      const cat2 = await ctx.regie.catalogue(c.type);
+      const l2 = cat2.lignes.find(x => x.carte && x.carte.fichier === c.fichier);
+      if (l2) { const r = await executer(ctx, () => ctx.regie.reveler(l2, l2.prevus)); if (r.ok) annoncer(`« ${c.titre} » révélé à ${liste(r.r.faits)}.`); }
+    } else annoncer(`Carte « ${c.titre} » gardée au coffre${c.prevu ? " : elle attend dans l'outil « Révéler »" : ""}.`);
+    redessiner();
+  } });
+  place.replaceChildren(h("button", { class: "jr-bouton", type: "button", onclick: creer }, icon("plus", 18), "Créer la carte"),
+    h("span", { class: "jr-meta" }, `Carte de ${typeDe(type).singulier} à révéler plus tard ; rien ne part chez les joueurs.`));
+}
+
 /** Fiche du coffre ouverte depuis une tuile : son texte, et les autres fiches qu'elle cite (on rebondit de tuile en tuile). */
-async function ouvrirTuile(ctx, e, entites) {
+async function ouvrirTuile(ctx, e, entites, seance = { doc: null, documents: [] }) {
   const corps = h("div", { class: "se-fiche" }, message("Lecture…", "info"));
   const fermer = feuille(e.nom, corps, { large: true });
   let texte = null;
@@ -41,14 +74,17 @@ async function ouvrirTuile(ctx, e, entites) {
   const d = parseDoc(texte);
   const champs = Object.entries(d.meta).filter(([k, v]) => !["visibilite", "nom", "titre", "photo", "carte"].includes(k) && String(v).trim() !== "");
   const liens = entitesCitees(d.body, entites.filter(x => !(x.genre === e.genre && x.fichier === e.fichier))).slice(0, 18);
+  const place = TYPE_DE_GENRE[e.genre] ? h("div", { class: "jr-actions se-fiche-carte" }) : null;
   corps.replaceChildren(...[
     h("div", { class: "jr-puces" }, h("span", { class: "jr-puce" }, e.libelle), champs.map(([k, v]) => h("span", { class: "jr-puce" }, `${k.replace(/_/g, " ")} : ${v}`))),
-    liens.length ? h("div", { class: "se-liens" }, h("span", { class: "jr-kicker" }, "Liens"), h("div", { class: "se-tuiles serre" }, liens.map(x => tuile(ctx, x, entites, () => fermer())))) : null,
+    place,
+    liens.length ? h("div", { class: "se-liens" }, h("span", { class: "jr-kicker" }, "Liens"), h("div", { class: "se-tuiles serre" }, liens.map(x => tuile(ctx, x, entites, () => fermer(), seance)))) : null,
     h("div", { class: "jr-md mj-corps" }, rendreMarkdown(d.body.replace(/^\s*#\s+.+\n?/, "")))
   ].filter(Boolean));
+  if (place) boutonCarte(ctx, e, texte, seance, place);
 }
-function tuile(ctx, e, entites, avant = null) {
-  return h("button", { class: "se-tuile g-" + e.genre, type: "button", title: `${e.libelle} · cité ${e.n} fois`, onclick: () => { if (avant) avant(); ouvrirTuile(ctx, e, entites); } },
+function tuile(ctx, e, entites, avant = null, seance = undefined) {
+  return h("button", { class: "se-tuile g-" + e.genre, type: "button", title: `${e.libelle} · cité ${e.n} fois`, onclick: () => { if (avant) avant(); ouvrirTuile(ctx, e, entites, seance); } },
     h("span", { class: "se-tuile-ic" }, icon(ICONE_GENRE[e.genre] || "book", 18)), h("span", { class: "se-tuile-nom" }, e.nom), e.n > 1 ? h("span", { class: "se-tuile-n" }, String(e.n)) : null);
 }
 
@@ -69,6 +105,7 @@ export async function ecranSeanceMJ(ctx, genre = null, fichier = null) {
   const d = parseDoc(texte);
   const scenes = decouper(d.body);
   const cites = entitesCitees(d.body, entites.filter(e => !(e.genre === doc.genre && e.fichier === doc.fichier)));
+  const seance = { doc, documents: tous.map(x => x.fichier) };   // ce qu'une fiche ouverte depuis une tuile doit savoir pour préparer sa carte
 
   /* ---- centre : le document, scène par scène ---- */
   const noeudsScenes = scenes.map((s, i) => h("section", { class: "se-scene", id: `se-scene-${i}` }, s.titre ? h("h3", { class: "se-scene-titre" + (/🔴|secret/i.test(s.titre) ? " mj-secret" : "") }, s.titre) : null, s.blocs.map(noeudBloc)));
@@ -141,10 +178,10 @@ export async function ecranSeanceMJ(ctx, genre = null, fichier = null) {
     },
     tuiles() {
       // Les fiches que ce document permet de créer (personnages, quêtes, objets… repérés par sa structure) : le MJ choisit lesquelles ajouter au coffre.
-      const manquantes = ecrire ? h("button", { class: "jr-bouton", type: "button", onclick: () => fenetreFiches(ctx, { markdown: d.body, titre: doc.titre, source: String(d.meta.source_word || doc.fichier), lieu: doc.genre === "lieu" ? doc.titre : doc.lieu || "", surFini: () => { location.reload(); } }) }, icon("plus", 18), "Créer les fiches de ce document") : null;
+      const manquantes = ecrire ? h("button", { class: "jr-bouton", type: "button", onclick: () => fenetreFiches(ctx, { markdown: d.body, titre: doc.titre, prevu: doc.fichier, source: String(d.meta.source_word || doc.fichier), lieu: doc.genre === "lieu" ? doc.titre : doc.lieu || "", surFini: () => { location.reload(); } }) }, icon("plus", 18), "Créer les fiches de ce document") : null;
       if (!cites.length) return [manquantes, message("Aucune fiche du coffre n'est citée par son nom dans ce document.", "info")];
       const groupes = Object.keys(NOM_GENRE).map(g => [g, cites.filter(e => e.genre === g)]).filter(([, l]) => l.length);
-      return [manquantes, ...groupes.map(([g, l]) => h("section", { class: "se-groupe" }, h("h4", { class: "se-titre-outil" }, icon(ICONE_GENRE[g], 15), `${NOM_GENRE[g]} (${l.length})`), h("div", { class: "se-tuiles" }, l.map(e => tuile(ctx, e, entites)))))];
+      return [manquantes, ...groupes.map(([g, l]) => h("section", { class: "se-groupe" }, h("h4", { class: "se-titre-outil" }, icon(ICONE_GENRE[g], 15), `${NOM_GENRE[g]} (${l.length})`), h("div", { class: "se-tuiles" }, l.map(e => tuile(ctx, e, entites, null, seance)))))];
     },
     async joueurs() {
       const [r, jauges] = await Promise.all([ctx.donnees.joueurs(), ctx.regie.jauges().catch(e => { if (estAuth(e)) throw e; return []; })]);

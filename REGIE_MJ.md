@@ -1,4 +1,4 @@
-# La régie du MJ (version 0.25.0)
+# La régie du MJ (version 0.26.0)
 
 Ce document décrit les écrans du MJ ajoutés à l'application : ce qu'ils font, où ils écrivent, et ce qui reste à vérifier.
 Il ne contient aucun contenu de jeu.
@@ -23,6 +23,14 @@ Il ne contient aucun contenu de jeu.
 Une carte destinée à un seul joueur (quête personnelle, objet clé, part de butin) se prépare en ne cochant que lui dans *Destinataires prévus*.
 
 Ce qui a été publié avant la régie n'a pas de carte au coffre : ces lignes restent visibles et révélables case par case, mais l'application ne propose jamais de les donner « à tous » d'un clic (un savoir personnel partirait chez toute la table). *Modifier* crée leur carte.
+
+### Créer la carte depuis une fiche (0.26)
+
+*Séance* → *Tuiles* → ouvrir la fiche d'un personnage, d'une quête ou d'un objet → **Créer la carte**. Un personnage donne une carte de rencontre, une quête une carte de quête, un objet une carte d'objet. Le formulaire habituel s'ouvre, prérempli : titre (le nom de la fiche), type, *Prévu pour* (le document ouvert dans *Séance*).
+
+**Sécurité par défaut** : tout le texte de la fiche (ses champs et ses rubriques non vides) va dans *Vérité du MJ* ; *Ce que les joueurs lisent* reste **vide**. Une carte enregistrée sans rien toucher ne laisse donc partir que son titre. C'est le MJ qui recopie ce que les joueurs peuvent savoir. Les titres de la fiche sont mis en gras dans la vérité (un titre `##` y ouvrirait une section publiée).
+
+La carte garde le lien vers sa fiche (`fiche_source`, champ du coffre jamais publié). Si une carte existe déjà pour la fiche (par ce lien, ou une carte ou un élément publié du même nom), le bouton devient **Ouvrir la carte**, avec son état : jamais de doublon.
 
 ## Les jauges
 
@@ -50,7 +58,9 @@ La fenêtre d'import propose aussi de créer les fiches que contient le document
 
 Chaque proposition a une case à cocher, un nom et un type modifiables. Une fiche déjà au coffre n'est jamais recréée ; un nom voisin, un lieu ou un type incertain restent décochés. Les fiches sont écrites au format de leur collection, `visibilite: secret`. La même liste s'ouvre pour un document déjà au coffre : *Séance* → *Tuiles* → *Créer les fiches de ce document*.
 
-Limites : un personnage décrit sans sous-titre n'est pas repéré ; les rubriques de la fiche ne sont pas résumées ; les cartes à révéler ne sont pas créées.
+**Préparer aussi les cartes à révéler** (0.26) : case de la même fenêtre, décochée au départ. Pour chaque personnage, quête ou objet créé, l'application prépare une carte **non révélée**, prévue pour ce document, avec la même règle que *Créer la carte* (texte des joueurs vide, fiche entière dans la vérité). Une fiche qui a déjà sa carte est sautée.
+
+Limites : un personnage décrit sans sous-titre n'est pas repéré ; les rubriques de la fiche ne sont pas résumées ; une carte n'est préparée que pour une fiche créée dans la fenêtre (pas pour une fiche « déjà au coffre » : utiliser *Créer la carte*) ; un élément publié sous un autre nom (une rencontre « A et B ») n'est pas reconnu comme la carte d'une fiche « B ».
 
 ## Le guide du MJ
 
