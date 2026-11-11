@@ -1,19 +1,19 @@
 // Mode parent (celui qui raconte l'histoire du soir) : Ce soir, Histoires, Monde, Notes, listes et fiches complètes, lieux et objets, compagnons.
 // Le parent voit tout (notes du MJ comprises) ; l'enfant, lui, n'a que ses écrans (ecrans_enfant.js).
-import { h, icon, hearts, disc, parler, rendreMarkdown } from "./ui.js?v=0.26.3";
-import { boitePhoto } from "./photo.js?v=0.26.3";
-import { banniereHorsLigne } from "./banniere.js?v=0.26.3";
-import { carteEtat, carte as ecranCarte } from "./ecrans_enfant.js?v=0.26.3";
-import { ecranPhotos } from "./ecrans_photos.js?v=0.26.3";
-import { ecranNotes } from "./ecrans_notes.js?v=0.26.3";
-import { ecranFormulaire } from "./ecrans_formulaire.js?v=0.26.3";
-import { ecranJouer, ecranRecap, partieEnCours } from "./ecrans_jouer.js?v=0.26.3";
-import { aspectObjet } from "../../src/conteur/objets.js?v=0.26.3";
-import { controleHistoire } from "../../src/conteur/controle.js?v=0.26.3";
-import { lireEtapes } from "../../src/conteur/etapes.js?v=0.26.3";
-import { apparitions, platNom } from "../../src/conteur/liens.js?v=0.26.3";
-import { sections, parseDoc } from "../../src/md/doc.js?v=0.26.3";
-import { pool } from "../../src/graph/pool.js?v=0.26.3";
+import { h, icon, hearts, disc, parler, rendreMarkdown } from "./ui.js?v=0.26.4";
+import { boitePhoto } from "./photo.js?v=0.26.4";
+import { banniereHorsLigne } from "./banniere.js?v=0.26.4";
+import { carteEtat, carte as ecranCarte } from "./ecrans_enfant.js?v=0.26.4";
+import { ecranPhotos } from "./ecrans_photos.js?v=0.26.4";
+import { ecranNotes } from "./ecrans_notes.js?v=0.26.4";
+import { ecranFormulaire } from "./ecrans_formulaire.js?v=0.26.4";
+import { ecranJouer, ecranRecap, partieEnCours } from "./ecrans_jouer.js?v=0.26.4";
+import { aspectObjet } from "../../src/conteur/objets.js?v=0.26.4";
+import { controleHistoire } from "../../src/conteur/controle.js?v=0.26.4";
+import { lireEtapes } from "../../src/conteur/etapes.js?v=0.26.4";
+import { apparitions, platNom } from "../../src/conteur/liens.js?v=0.26.4";
+import { sections, parseDoc } from "../../src/md/doc.js?v=0.26.4";
+import { pool } from "../../src/graph/pool.js?v=0.26.4";
 
 const lien = (chemin, classe, ...enfants) => h("a", { class: classe, href: "#" + chemin }, ...enfants);
 const plus = chemin => lien(chemin, "iconbtn plus", icon("plus", 26, "#fff", 3));

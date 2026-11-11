@@ -1,9 +1,9 @@
 // Formulaire de fiche (créer ou modifier), tout vient du profil : champs, sections, photo. Les contrôles s'adaptent au type du champ :
 // nombre = « − 0 + », oui/non = case à cocher, choix = boutons, texte long = zone de texte, photo = appareil ou galerie.
-import { h, icon } from "./ui.js?v=0.26.3";
-import { boitePhoto, envoyerPhoto } from "./photo.js?v=0.26.3";
-import { modeleFormulaire, enregistrerCreation, enregistrerModification, ouvrirPourModifier, messageEcriture } from "../../src/app/formulaire.js?v=0.26.3";
-import { platNom } from "../../src/conteur/liens.js?v=0.26.3";
+import { h, icon } from "./ui.js?v=0.26.4";
+import { boitePhoto, envoyerPhoto } from "./photo.js?v=0.26.4";
+import { modeleFormulaire, enregistrerCreation, enregistrerModification, ouvrirPourModifier, messageEcriture } from "../../src/app/formulaire.js?v=0.26.4";
+import { platNom } from "../../src/conteur/liens.js?v=0.26.4";
 
 export async function ecranFormulaire(ctx, colId, fichier) {
   const col = ctx.donnees.colonne(colId);

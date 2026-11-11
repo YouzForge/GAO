@@ -1,6 +1,6 @@
 // Contenu du guide du MJ (onglet « Guide »). FICHIER GÉNÉRÉ : ne pas le modifier à la main.
 // Source : le générateur du guide Word (guide_mj_generer.js), converti par guide_mj_donnees.js. Aucun contenu de jeu.
-export const VERSION_GUIDE = "0.26.3";
+export const VERSION_GUIDE = "0.26.4";
 export const GUIDE = [
  {
   "num": "",
@@ -263,7 +263,8 @@ export const GUIDE = [
      "Chaque ligne a une **case à cocher**, un **nom** et un **type** que tu peux corriger.",
      "« **déjà au coffre** » : la fiche existe, elle ne sera pas recréée. « **nom voisin au coffre** » : une fiche au nom proche existe (décochée par prudence : vérifie que ce n'est pas la même). « **type à vérifier** » : l'application n'a pas su dire si c'est un objet ou un personnage.",
      "Coche ce que tu veux créer. Le bouton devient **Importer le document et créer N fiches**.",
-     "Si tu veux, coche aussi **Préparer aussi les cartes à révéler** (sous la liste) : chaque personnage, quête ou objet créé reçoit sa carte, **non révélée**, prévue pour ce document. Tout le texte de la fiche y est rangé dans « Vérité du MJ » ; le texte des joueurs reste vide, c'est toi qui l'écris (fiche 4)."
+     "**Rien ne part chez les joueurs** : les fiches vont dans ton coffre, et les cartes préparées attendent, non révélées, dans l'outil **Révéler** de l'écran Séance. Un élément que les joueurs ont déjà apparaît seulement comme « révélé » parce qu'il l'était avant : l'application ne l'a pas envoyé.",
+     "Si tu veux, coche aussi **Préparer aussi les cartes à révéler** (sous la liste) : chaque personnage, quête ou objet du document, **créé maintenant ou déjà au coffre**, reçoit sa carte, **non révélée**, prévue pour ce document (une fiche qui a déjà sa carte est sautée). Si toutes les fiches sont déjà au coffre, la case suffit : le bouton devient **Préparer les cartes des N fiches déjà au coffre**. Tout le texte de la fiche y est rangé dans « Vérité du MJ » ; le texte des joueurs reste vide, c'est toi qui l'écris (fiche 4)."
     ]
    },
    {
@@ -277,7 +278,7 @@ export const GUIDE = [
     "t": "boite",
     "genre": "astuce",
     "lignes": [
-     "Ce que l'application reconnaît : les sous-titres « Nom — rôle » d'une partie dont le titre parle de PNJ, de personnages, d'alliés, d'antagonistes, de lieux, de factions ou de bestiaire ; les blocs « Quête débloquée » ; les fiches 📦.",
+     "Ce que l'application reconnaît : les sous-titres « Nom — rôle » d'une partie dont le titre parle de PNJ, de personnages, d'alliés, d'antagonistes, de lieux, de factions ou de bestiaire ; les blocs « Quête débloquée » ; les fiches 📦 (sauf les encadrés d'aide de jeu : « Réponses de… », « Questions… », « Indices… », « Tableau… »).",
      "Pour un document déjà au coffre (importé avant, ou par Claude) : écran **Séance** → outil **Tuiles** → **Créer les fiches de ce document**. C'est la même liste.",
      "Sur les 45 documents de ton atelier, cette méthode retrouve 83 de tes 110 personnages et 11 de tes 12 créatures."
     ]

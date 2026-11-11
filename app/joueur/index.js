@@ -2,25 +2,25 @@
 // Lancée par app.js quand profil.application === "joueur" et que la session est prête (connexion, dossier relié).
 // Lecture partout ; l'écriture (tranche 2 : étiquettes, notes, sac, points de vie, bourse) n'existe que pour un JOUEUR et seulement si l'interrupteur `ecriture` du JDR est ouvert.
 // Le MJ qui « voit comme » un joueur ne peut rien modifier.
-import { creerDonneesJoueur } from "../../src/joueur/donnees.js?v=0.26.3";
-import { nature, issue } from "../../src/joueur/geste.js?v=0.26.3";
-import { reglesD100 } from "../../src/joueur/d100.js?v=0.26.3";
-import { h, icon, attente, message, urlImage, viderImages, feuille, feuilleOuverte } from "./ui.js?v=0.26.3";
-import { ouvrirJet } from "./jet.js?v=0.26.3";
-import { ecranFiche, ecranCompetences } from "./ecrans_fiche.js?v=0.26.3";
-import { ecranSacDossiers, ecranSacTout, ecranSacDossier } from "./ecrans_sac.js?v=0.26.3";
-import { ecranSavoirs, ecranQuetes, ecranNotes, ecranJournal, ecranRencontres, ecranRencontre } from "./ecrans_savoirs.js?v=0.26.3";
-import { ecranCarte } from "./ecrans_carte.js?v=0.26.3";
-import { ecranRecherche } from "./ecrans_recherche.js?v=0.26.3";
-import { ecranAccueilMJ, ecranDocumentMJ, ecranJoueursMJ, ecranJoueurMJ } from "./ecrans_mj.js?v=0.26.3";
-import { ecranRevelationsMJ } from "./ecrans_regie.js?v=0.26.3";
-import { ecranParcoursMJ } from "./ecrans_parcours.js?v=0.26.3";
-import { ecranGuideMJ } from "./ecrans_guide.js?v=0.26.3";
-import { ecranJaugesMJ } from "./ecrans_jauges.js?v=0.26.3";
-import { ecranSeanceMJ } from "./ecrans_seance.js?v=0.26.3";
-import { creerRegie } from "../../src/mj/regie.js?v=0.26.3";
-import { creerNouveautes } from "../../src/joueur/nouveautes.js?v=0.26.3";
-import { creerStockageImages } from "./stockage_images.js?v=0.26.3";
+import { creerDonneesJoueur } from "../../src/joueur/donnees.js?v=0.26.4";
+import { nature, issue } from "../../src/joueur/geste.js?v=0.26.4";
+import { reglesD100 } from "../../src/joueur/d100.js?v=0.26.4";
+import { h, icon, attente, message, urlImage, viderImages, feuille, feuilleOuverte } from "./ui.js?v=0.26.4";
+import { ouvrirJet } from "./jet.js?v=0.26.4";
+import { ecranFiche, ecranCompetences } from "./ecrans_fiche.js?v=0.26.4";
+import { ecranSacDossiers, ecranSacTout, ecranSacDossier } from "./ecrans_sac.js?v=0.26.4";
+import { ecranSavoirs, ecranQuetes, ecranNotes, ecranJournal, ecranRencontres, ecranRencontre } from "./ecrans_savoirs.js?v=0.26.4";
+import { ecranCarte } from "./ecrans_carte.js?v=0.26.4";
+import { ecranRecherche } from "./ecrans_recherche.js?v=0.26.4";
+import { ecranAccueilMJ, ecranDocumentMJ, ecranJoueursMJ, ecranJoueurMJ } from "./ecrans_mj.js?v=0.26.4";
+import { ecranRevelationsMJ } from "./ecrans_regie.js?v=0.26.4";
+import { ecranParcoursMJ } from "./ecrans_parcours.js?v=0.26.4";
+import { ecranGuideMJ } from "./ecrans_guide.js?v=0.26.4";
+import { ecranJaugesMJ } from "./ecrans_jauges.js?v=0.26.4";
+import { ecranSeanceMJ } from "./ecrans_seance.js?v=0.26.4";
+import { creerRegie } from "../../src/mj/regie.js?v=0.26.4";
+import { creerNouveautes } from "../../src/joueur/nouveautes.js?v=0.26.4";
+import { creerStockageImages } from "./stockage_images.js?v=0.26.4";
 
 const dec = decodeURIComponent;
 const FRAICHEUR_MS = 60_000;   // une lecture est réutilisée une minute en mémoire de page ; « Actualiser » (menu du nom) et le retour au premier plan la rafraîchissent
@@ -78,7 +78,7 @@ const ROUTES_MJ = [
 
 export function demarrerJoueur({ profil, session, auth, deconnecter, versMoteur, surErreur, ecriture = false }) {
   document.body.classList.add("joueur");
-  if (!document.getElementById("css-joueur")) document.head.append(h("link", { id: "css-joueur", rel: "stylesheet", href: "./joueur/joueur.css?v=0.26.3" }));
+  if (!document.getElementById("css-joueur")) document.head.append(h("link", { id: "css-joueur", rel: "stylesheet", href: "./joueur/joueur.css?v=0.26.4" }));
   let themeMeta = document.querySelector('meta[name="theme-color"]');
   if (!themeMeta) { themeMeta = h("meta", { name: "theme-color", content: "#1d1b1a" }); document.head.append(themeMeta); } else themeMeta.setAttribute("content", "#1d1b1a");
   const racine = document.getElementById("app-joueur") || document.body.appendChild(h("div", { id: "app-joueur" }));

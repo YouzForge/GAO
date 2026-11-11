@@ -1,7 +1,7 @@
 // État du héros (cœurs, armure, pièces, équipement) lu dans sa fiche, et fiches des collections du conteur vues par l'enfant.
 // Logique pure : le texte est donné, rien n'est lu ni écrit ici.
-import { parseDoc, intOf, isTrue, humanize, sections } from "../md/doc.js?v=0.26.3";
-import { trouverObjet } from "./objets.js?v=0.26.3";
+import { parseDoc, intOf, isTrue, humanize, sections } from "../md/doc.js?v=0.26.4";
+import { trouverObjet } from "./objets.js?v=0.26.4";
 
 /** « 50,50 » → { x, y } (0 à 100), sinon null. */
 export function lireCarte(v) {

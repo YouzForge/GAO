@@ -3,13 +3,13 @@
 //
 // Principe de sécurité : une modification n'envoie QUE ce qui a changé (`modifierFiche`), donc un champ ou une section que la personne
 // ne voit pas (masqués pour un joueur) ou que le formulaire ne connaît pas n'est jamais touché.
-import { norm, getSection, parseDoc } from "../md/doc.js?v=0.26.3";
-import { analyserType } from "../profil/champs.js?v=0.26.3";
-import { cheminCollection } from "../collections/charger.js?v=0.26.3";
-import { modifierFiche, creerFiche, nomFichier, verifierValeur, EcritureInvalide } from "../ecriture/fiche.js?v=0.26.3";
-import { CHAMPS_TECHNIQUES } from "./affichage.js?v=0.26.3";
-import { FicheExiste, ConflitEcriture, FicheVerrouillee } from "../graph/client.js?v=0.26.3";
-import { AccesRefuse, AccesRetire } from "../depot/depot.js?v=0.26.3";
+import { norm, getSection, parseDoc } from "../md/doc.js?v=0.26.4";
+import { analyserType } from "../profil/champs.js?v=0.26.4";
+import { cheminCollection } from "../collections/charger.js?v=0.26.4";
+import { modifierFiche, creerFiche, nomFichier, verifierValeur, EcritureInvalide } from "../ecriture/fiche.js?v=0.26.4";
+import { CHAMPS_TECHNIQUES } from "./affichage.js?v=0.26.4";
+import { FicheExiste, ConflitEcriture, FicheVerrouillee } from "../graph/client.js?v=0.26.4";
+import { AccesRefuse, AccesRetire } from "../depot/depot.js?v=0.26.4";
 
 const sec = profil => (profil && profil.securite) || {};
 const masque = profil => sec(profil).masque || {};

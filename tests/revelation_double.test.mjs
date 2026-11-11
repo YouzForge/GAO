@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { texteCarte } from "../src/mj/revelations.js";
 import { creerRegie } from "../src/mj/regie.js";
-import { FicheExiste, ConflitEcriture } from "../src/graph/client.js?v=0.26.3";   // même version que la régie : sinon deux classes FicheExiste différentes
+import { FicheExiste, ConflitEcriture } from "../src/graph/client.js?v=0.26.4";   // même version que la régie : sinon deux classes FicheExiste différentes
 
 const pause = () => new Promise(r => setTimeout(r, Math.random() * 4));
 /** Faux OneDrive avec versions (eTag) et délais aléatoires : les appels simultanés s'entremêlent vraiment. */

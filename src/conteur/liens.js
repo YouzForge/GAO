@@ -1,5 +1,5 @@
 // Liens entre fiches : quelle photo sert à quelle fiche, où une fiche apparaît dans les histoires jouées. Logique pure.
-import { parseDoc } from "../md/doc.js?v=0.26.3";
+import { parseDoc } from "../md/doc.js?v=0.26.4";
 
 const plat = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/œ/g, "oe").replace(/’/g, "'").toLowerCase();
 export const platNom = plat;

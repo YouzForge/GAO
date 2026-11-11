@@ -1,9 +1,9 @@
 // Onglet « Guide » du MJ : le mode d'emploi de la régie, toujours sous la main. Le même contenu que le guide Word (guide_contenu.js, généré).
 // Une recherche (« que veux-tu faire ? ») trouve la fiche ; chaque fiche est repliée et s'ouvre d'un clic. Le contenu n'est téléchargé qu'à l'ouverture de l'onglet.
 // RÈGLE du moteur : jamais de innerHTML ; tout est construit avec le DOM.
-import { norm } from "../../src/md/doc.js?v=0.26.3";
-import { h, icon } from "./ui.js?v=0.26.3";
-import { cadreMJ } from "./ecrans_mj.js?v=0.26.3";
+import { norm } from "../../src/md/doc.js?v=0.26.4";
+import { h, icon } from "./ui.js?v=0.26.4";
+import { cadreMJ } from "./ecrans_mj.js?v=0.26.4";
 
 const TITRES_BOITE = { astuce: "Bon à savoir", attention: "Attention", limite: "Pas encore possible dans l'outil", resultat: "Résultat", cowork: "À dire à Claude (Cowork)" };
 const ICONES_BOITE = { astuce: "bulb", attention: "info", limite: "tools", resultat: "check", cowork: "chat" };
@@ -39,7 +39,7 @@ function fichesDe(partie) {
 }
 
 export async function ecranGuideMJ(ctx, partieDemandee = null, ficheDemandee = null) {
-  const { GUIDE, VERSION_GUIDE } = await import("./guide_contenu.js?v=0.26.3");
+  const { GUIDE, VERSION_GUIDE } = await import("./guide_contenu.js?v=0.26.4");
   const etat = ctx.etat.guideMJ || (ctx.etat.guideMJ = { partie: 1, q: "" });
   if (partieDemandee != null && GUIDE[partieDemandee]) etat.partie = partieDemandee;
   const toutes = GUIDE.flatMap((p, i) => fichesDe(p).fiches.map(f => ({ ...f, partie: i, cherche: norm([f.q, ...f.blocs.map(texteDe)].join(" ")).replace(/_+/g, " ") })));

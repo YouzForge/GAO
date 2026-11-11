@@ -9,7 +9,7 @@
 //
 // Principe des DÉCLENCHEMENTS (posé ici, appliqué plus tard) : quand une valeur entre dans un nouveau palier, `franchissement` le dit ; l'écran l'annonce au MJ.
 // Un palier pourra porter des effets lisibles par la machine (lignes « ⚙ … », voir `effetsDe`) que la régie proposera d'appliquer à la fiche d'un joueur.
-import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize, sansGrandsTitres } from "../md/doc.js?v=0.26.3";
+import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize, sansGrandsTitres } from "../md/doc.js?v=0.26.4";
 
 export const DOSSIER_JAUGES = "Jauges";
 export const FICHIER_RANGEMENT = "Rangement.md";

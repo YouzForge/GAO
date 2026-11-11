@@ -8,8 +8,8 @@
 //  - un bloc 🆕 dont le libellé ou la première ligne parle de quête : une quête, titrée d'après « Quête débloquée — Titre » ou, à défaut, le sous-titre qui le précède ;
 //  - un bloc de fiche dont la première ligne commence par 📦, hors d'une scène de personnages : un objet.
 // Ce qui ne l'est PAS : un personnage décrit au fil d'un paragraphe, sans sous-titre. Le MJ relit toujours la proposition avant de créer quoi que ce soit.
-import { norm } from "../md/doc.js?v=0.26.3";
-import { decouper } from "../mj/seance.js?v=0.26.3";
+import { norm } from "../md/doc.js?v=0.26.4";
+import { decouper } from "../mj/seance.js?v=0.26.4";
 
 export const GENRES = [
   { id: "pnj", libelle: "Personnage", pluriel: "Personnages" }, { id: "lieu", libelle: "Lieu", pluriel: "Lieux" }, { id: "quete", libelle: "Quête", pluriel: "Quêtes" },
@@ -25,6 +25,8 @@ const SCENES = [
 const SCENE_EXCLUE = /relations? entre|hooks?|accroches?|vos personnages|joueurs?|niveaux? d.information/i;
 /** Débuts de sous-titre qui annoncent une sous-partie de scène, pas un nom. */
 const PAS_UN_NOM = /^(si|comment|quand|pourquoi|que|ce que|o[uù]|la sc[èe]ne|le d[ée]roul[ée]|d[ée]roul[ée]|sc[èe]ne|option|acte|[ée]tape|r[ée]sum[ée]|cons[ée]quences?|notes?|rappel|ambiance|description|objectifs?|contexte|issues?|variante|conclusion|introduction|apr[èe]s|avant|pendant)(?![A-Za-zÀ-ÿ])/i;   // « \b » ne connaît pas les lettres accentuées
+/** Encadrés 📦 qui servent d'aide de jeu, pas de fiche : « Réponses de Pierre selon le sujet », « Questions possibles », « Indices », « Tableau… ». */
+const PAS_UNE_FICHE = /^(r[ée]ponses?|questions?|informations?|infos?|indices?|rumeurs?|ce qu['’e]?|tableau|liste|r[èe]gles?|jets?|tests?|rappels?|options?|tirages?|table|r[ée]capitulatif|r[ée]sum[ée]|d[ée]roul[ée]|conseils?|astuces?|si|quand|comment)(?![A-Za-zÀ-ÿ])/i;   // « \b » ne connaît pas les lettres accentuées
 const t = v => (v == null ? "" : String(v).trim());
 const nu =s => t(s).replace(/\*+/g, "").replace(/[★☆✦●▸►]+/g, " ").replace(/\s+/g, " ").trim();
 
@@ -96,7 +98,7 @@ export function detecterFiches(markdown) {
         }
         // Un bloc 📦 est une « fiche » au sens large (objet, mais aussi personnage, plante, créature) : le genre est deviné d'après son contenu,
         // et marqué incertain quand rien ne tranche (l'écran le laisse alors décoché : c'est le MJ qui choisit).
-        if (b.cle === "combat" && !prise && !faction && /^📦/u.test(premiere)) {
+        if (b.cle === "combat" && !prise && !faction && /^📦/u.test(premiere) && !PAS_UNE_FICHE.test(nu(premiere.replace(/^📦\s*/u, "")))) {
           const titre = premiere.replace(/^📦\s*/u, ""), d = decomposerTitre(titre);
           const reste = b.texte.split("\n").slice(1).join("\n");
           const genre = devinerGenre(d, reste);

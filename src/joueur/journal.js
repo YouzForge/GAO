@@ -6,7 +6,7 @@
 //  - chaque compte rendu a SON bloc : deux comptes rendus ne se remplacent jamais et ne se rangent jamais l'un dans l'autre ;
 //  - une note va dans le bloc du compte rendu qui porte le même titre ; sinon dans celui du même numéro de session (le plus récent s'il y en a
 //    plusieurs, une saison 2 avant une saison 1) ; sinon dans un bloc de notes à son numéro.
-import { norm } from "../md/doc.js?v=0.26.3";
+import { norm } from "../md/doc.js?v=0.26.4";
 
 /**
  * Lit le champ `session` d'un compte rendu. → { saison, n, ordre, etiquette }

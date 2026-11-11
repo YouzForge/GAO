@@ -1,13 +1,13 @@
 // Mode Jouer : l'aide-mémoire de la partie, téléphone posé sur la table. Port fidèle de « Petite Feuille » : étapes, voies, fins A/B/autre,
 // cœurs et armure, potions en deux moitiés (avec « Annuler »), dés 2d6, règles en bref, phrases de l'enfant, écran allumé.
 // La séance entière est gardée sur le téléphone (clé « partie ») : fermer l'application ne perd rien ; le récap la relit.
-import { h, icon, hearts, spinner, enligne, rendreMarkdown, ouvrirFeuille, de } from "./ui.js?v=0.26.3";
-import { lireEtapes, sectionsDeRegles } from "../../src/conteur/etapes.js?v=0.26.3";
-import { parseVoie } from "../../src/conteur/voies.js?v=0.26.3";
-import { controleHistoire } from "../../src/conteur/controle.js?v=0.26.3";
-import { ajouterPotion, boire, annuler, peutAnnuler } from "../../src/conteur/potions.js?v=0.26.3";
-import { nouvelleSeance, bornerEtape, ajouterJet, deuxRatesDeSuite, finsDe, pastilleVoie, estReussite } from "../../src/conteur/seance.js?v=0.26.3";
-import { recapMarkdown, reprendreBrouillon, nomRecap } from "../../src/conteur/recap.js?v=0.26.3";
+import { h, icon, hearts, spinner, enligne, rendreMarkdown, ouvrirFeuille, de } from "./ui.js?v=0.26.4";
+import { lireEtapes, sectionsDeRegles } from "../../src/conteur/etapes.js?v=0.26.4";
+import { parseVoie } from "../../src/conteur/voies.js?v=0.26.4";
+import { controleHistoire } from "../../src/conteur/controle.js?v=0.26.4";
+import { ajouterPotion, boire, annuler, peutAnnuler } from "../../src/conteur/potions.js?v=0.26.4";
+import { nouvelleSeance, bornerEtape, ajouterJet, deuxRatesDeSuite, finsDe, pastilleVoie, estReussite } from "../../src/conteur/seance.js?v=0.26.4";
+import { recapMarkdown, reprendreBrouillon, nomRecap } from "../../src/conteur/recap.js?v=0.26.4";
 
 const SECTIONS_REGLES = ["4.1", "4.2", "4.3", "4.4", "4.5", "4.9", "4.10"];
 const aller = chemin => { location.hash = "#" + chemin; };

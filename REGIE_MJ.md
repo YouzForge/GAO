@@ -1,4 +1,4 @@
-# La régie du MJ (version 0.26.3)
+# La régie du MJ (version 0.26.4)
 
 Ce document décrit les écrans du MJ ajoutés à l'application : ce qu'ils font, où ils écrivent, et ce qui reste à vérifier.
 Il ne contient aucun contenu de jeu.
@@ -60,9 +60,9 @@ La fenêtre d'import propose aussi de créer les fiches que contient le document
 
 Chaque proposition a une case à cocher, un nom et un type modifiables. Une fiche déjà au coffre n'est jamais recréée ; un nom voisin, un lieu ou un type incertain restent décochés. Les fiches sont écrites au format de leur collection, `visibilite: secret`. La même liste s'ouvre pour un document déjà au coffre : *Séance* → *Tuiles* → *Créer les fiches de ce document*.
 
-**Préparer aussi les cartes à révéler** (0.26) : case de la même fenêtre, décochée au départ. Pour chaque personnage, quête ou objet créé, l'application prépare une carte **non révélée**, prévue pour ce document, avec la même règle que *Créer la carte* (texte des joueurs vide, fiche entière dans la vérité). Une fiche qui a déjà sa carte est sautée.
+**Préparer aussi les cartes à révéler** (0.26) : case de la même fenêtre, décochée au départ. Pour chaque personnage, quête ou objet du document, **créé dans la fenêtre ou déjà au coffre** (0.26.4), l'application prépare une carte **non révélée**, prévue pour ce document, avec la même règle que *Créer la carte* (texte des joueurs vide, fiche entière dans la vérité). Une fiche qui a déjà sa carte est sautée. Si toutes les fiches sont déjà au coffre, la case seule active le bouton (« Préparer les cartes des N fiches déjà au coffre »). La fenêtre le dit en tête : **rien ne part chez les joueurs** (fiches au coffre, cartes non révélées dans l'outil *Révéler*). Un encadré 📦 d'aide de jeu (« Réponses de… », « Questions… », « Indices… », « Tableau… ») n'est plus proposé comme fiche.
 
-Limites : un personnage décrit sans sous-titre n'est pas repéré ; les rubriques de la fiche ne sont pas résumées ; une carte n'est préparée que pour une fiche créée dans la fenêtre (pas pour une fiche « déjà au coffre » : utiliser *Créer la carte*) ; un élément publié sous un autre nom (une rencontre « A et B ») n'est pas reconnu comme la carte d'une fiche « B ».
+Limites : un personnage décrit sans sous-titre n'est pas repéré ; les rubriques de la fiche ne sont pas résumées ; un élément publié sous un autre nom (une rencontre « A et B ») n'est pas reconnu comme la carte d'une fiche « B ».
 
 ## Le guide du MJ
 
