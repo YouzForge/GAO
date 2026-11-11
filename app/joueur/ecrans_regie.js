@@ -2,11 +2,11 @@
 // Une ligne par carte, une colonne par joueur : un clic sur une case révèle (ou retire, après confirmation) ; « À tous » révèle aux joueurs prévus.
 // Une carte s'ouvre sur ce que les joueurs liront et, à part, sur ce qui ne sort jamais du coffre.
 // RÈGLE du moteur : jamais de innerHTML ; tout est construit avec le DOM. Rien ne s'écrit si l'interrupteur `ecriture` du JDR est fermé.
-import { parseDoc } from "../../src/md/doc.js?v=0.26.0";
-import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.26.0";
-import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.26.0";
-import { executer, confirmer } from "./edition.js?v=0.26.0";
-import { cadreMJ } from "./ecrans_mj.js?v=0.26.0";
+import { parseDoc } from "../../src/md/doc.js?v=0.26.1";
+import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.26.1";
+import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.26.1";
+import { executer, confirmer } from "./edition.js?v=0.26.1";
+import { cadreMJ } from "./ecrans_mj.js?v=0.26.1";
 
 const enc = encodeURIComponent;
 const nomJoueur = p => String(p).replace(/_/g, " ");
@@ -42,7 +42,8 @@ export function formulaireCarte(ctx, { carte = null, type = "savoir", joueurs = 
   const ty0 = carte ? carte.type : type;
   const selType = h("select", { class: "jr-select", "aria-label": "Type de carte", disabled: !!carte }, TYPES.map(t => h("option", { value: t.id, selected: t.id === ty0 }, t.singulier.replace(/^./, c => c.toUpperCase()))));
   const titre = saisie({ maxlength: "120", value: carte ? carte.titre : defauts.titre || "", "aria-label": "Titre", placeholder: "Titre lu par les joueurs" });
-  const texte = zoneTexte(carte ? (carte.texteMJ || carte.corpsJoueur) : defauts.texte || "", { rows: "7", "aria-label": "Texte pour les joueurs", placeholder: "Ce que les personnages apprennent, écrit comme ils le noteraient." });
+  // seulement la section principale : y remettre tout ce que lisent les joueurs (titres compris) recopiait ces parties à chaque enregistrement
+  const texte = zoneTexte(carte ? carte.texteMJ || "" : defauts.texte || "", { rows: "7", "aria-label": "Texte pour les joueurs", placeholder: "Ce que les personnages apprennent, écrit comme ils le noteraient." });
   const verite = zoneTexte(carte ? carte.verite : defauts.verite || "", { rows: !carte && defauts.verite ? "10" : "3", "aria-label": "Vérité du MJ", placeholder: "Facultatif : ce que tu sais et qu'ils ignorent." });
   verite.classList.add("rv-secret-champ");
   const session = saisie({ inputmode: "numeric", maxlength: "4", value: carte ? carte.session : defauts.session || "", "aria-label": "Session" });
@@ -62,8 +63,9 @@ export function formulaireCarte(ctx, { carte = null, type = "savoir", joueurs = 
   const maintenant = carte ? null : h("button", { class: "jr-bouton gros rv-reveler", type: "button" }, icon("eye", 20), "Enregistrer et révéler maintenant");
   // Carte préparée depuis une fiche du coffre : tout son texte est dans la vérité, rien n'est encore écrit pour les joueurs.
   const depuisFiche = !carte && defauts.ficheSource ? message("Tout le texte de la fiche est dans « Vérité du MJ ». Rien n'est écrit pour les joueurs : recopie dans « Ce que les joueurs lisent » seulement ce qu'ils peuvent savoir.", "info") : null;
+  const autres = carte && (carte.autres || []).length ? message(`Les joueurs liront aussi : ${carte.autres.join(", ")}. Ces parties ne changent pas ici.`, "info") : null;
   const fermer = feuille(carte ? "Modifier la carte" : "Nouvelle carte", [
-    depuisFiche,
+    depuisFiche, autres,
     h("div", { class: "rv-grille" }, champ("Type", selType), champ("Session", session, "Numéro, facultatif."), champ("Lieu", lieu, "Facultatif.")),
     champ("Titre", titre), champStatut, champQuantite,
     champ("Ce que les joueurs lisent", texte),

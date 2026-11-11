@@ -2,11 +2,11 @@
 // Les jauges des objets des joueurs y sont à côté des jauges libres (avancement d'un temple, menace…). On change une valeur d'un clic, on glisse une
 // jauge d'une section à l'autre, et l'écran annonce quand une valeur entre dans un nouveau palier. Tout reste au coffre : aucun joueur ne voit une jauge.
 // RÈGLE du moteur : jamais de innerHTML.
-import { deplacerJauge, ajouterSection, renommerSection, supprimerSection, decalerSection, palierDe, effetsDe } from "../../src/mj/jauges.js?v=0.26.0";
-import { h, icon, message, feuille, rendreMarkdown } from "./ui.js?v=0.26.0";
-import { executer, confirmer } from "./edition.js?v=0.26.0";
-import { cadreMJ } from "./ecrans_mj.js?v=0.26.0";
-import { annoncer } from "./ecrans_regie.js?v=0.26.0";
+import { deplacerJauge, ajouterSection, renommerSection, supprimerSection, decalerSection, palierDe, effetsDe } from "../../src/mj/jauges.js?v=0.26.1";
+import { h, icon, message, feuille, rendreMarkdown } from "./ui.js?v=0.26.1";
+import { executer, confirmer } from "./edition.js?v=0.26.1";
+import { cadreMJ } from "./ecrans_mj.js?v=0.26.1";
+import { annoncer } from "./ecrans_regie.js?v=0.26.1";
 
 const estAuth = e => e && (e.status === 401 || e.auth);
 const champ = (libelle, controle, aide) => h("label", { class: "jr-champ" }, h("span", null, libelle), controle, aide ? h("small", { class: "jr-aide" }, aide) : null);
@@ -40,7 +40,7 @@ function formulaireJauge(ctx, { jauge = null, sections = [], sectionIndex = 0, s
   const porteur = saisie({ maxlength: "60", value: jauge ? jauge.porteur : "", "aria-label": "Concerne", placeholder: "Un joueur, un lieu, une faction…" });
   const description = h("textarea", { class: "jr-saisie zone jg-zone", rows: "3", "aria-label": "Description", placeholder: "Ce que mesure cette jauge, ce qui la fait monter ou descendre." }, jauge ? jauge.description : "");
   const paliers = h("textarea", { class: "jr-saisie zone jg-zone", rows: "6", "aria-label": "Paliers", placeholder: "25-49 : Les murs montent\n- Les ouvriers arrivent par dizaines.\n50-99 : Le toit est posé\n100 : Temple activé\n- Le rituel peut commencer." },
-    jauge ? jauge.paliers.map(p => [`${p.de === p.a ? p.de : `${p.de}-${p.a}`} : ${p.nom}`, ...p.lignes.map(l => "- " + l)].join("\n")).join("\n") : "");
+    jauge ? jauge.textePaliers || "" : "");
   const sec = h("select", { class: "jr-select", "aria-label": "Section" }, sections.map((s, i) => h("option", { value: String(i), selected: i === sectionIndex }, s.titre)));
   const msg = h("div", { class: "jr-retour-action" });
   const ok = h("button", { class: "jr-bouton gros rv-reveler", type: "button" }, icon("check", 20), jauge ? "Enregistrer" : "Créer la jauge");
@@ -53,6 +53,9 @@ function formulaireJauge(ctx, { jauge = null, sections = [], sectionIndex = 0, s
     msg, ok].filter(Boolean), { large: true });
   ok.addEventListener("click", async () => {
     const champs = { nom: nom.value, max: max.value, unite: unite.value, porteur: porteur.value, description: description.value, paliers: paliers.value, actuelle: depart.value };
+    // en réglage, un texte non touché n'est pas réécrit
+    if (jauge && description.value.trim() === (jauge.description || "").trim()) delete champs.description;
+    if (jauge && paliers.value.trim() === (jauge.textePaliers || "").trim()) delete champs.paliers;
     const r = await executer(ctx, () => (jauge ? ctx.regie.modifierJauge(jauge, champs) : ctx.regie.creerJauge(champs, sections, Number(sec.value))), { zone: msg, boutons: [ok] });
     if (!r.ok) return;
     fermer(); surFini(r.r);

@@ -85,6 +85,13 @@ export function setSection(body, title, text) {
   return bloc ? body.trimEnd() + "\n\n" + bloc : body;
 }
 
+/**
+ * Les titres « # » et « ## » d'un texte saisi deviennent du gras (« ### » et plus restent tels quels). À appliquer à tout texte écrit DANS une section :
+ * un « ## Titre » ouvrirait sinon une nouvelle section, que la relecture séparerait du texte (et qui pourrait se retrouver publiée ou recopiée).
+ */
+export const sansGrandsTitres = texte => String(texte ?? "").replace(/\r\n/g, "\n").split("\n")
+  .map(l => { const m = l.match(/^\s{0,3}#{1,2}(?!#)(?:[ \t]+(.*?))?[ \t#]*$/); return m ? (m[1] ? `**${m[1]}**` : "") : l; }).join("\n");
+
 const aplati = v => String(v ?? "").replace(/\s*\n\s*/g, " ").trim();
 
 /** Remet un en-tête de champs devant un corps. L'ordre des champs est celui de l'objet. Un champ ne peut jamais contenir de saut de ligne. */

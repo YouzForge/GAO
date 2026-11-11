@@ -1,10 +1,10 @@
 // Fiches proposées à la création à partir d'un document (à l'import d'un fichier Word, ou depuis l'écran « Séance » pour un document déjà au coffre).
 // L'application propose, le MJ décide : chaque fiche a une case à cocher, un type et un nom modifiables. Ce qui existe déjà au coffre n'est jamais recréé.
 // RÈGLE du moteur : jamais de innerHTML.
-import { GENRES, detecterFiches, rapprocher } from "../../src/import/fiches.js?v=0.26.0";
-import { h, icon, message, feuille } from "./ui.js?v=0.26.0";
-import { executer } from "./edition.js?v=0.26.0";
-import { annoncer } from "./ecrans_regie.js?v=0.26.0";
+import { GENRES, detecterFiches, rapprocher } from "../../src/import/fiches.js?v=0.26.1";
+import { h, icon, message, feuille } from "./ui.js?v=0.26.1";
+import { executer } from "./edition.js?v=0.26.1";
+import { annoncer } from "./ecrans_regie.js?v=0.26.1";
 
 const ICONES = { pnj: "user", lieu: "pin", quete: "scroll", objet: "gem", faction: "flag", creature: "monster" };
 const pluriel = (n, un, plus) => `${n} ${n > 1 ? plus : un}`;

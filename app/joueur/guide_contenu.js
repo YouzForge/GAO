@@ -1,6 +1,6 @@
 // Contenu du guide du MJ (onglet « Guide »). FICHIER GÉNÉRÉ : ne pas le modifier à la main.
 // Source : le générateur du guide Word (guide_mj_generer.js), converti par guide_mj_donnees.js. Aucun contenu de jeu.
-export const VERSION_GUIDE = "0.26.0";
+export const VERSION_GUIDE = "0.26.1";
 export const GUIDE = [
  {
   "num": "",
@@ -425,7 +425,7 @@ export const GUIDE = [
     "t": "boite",
     "genre": "limite",
     "lignes": [
-     "Une rencontre publiée sous un autre nom (« Mira et Tom ») n'est pas reconnue comme la carte de la fiche « Mira » : vérifie dans Révélations → Rencontres avant de créer."
+     "Un élément déjà publié sous un nom qui commence pareil (« Une alliance avec Tom » pour la fiche « Une alliance avec Tom contre le culte ») est reconnu depuis la 0.26.1. Un nom tout à fait différent (« Mira et Tom » pour la fiche « Mira ») ne l'est pas : vérifie dans Révélations avant de créer, sinon les joueurs recevraient une seconde copie."
     ]
    },
    {
@@ -1515,6 +1515,10 @@ export const GUIDE = [
       "Une carte ou une fiche porte déjà ce titre. Change un mot du titre."
      ],
      [
+      "Le texte d'une carte apparaît en double",
+      "Défaut des versions 0.26.0 et antérieures, corrigé en 0.26.1. Ouvre la carte → **Modifier** → **Enregistrer** : les parties répétées sont retirées. Relis ensuite le texte, puis **Mettre à jour chez eux** si elle est déjà révélée."
+     ],
+     [
       "Un joueur ne voit pas ce que je viens de révéler",
       "Attends une demi-minute, application ouverte. Sinon : son nom en haut → Actualiser. Vérifie dans Révélations que sa case est cochée."
      ],
@@ -1587,7 +1591,7 @@ export const GUIDE = [
      ],
      [
       "2 bis. Cartes à révéler depuis les fiches",
-      "FAIT depuis la version 0.26 : « Créer la carte » sur une fiche (fiche 4) et case « Préparer aussi les cartes à révéler » à l'import.  →  Reste à prévoir : proposer un texte joueur sûr (aujourd'hui vide par sécurité), et reconnaître une rencontre publiée sous un autre nom."
+      "FAIT depuis la version 0.26 : « Créer la carte » sur une fiche (fiche 4) et case « Préparer aussi les cartes à révéler » à l'import.  →  Reste à prévoir : proposer un texte joueur sûr (aujourd'hui vide par sécurité), et reconnaître un élément publié sous un nom tout à fait différent."
      ],
      [
       "3. Des notes aux cartes",

@@ -9,7 +9,7 @@
 //
 // Principe des DÉCLENCHEMENTS (posé ici, appliqué plus tard) : quand une valeur entre dans un nouveau palier, `franchissement` le dit ; l'écran l'annonce au MJ.
 // Un palier pourra porter des effets lisibles par la machine (lignes « ⚙ … », voir `effetsDe`) que la régie proposera d'appliquer à la fiche d'un joueur.
-import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize } from "../md/doc.js?v=0.26.0";
+import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize, sansGrandsTitres } from "../md/doc.js?v=0.26.1";
 
 export const DOSSIER_JAUGES = "Jauges";
 export const FICHIER_RANGEMENT = "Rangement.md";
@@ -75,7 +75,9 @@ export function lireJauge(texte, fichier, genre) {
   return {
     genre, fichier, cle: cleJauge(genre, fichier), nom: t(m.nom) || t(m.titre) || d.title || humanize(fichier),
     actuelle, max, unite: t(m.unite), porteur: t(m.porteur).replace(/_/g, " "), section: t(m.section),
-    description: genre === "jauge" ? getSection(corps, "Description") : "", paliers, palier: palierDe(paliers, actuelle), suivi
+    description: genre === "jauge" ? getSection(corps, "Description") : "", paliers, palier: palierDe(paliers, actuelle), suivi,
+    // le texte des paliers TEL QU'IL EST ÉCRIT, pour le formulaire : le reconstruire depuis `paliers` perdait toute ligne qui n'est pas un palier
+    textePaliers: titrePaliers ? getSection(corps, titrePaliers) : ""
   };
 }
 
@@ -96,8 +98,11 @@ export function modifierJauge(texte, { nom, max, unite, porteur, description, pa
   if (nom !== undefined && t(nom)) { meta.nom = t(nom).replace(/\s*\n\s*/g, " "); body = /^\s*#\s+.+$/m.test(body) ? body.replace(/^(\s*)#\s+.+$/m, `$1# ${meta.nom}`) : body; }
   if (max !== undefined) { meta.max = Math.max(1, entier(max, meta.max || 100)); meta.actuelle = Math.max(0, Math.min(meta.max, entier(meta.actuelle, 0))); }
   for (const [k, v] of [["unite", unite], ["porteur", porteur]]) if (v !== undefined) { if (t(v)) meta[k] = t(v); else delete meta[k]; }
-  if (description !== undefined) body = setSection(body, "Description", t(description) ? "\n" + t(description) : "");
-  if (paliers !== undefined) body = setSection(body, SECTION_PALIERS, t(paliers) ? "\n" + t(paliers) : "");
+  if (description !== undefined) body = setSection(body, "Description", t(description) ? "\n" + t(sansGrandsTitres(description)) : "");
+  // les paliers s'écrivent dans la section où lireJauge les lit (la première dont le titre contient « paliers ») : écrire toujours dans
+  // « 🔴 Paliers de la jauge » laissait l'ancienne section en place, relue à la place de la nouvelle
+  const titrePaliers = (sections(body).find(s => /paliers/i.test(s.title)) || {}).title || SECTION_PALIERS;
+  if (paliers !== undefined) body = setSection(body, titrePaliers, t(paliers) ? "\n" + t(sansGrandsTitres(paliers)) : "");
   const ordre = {}; for (const k of Object.keys(meta)) if (k !== "visibilite") ordre[k] = meta[k]; ordre.visibilite = "secret";
   return serializeDoc(ordre, "\n" + body.replace(/^\n+/, ""));
 }

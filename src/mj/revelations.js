@@ -7,8 +7,8 @@
 //
 // Un élément déjà présent chez des joueurs mais sans carte au coffre (tout ce qui a été publié avant la régie) reste révélable aux autres :
 // on recopie alors la version d'un joueur qui l'a, sans ses sections personnelles (« Ma note », « Ce que j'ai fait »).
-import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize } from "../md/doc.js?v=0.26.0";
-import { masquerPourJoueur } from "../md/masque.js?v=0.26.0";
+import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize, sansGrandsTitres } from "../md/doc.js?v=0.26.1";
+import { masquerPourJoueur } from "../md/masque.js?v=0.26.1";
 
 export const DOSSIER_REVELATIONS = "04_Revelations";
 
@@ -28,6 +28,30 @@ const SECTION_COFFRE = /🔴|🔒|🎲|⚔️|🆕|secret mj|notes? mj|suivi mj|
 
 const t = v => (v == null ? "" : String(v).trim());
 const SANS_MD = n => String(n).replace(/\.md$/i, "");
+const rendreSections = l => l.map(s => (s.title ? `## ${s.title}\n${s.text}` : s.text)).join("\n");
+const estCoffre = s => !!(s.title && SECTION_COFFRE.test(s.title));
+/** Titre gardé en gras devant un texte du coffre qui n'est pas « la » vérité (« 🎲 Jets », « Notes MJ »…), pour qu'il ne se perde pas une fois fusionné. */
+const avecTitre = (s, motif) => (motif.test(s.title) ? s.text.trim() : `**${s.title}**\n\n${s.text.trim()}`);
+
+/**
+ * Sections répétées (même titre) : une section vide ou identique à une autre du même titre est retirée ; une vide est remplie par la suivante.
+ * Deux textes DIFFÉRENTS sous le même titre sont gardés tous les deux (rien n'est jamais perdu). Répare les cartes abîmées avant la 0.26.1,
+ * où le texte d'une carte se recopiait à chaque modification.
+ */
+export function sansDoublons(liste) {
+  const out = [], parTitre = new Map();
+  for (const s of liste) {
+    if (!s.title) { out.push(s); continue; }
+    const k = norm(s.title), txt = s.text.trim(), deja = parTitre.get(k);
+    if (!deja) { const e = { ...s }; parTitre.set(k, [e]); out.push(e); continue; }
+    if (!txt || deja.some(e => e.text.trim() === txt)) continue;
+    const vide = deja.find(e => !e.text.trim());
+    if (vide) { vide.text = s.text; continue; }
+    const e = { ...s }; deja.push(e); out.push(e);
+  }
+  return out;
+}
+const corpsSansDoublons = body => rendreSections(sansDoublons(sections(body)));
 
 /** Clé d'identité d'un fichier publié : la même chez tous les joueurs (nom de fichier, casse, accents et séparateurs ignorés). */
 export const cleFichier = nom => norm(SANS_MD(nom));
@@ -72,16 +96,20 @@ export function lireCarte(texte, fichier, type) {
   const d = parseDoc(texte);
   const m = d.meta;
   const titre = t(m.titre) || t(m.nom) || d.title || humanize(fichier);
-  const corps = d.body.replace(/^\s*#\s+.+\n?/, "");
+  const corps = corpsSansDoublons(d.body.replace(/^\s*#\s+.+\n?/, ""));
   const publiques = [], coffre = [];
-  for (const s of sections(corps)) (s.title && SECTION_COFFRE.test(s.title) ? coffre : publiques).push(s);
-  const rendre = l => l.map(s => (s.title ? `## ${s.title}\n${s.text}` : s.text)).join("\n").trim();
+  for (const s of sections(corps)) (estCoffre(s) ? coffre : publiques).push(s);
+  const rendre = l => rendreSections(l).trim();
   const ty = typeDe(type);
+  // les autres parties que les joueurs liront (hors section principale et sections personnelles) : le formulaire les signale, sans les modifier
+  const autres = ty ? publiques.filter(s => s.title && norm(s.title) !== norm(ty.section) && !ty.perso.includes(s.title) && s.text.trim()).map(s => s.title) : [];
   return {
-    texteMJ: ty ? getSection(corps, ty.section) : "",   // ce que le MJ écrit pour les joueurs (la section principale du type), pour le formulaire
+    // ce que le MJ écrit pour les joueurs : la section principale du type SEULEMENT (jamais tout le corps : le réenregistrer dans cette section
+    // recopiait les autres sections une fois de plus à chaque modification)
+    texteMJ: ty ? getSection(corps, ty.section) : "", autres,
     type, fichier, titre, pour: lirePour(m.pour), prevu: t(m.prevu), publieSous: t(m.publie_sous),
     session: m.session == null ? "" : t(m.session), lieu: t(m.lieu), statut: t(m.statut), ficheSource: t(m.fiche_source), quantite: m.quantite == null ? "" : t(m.quantite), portrait: t(m.portrait),
-    corpsJoueur: rendre(publiques), verite: coffre.map(s => s.text.trim()).filter(Boolean).join("\n\n"), texte: String(texte)
+    corpsJoueur: rendre(publiques), verite: coffre.filter(s => s.text.trim()).map(s => avecTitre(s, /v[ée]rit[ée]/i)).join("\n\n"), texte: String(texte)
   };
 }
 
@@ -95,7 +123,7 @@ export function texteJoueur(texteCarte, { date = "" } = {}) {
   for (const [k, v] of Object.entries(d.meta)) if (!CHAMPS_COFFRE.includes(k) && k !== "visibilite" && k !== "revele_le") meta[k] = v;
   meta.visibilite = "accessible";
   if (date) meta.revele_le = date;
-  const gardees = sections(d.body).filter(s => !(s.title && SECTION_COFFRE.test(s.title)));
+  const gardees = sansDoublons(sections(d.body)).filter(s => !estCoffre(s));
   const corps = gardees.map(s => (s.title ? `## ${s.title}\n${s.text}` : s.text)).join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
   const masque = masquerPourJoueur(corps);
   if (masque == null) return null;
@@ -142,9 +170,9 @@ export function texteCarte({ type, titre, texte = "", verite = "", pour = "tous"
   if (t(prevu)) meta.prevu = t(prevu);
   if (t(ficheSource)) meta.fiche_source = t(ficheSource);
   meta.visibilite = "secret";
-  let corps = `\n# ${t(titre)}\n\n## ${ty.section}\n\n${t(texte)}\n`;
+  let corps = `\n# ${t(titre)}\n\n## ${ty.section}\n\n${t(sansGrandsTitres(texte))}\n`;
   for (const p of ty.perso) corps += `\n## ${p}\n`;
-  if (t(verite)) corps += `\n## 🔴 Vérité MJ\n\n${t(verite)}\n`;
+  if (t(verite)) corps += `\n## 🔴 Vérité MJ\n\n${t(sansGrandsTitres(verite))}\n`;
   return serializeDoc(meta, corps);
 }
 
@@ -187,7 +215,11 @@ export function ligneDeFiche(lignes, genre, fichier, nom = "") {
   const src = `${genre}:${fichier}`;
   const k = norm(nom || humanize(fichier)), kf = norm(humanize(fichier));
   const memeNom = l => norm(l.titre) === k || norm(humanize(l.carte ? l.carte.fichier : l.fichier || "")) === kf || (l.fichier && norm(humanize(l.fichier)) === kf);
-  return (lignes || []).find(l => l.carte && l.carte.ficheSource === src) || (lignes || []).find(memeNom) || null;
+  // dernier recours : un élément publié sous un nom plus court ou plus long (« Une alliance avec Tom et Mira » pour la fiche « Une alliance avec Tom
+  // et Mira contre le culte »), si le nom le plus court a au moins trois mots : sinon la carte créée ferait révéler une seconde copie aux joueurs
+  const debut = (a, b) => { const [c, l] = a.length <= b.length ? [a, b] : [b, a]; return c.split("_").length >= 3 && l.startsWith(c + "_"); };
+  const proche = l => !(l.carte && l.carte.ficheSource && l.carte.ficheSource !== src) && [l.titre, l.fichier ? humanize(l.fichier) : ""].filter(Boolean).map(norm).some(n => debut(n, k) || debut(n, kf));
+  return (lignes || []).find(l => l.carte && l.carte.ficheSource === src) || (lignes || []).find(memeNom) || (lignes || []).find(proche) || null;
 }
 
 /** Remplace le texte joueur et la vérité d'une carte existante en gardant le reste de l'en-tête. */
@@ -197,7 +229,7 @@ export function modifierCarte(texteAncien, { titre, texte, verite, pour, session
   const d = parseDoc(texteAncien);
   const meta = { ...d.meta };
   const poser = (k, v) => { if (v === undefined) return; if (t(v)) meta[k] = t(v); else delete meta[k]; };
-  let body = d.body;
+  let body = corpsSansDoublons(d.body);   // répare au passage une carte abîmée (sections recopiées avant la 0.26.1)
   if (titre !== undefined && t(titre)) {
     meta[meta.titre == null && meta.nom != null ? "nom" : "titre"] = t(titre);
     body = /^\s*#\s+.+$/m.test(body) ? body.replace(/^(\s*)#\s+.+$/m, `$1# ${t(titre)}`) : `\n# ${t(titre)}\n${body}`;
@@ -207,11 +239,19 @@ export function modifierCarte(texteAncien, { titre, texte, verite, pour, session
   if (type === "objet" && quantite !== undefined && t(quantite)) meta.quantite = Math.max(1, Math.trunc(Number(quantite)) || 1);
   if (pour !== undefined) meta.pour = Array.isArray(pour) ? (pour.length ? pour.join(", ") : "tous") : "tous";
   // seules la section du MJ et la vérité changent : les autres sections (« Savoirs liés », sections personnelles…) restent telles quelles
-  if (texte !== undefined) body = setSection(body, ty.section, t(texte) ? "\n" + t(texte) : "");
+  // un « ## » tapé dans le texte deviendrait une section à part : il est mis en gras. Une section principale VIDE est gardée (titre seul),
+  // pour que la carte garde sa forme et que la relecture retrouve toujours la même section.
+  if (texte !== undefined) {
+    const neuf = t(sansGrandsTitres(texte));
+    body = neuf ? setSection(body, ty.section, "\n" + neuf) : rendreSections(sections(body).map(s => (s.title === ty.section ? { ...s, text: "\n" } : s)));
+  }
+  // la vérité affichée réunit TOUTES les sections du coffre (lireCarte) : on les remplace donc toutes, sinon celles qui ne s'appellent pas
+  // « Vérité » se recopiaient dans la vérité à chaque modification
   if (verite !== undefined) {
-    const autres = sections(body).filter(s => !(s.title && /v[ée]rit[ée]/i.test(s.title)));
-    body = autres.map(s => (s.title ? `## ${s.title}\n${s.text}` : s.text)).join("\n").trimEnd() + "\n";
-    if (t(verite)) body += `\n## 🔴 Vérité MJ\n\n${t(verite)}\n`;
+    const autres = sections(body).filter(s => !estCoffre(s));
+    body = rendreSections(autres).trimEnd() + "\n";
+    const v = t(sansGrandsTitres(verite));
+    if (v) body += `\n## 🔴 Vérité MJ\n\n${v}\n`;
   }
   const ordre = {}; for (const k of Object.keys(meta)) if (k !== "visibilite") ordre[k] = meta[k]; ordre.visibilite = "secret";
   return serializeDoc(ordre, "\n" + body.replace(/^\n+/, "").replace(/\n{3,}/g, "\n\n"));
@@ -303,8 +343,8 @@ export function texteResume({ titre, session = "", texte = "", notes = "" }) {
   const meta = { titre: t(titre) };
   if (t(session)) meta.session = t(session);
   meta.visibilite = "secret";
-  let corps = `\n# ${t(titre)}\n\n## ${SECTION_RESUME}\n\n${t(texte)}\n`;
-  if (t(notes)) corps += `\n## 🔴 Notes MJ\n\n${t(notes)}\n`;
+  let corps = `\n# ${t(titre)}\n\n## ${SECTION_RESUME}\n\n${t(sansGrandsTitres(texte))}\n`;
+  if (t(notes)) corps += `\n## 🔴 Notes MJ\n\n${t(sansGrandsTitres(notes))}\n`;
   return serializeDoc(meta, corps);
 }
 
@@ -313,12 +353,14 @@ export function lireResume(contenu, fichier) {
   const d = parseDoc(contenu);
   const corps = d.body.replace(/^\s*#\s+.+\n?/, "");
   const publiques = [], coffre = [];
-  for (const s of sections(corps)) (s.title && SECTION_COFFRE.test(s.title) ? coffre : publiques).push(s);
-  const principal = getSection(corps, SECTION_RESUME);
+  for (const s of sansDoublons(sections(corps))) (estCoffre(s) ? coffre : publiques).push(s);
+  // TOUT ce que les joueurs lisent, et pas seulement la section principale : l'enregistrement réécrit le compte rendu entier, donc une partie
+  // non montrée dans le formulaire serait perdue. Les autres titres passent en gras, dans le même texte.
+  const motif = new RegExp(`^${SECTION_RESUME}$`, "i");
   return {
     fichier, titre: t(d.meta.titre) || d.title || humanize(fichier), session: d.meta.session == null ? "" : t(d.meta.session),
-    texte: principal || publiques.map(s => (s.title ? `## ${s.title}\n${s.text}` : s.text)).join("\n").trim(),
-    notes: coffre.map(s => s.text.trim()).filter(Boolean).join("\n\n")
+    texte: publiques.filter(s => s.text.trim()).map(s => (s.title ? avecTitre(s, motif) : s.text.trim())).join("\n\n"),
+    notes: coffre.filter(s => s.text.trim()).map(s => avecTitre(s, /notes? mj/i)).join("\n\n")
   };
 }
 

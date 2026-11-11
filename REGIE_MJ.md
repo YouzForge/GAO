@@ -1,4 +1,4 @@
-# La régie du MJ (version 0.26.0)
+# La régie du MJ (version 0.26.1)
 
 Ce document décrit les écrans du MJ ajoutés à l'application : ce qu'ils font, où ils écrivent, et ce qui reste à vérifier.
 Il ne contient aucun contenu de jeu.
@@ -18,6 +18,7 @@ Il ne contient aucun contenu de jeu.
 2. **Révéler** (pendant ou après la séance) : un clic sur *Révéler* (ou sur une case de la matrice). Le fichier est écrit dans le dossier de chaque joueur choisi ; son application ouverte le montre toute seule en moins d'une demi-minute (elle vérifie toutes les 20 secondes), en tête de liste, avec la pastille **Nouveau**.
 3. **Improviser** : *Séance* → *Révéler* → *Nouvelle révélation* → *Enregistrer et révéler maintenant*.
 4. **Corriger** : ouvrir la carte → *Modifier*, puis *Mettre à jour chez eux*. Ce que le joueur a écrit lui-même (sa note sur une rencontre, « Ce que j'ai fait » d'une quête) est gardé.
+   *Modifier* ne touche que la partie principale de la carte (« Ce que je sais », « Présentation »…) et sa vérité. Les autres parties lues par les joueurs (« Savoirs liés »…) sont signalées dans le formulaire et ne changent pas. Un titre # ou ## tapé dans un texte est mis en gras : il n'ouvre jamais une nouvelle partie. Avant la 0.26.1, une carte dont la partie principale était vide recopiait à chaque *Modifier* tout ce que lisent les joueurs. Le premier enregistrement en 0.26.1 retire les parties répétées (deux textes différents sous le même titre restent tous les deux).
 5. **Annuler** : le bandeau qui suit une révélation propose *Annuler* ; plus tard, un clic sur la case cochée retire la carte à ce joueur.
 
 Une carte destinée à un seul joueur (quête personnelle, objet clé, part de butin) se prépare en ne cochant que lui dans *Destinataires prévus*.
@@ -30,7 +31,7 @@ Ce qui a été publié avant la régie n'a pas de carte au coffre : ces lignes r
 
 **Sécurité par défaut** : tout le texte de la fiche (ses champs et ses rubriques non vides) va dans *Vérité du MJ* ; *Ce que les joueurs lisent* reste **vide**. Une carte enregistrée sans rien toucher ne laisse donc partir que son titre. C'est le MJ qui recopie ce que les joueurs peuvent savoir. Les titres de la fiche sont mis en gras dans la vérité (un titre `##` y ouvrirait une section publiée).
 
-La carte garde le lien vers sa fiche (`fiche_source`, champ du coffre jamais publié). Si une carte existe déjà pour la fiche (par ce lien, ou une carte ou un élément publié du même nom), le bouton devient **Ouvrir la carte**, avec son état : jamais de doublon.
+La carte garde le lien vers sa fiche (`fiche_source`, champ du coffre jamais publié). Si une carte existe déjà pour la fiche (par ce lien, ou une carte ou un élément publié du même nom), le bouton devient **Ouvrir la carte**, avec son état : jamais de doublon. Depuis la 0.26.1, un élément publié sous un nom qui commence pareil est aussi reconnu (« Une alliance avec Tom » pour la fiche « Une alliance avec Tom contre le culte »), si le nom le plus court a au moins trois mots.
 
 ## Les jauges
 
@@ -39,7 +40,7 @@ Onglet **Jauges** : toutes les jauges de la campagne, rangées en sections (au d
 - **jauge d'objet** : celle d'un objet de l'univers, écrite dans sa fiche (`jauge_actuelle`, `jauge_max`, `porteur`) ; c'est la même que dans l'outil *Joueurs* de l'écran *Séance* ;
 - **jauge libre** : créée par le MJ, un fichier par jauge dans `MJ/02_Campagne/Jauges` (`nom`, `actuelle`, `max`, `unite`, `porteur`).
 
-Les **paliers** sont lus dans la fiche, section « 🔴 Paliers de la jauge » : une ligne `**10–29 : Nom**` (ou `10-29 : Nom`, ou `100 : Nom`) par palier, ses effets sur les lignes suivantes. Chaque changement de valeur est daté dans le suivi de la fiche (section « Suivi MJ » d'un objet, « Suivi » d'une jauge libre). Le rangement (sections et ordre) est dans `MJ/02_Campagne/Jauges/Rangement.md`.
+Les **paliers** sont lus dans la fiche, section « 🔴 Paliers de la jauge » : une ligne `**10–29 : Nom**` (ou `10-29 : Nom`, ou `100 : Nom`) par palier, ses effets sur les lignes suivantes. Chaque changement de valeur est daté dans le suivi de la fiche (section « Suivi MJ » d'un objet, « Suivi » d'une jauge libre). Le rangement (sections et ordre) est dans `MJ/02_Campagne/Jauges/Rangement.md`. *Régler* montre le texte des paliers tel qu'il est écrit (une phrase d'introduction ou une ligne qui n'est pas un palier n'est plus perdue) et l'écrit dans la section où il est lu, même si elle s'appelle autrement ; une description ou des paliers non touchés ne sont pas réécrits (0.26.1).
 
 **Déclenchements.** Quand une valeur entre dans un nouveau palier, l'écran ouvre « Palier atteint » avec ses effets. Les effets ne sont pas encore appliqués aux fiches des joueurs. Le principe est posé dans `src/mj/jauges.js` : une ligne d'effet `⚙ Cible | Ce qui change | +10` dans un palier est lue par `effetsDe` ; il reste à écrire l'application de ces effets à la fiche du joueur (et leur retrait quand la jauge redescend).
 
@@ -73,7 +74,7 @@ Onglet **Guide**, tout à droite : le mode d'emploi en fiches pratiques, avec un
 - **Visible** : le fichier est dans la table (`Table/Resumes_de_session`) ; tous les joueurs le lisent dans leur application (onglet *Savoirs*, puis *Journal*).
 - **Masqué** : le fichier est retiré de la table ; son texte reste au coffre (`MJ/04_Revelations/Resumes`), d'où il peut être remontré, corrigé ou supprimé.
 
-*Nouveau compte rendu* en écrit un (gardé masqué, ou montré tout de suite). *Corriger* modifie le texte ; si le compte rendu est visible, les joueurs voient la correction. Les *Notes du MJ* d'un compte rendu ne quittent jamais le coffre.
+*Nouveau compte rendu* en écrit un (gardé masqué, ou montré tout de suite). *Corriger* modifie le texte ; si le compte rendu est visible, les joueurs voient la correction. Le formulaire montre tout ce que lisent les joueurs, autres parties comprises (leurs titres en gras) : rien n'est perdu à l'enregistrement (0.26.1). Les *Notes du MJ* d'un compte rendu ne quittent jamais le coffre.
 Il n'y a pas de visibilité par joueur : la table est commune, un compte rendu est visible pour tous ou pour personne.
 ## Où tout est écrit (OneDrive du MJ)
 
