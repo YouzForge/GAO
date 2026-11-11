@@ -1,16 +1,17 @@
 // Écran « Séance » du MJ : la table de jeu. Le document de la prochaine session au centre (scènes, blocs colorés : à lire, dialogue, note MJ, secret, combat),
 // le sommaire des scènes à gauche, et à droite un panneau d'outils : fiche MJ, secrets, cartes à révéler, tuiles (PNJ, lieux, quêtes cités), joueurs et jauges, notes.
 // Pensé pour l'ordinateur (trois colonnes) ; sur téléphone tout s'empile. RÈGLE du moteur : jamais de innerHTML.
-import { parseDoc } from "../../src/md/doc.js?v=0.24.1";
-import { rangerParcours, deplacer, parcoursDepuisRangement } from "../../src/mj/parcours.js?v=0.24.1";
-import { decouper, ficheMJ, blocsDe, entitesCitees } from "../../src/mj/seance.js?v=0.24.1";
-import { TYPES, typeDe } from "../../src/mj/revelations.js?v=0.24.1";
-import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.24.1";
-import { executer, confirmer } from "./edition.js?v=0.24.1";
-import { cadreMJ } from "./ecrans_mj.js?v=0.24.1";
-import { formulaireCarte, ouvrirCarte, annoncer } from "./ecrans_regie.js?v=0.24.1";
-import { annoncerPalier } from "./ecrans_jauges.js?v=0.24.1";
-import { palierDe } from "../../src/mj/jauges.js?v=0.24.1";
+import { parseDoc } from "../../src/md/doc.js?v=0.25.0";
+import { rangerParcours, deplacer, parcoursDepuisRangement } from "../../src/mj/parcours.js?v=0.25.0";
+import { decouper, ficheMJ, blocsDe, entitesCitees } from "../../src/mj/seance.js?v=0.25.0";
+import { TYPES, typeDe } from "../../src/mj/revelations.js?v=0.25.0";
+import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.25.0";
+import { executer, confirmer } from "./edition.js?v=0.25.0";
+import { cadreMJ } from "./ecrans_mj.js?v=0.25.0";
+import { formulaireCarte, ouvrirCarte, annoncer } from "./ecrans_regie.js?v=0.25.0";
+import { annoncerPalier } from "./ecrans_jauges.js?v=0.25.0";
+import { fenetreFiches } from "./ecrans_fiches.js?v=0.25.0";
+import { palierDe } from "../../src/mj/jauges.js?v=0.25.0";
 
 const enc = encodeURIComponent;
 const estAuth = e => e && (e.status === 401 || e.auth);
@@ -139,9 +140,11 @@ export async function ecranSeanceMJ(ctx, genre = null, fichier = null) {
         h("a", { class: "jr-retour", href: "#/mj/revelations" }, "Toutes les révélations", icon("next", 16))];
     },
     tuiles() {
-      if (!cites.length) return [message("Aucune fiche du coffre n'est citée par son nom dans ce document.", "info")];
+      // Les fiches que ce document permet de créer (personnages, quêtes, objets… repérés par sa structure) : le MJ choisit lesquelles ajouter au coffre.
+      const manquantes = ecrire ? h("button", { class: "jr-bouton", type: "button", onclick: () => fenetreFiches(ctx, { markdown: d.body, titre: doc.titre, source: String(d.meta.source_word || doc.fichier), lieu: doc.genre === "lieu" ? doc.titre : doc.lieu || "", surFini: () => { location.reload(); } }) }, icon("plus", 18), "Créer les fiches de ce document") : null;
+      if (!cites.length) return [manquantes, message("Aucune fiche du coffre n'est citée par son nom dans ce document.", "info")];
       const groupes = Object.keys(NOM_GENRE).map(g => [g, cites.filter(e => e.genre === g)]).filter(([, l]) => l.length);
-      return groupes.map(([g, l]) => h("section", { class: "se-groupe" }, h("h4", { class: "se-titre-outil" }, icon(ICONE_GENRE[g], 15), `${NOM_GENRE[g]} (${l.length})`), h("div", { class: "se-tuiles" }, l.map(e => tuile(ctx, e, entites)))));
+      return [manquantes, ...groupes.map(([g, l]) => h("section", { class: "se-groupe" }, h("h4", { class: "se-titre-outil" }, icon(ICONE_GENRE[g], 15), `${NOM_GENRE[g]} (${l.length})`), h("div", { class: "se-tuiles" }, l.map(e => tuile(ctx, e, entites)))))];
     },
     async joueurs() {
       const [r, jauges] = await Promise.all([ctx.donnees.joueurs(), ctx.regie.jauges().catch(e => { if (estAuth(e)) throw e; return []; })]);

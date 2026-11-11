@@ -4,17 +4,18 @@
 //
 // RÈGLE DE SÉCURITÉ : le seul chemin par lequel un texte du coffre arrive dans le dossier d'un joueur est `texteJoueur` / `copiePourAutreJoueur` / `fusionner`
 // (src/mj/revelations.js), qui retirent les sections et les champs du coffre et refusent de publier si une marque de secret subsiste.
-import { parseDoc, humanize, norm } from "../md/doc.js?v=0.24.1";
-import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.24.1";
-import { AccesRefuse } from "../depot/depot.js?v=0.24.1";
-import { EcritureInvalide } from "../ecriture/fiche.js?v=0.24.1";
-import { pool } from "../graph/pool.js?v=0.24.1";
+import { parseDoc, humanize, norm } from "../md/doc.js?v=0.25.0";
+import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.25.0";
+import { AccesRefuse } from "../depot/depot.js?v=0.25.0";
+import { EcritureInvalide } from "../ecriture/fiche.js?v=0.25.0";
+import { pool } from "../graph/pool.js?v=0.25.0";
 import { TYPES, typeDe, DOSSIER_REVELATIONS, lireCarte, texteJoueur, copiePourAutreJoueur, fusionner, texteCarte, modifierCarte, poserChamp, nomPublie, nomDepuisTitre,
-  construireCatalogue, plusGrandNumero, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal } from "./revelations.js?v=0.24.1";
-import { texteDocumentImporte } from "../import/docx.js?v=0.24.1";
-import { lireParcours, ecrireParcours } from "./parcours.js?v=0.24.1";
-import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.24.1";
-import { DOSSIER_JAUGES, FICHIER_RANGEMENT, lireJauge, texteJauge, modifierJauge, changerValeur, palierDe, franchissement, lireRangement, ecrireRangement, rangerJauges, rangementDepuis } from "./jauges.js?v=0.24.1";
+  construireCatalogue, plusGrandNumero, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal } from "./revelations.js?v=0.25.0";
+import { texteDocumentImporte } from "../import/docx.js?v=0.25.0";
+import { texteFiche } from "../import/fiches.js?v=0.25.0";
+import { lireParcours, ecrireParcours } from "./parcours.js?v=0.25.0";
+import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.25.0";
+import { DOSSIER_JAUGES, FICHIER_RANGEMENT, lireJauge, texteJauge, modifierJauge, changerValeur, palierDe, franchissement, lireRangement, ecrireRangement, rangerJauges, rangementDepuis } from "./jauges.js?v=0.25.0";
 
 const MARKDOWN = /^(?!00_|LISEZMOI).+\.md$/i;
 const NOM_DOSSIER = /^(?![._])[^/\\:?*"<>|\u0000-\u001f]{1,80}$/;
@@ -423,6 +424,29 @@ export function creerRegie({ profil, depot, maintenant = () => new Date() }) {
       await api.montrerCompteRendu(l);
       return { fichier: l.fichier };
     },
+    /** Noms de fichiers des fiches du coffre, par genre : pour dire ce qui existe déjà quand un document propose des fiches. → { pnj:[…], lieu:[…], … } */
+    async fichesExistantes() {
+      const out = {};
+      await pool(GENRES_TUILES.filter(dossierCol), async id => { try { out[id] = nomsMd(await lister(dossierCol(id))); } catch (e) { if (estAuth(e)) throw e; out[id] = []; } }, 4);
+      return out;
+    },
+    /**
+     * Crée dans le coffre les fiches repérées dans un document et cochées par le MJ. Jamais d'écrasement : une fiche dont le nom est pris est sautée.
+     * `liste` : candidats de `detecterFiches` (nom et genre éventuellement corrigés). → { creees:[{genre, fichier, nom}], deja:[noms] }
+     */
+    async creerFiches(liste, { source = "", lieu = "" } = {}) {
+      const creees = [], deja = [];
+      const date = jourDe(maintenant());
+      for (const c of liste || []) {
+        const d = dossierCol(c.genre);
+        if (!d || !GENRES_TUILES.includes(c.genre) || !String(c.nom || "").trim()) continue;
+        const nom = `${nomDepuisTitre(c.nom)}.md`;
+        try { await depot.creer(`${d}/${nom}`, texteFiche(c, { source, lieu, date })); creees.push({ genre: c.genre, fichier: nom, nom: c.nom }); }
+        catch (e) { if (e instanceof FicheExiste) deja.push(c.nom); else throw e; }
+      }
+      return { creees, deja };
+    },
+
     /**
      * Range dans le coffre un document converti depuis Word (session ou lieu). Jamais d'écrasement : un nom pris reçoit un suffixe.
      * Une session reçoit le numéro d'ordre suivant (« 19_Titre.md ») ; un lieu porte son nom. → { genre, fichier }

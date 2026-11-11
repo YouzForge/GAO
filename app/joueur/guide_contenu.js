@@ -1,6 +1,6 @@
 // Contenu du guide du MJ (onglet « Guide »). FICHIER GÉNÉRÉ : ne pas le modifier à la main.
 // Source : le générateur du guide Word (guide_mj_generer.js), converti par guide_mj_donnees.js. Aucun contenu de jeu.
-export const VERSION_GUIDE = "0.24.1";
+export const VERSION_GUIDE = "0.25.0";
 export const GUIDE = [
  {
   "num": "",
@@ -251,17 +251,49 @@ export const GUIDE = [
    },
    {
     "t": "h3",
-    "x": "Et pour aller plus loin : les fiches et les cartes"
+    "x": "Les fiches que le document permet de créer"
    },
    {
     "t": "p",
-    "x": "L'import range le document. Il ne crée ni les fiches des PNJ (pour les tuiles) ni les cartes à révéler : tu peux les faire à la main (fiches 4 et 6) ou les demander à Claude."
+    "x": "Dans la même fenêtre d'import, la liste **Fiches repérées** propose de créer en même temps les fiches que contient ton document : personnages, quêtes, objets, lieux, factions, créatures."
+   },
+   {
+    "t": "etapes",
+    "items": [
+     "Chaque ligne a une **case à cocher**, un **nom** et un **type** que tu peux corriger.",
+     "« **déjà au coffre** » : la fiche existe, elle ne sera pas recréée. « **nom voisin au coffre** » : une fiche au nom proche existe (décochée par prudence : vérifie que ce n'est pas la même). « **type à vérifier** » : l'application n'a pas su dire si c'est un objet ou un personnage.",
+     "Coche ce que tu veux créer. Le bouton devient **Importer le document et créer N fiches**."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "resultat",
+    "lignes": [
+     "Les fiches sont créées dans ton coffre, au format de leur collection : les statistiques dans « Statistiques », les blocs rouges dans « Secret MJ », le reste du passage dans « Fiche complète (source) ». Les personnages deviennent tout de suite des tuiles dans l'écran Séance."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "astuce",
+    "lignes": [
+     "Ce que l'application reconnaît : les sous-titres « Nom — rôle » d'une partie dont le titre parle de PNJ, de personnages, d'alliés, d'antagonistes, de lieux, de factions ou de bestiaire ; les blocs « Quête débloquée » ; les fiches 📦.",
+     "Pour un document déjà au coffre (importé avant, ou par Claude) : écran **Séance** → outil **Tuiles** → **Créer les fiches de ce document**. C'est la même liste.",
+     "Sur les 45 documents de ton atelier, cette méthode retrouve 83 de tes 110 personnages et 11 de tes 12 créatures."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "limite",
+    "lignes": [
+     "L'application lit la **structure** du document, pas son sens : un personnage décrit au fil d'un paragraphe, sans sous-titre ni fiche, n'est pas repéré. Crée-le à la main (fiche 6).",
+     "Les **cartes à révéler** (ce que les joueurs liront) ne sont pas créées par l'import : c'est un texte à écrire du point de vue des personnages, sans secret. Fais-les à la main (fiche 4) ou demande-les à Claude."
+    ]
    },
    {
     "t": "boite",
     "genre": "cowork",
     "lignes": [
-     "Le document de session « … » est importé dans le coffre. Crée les fiches des PNJ, lieux et quêtes nouveaux qu'il cite, et propose-moi les cartes à révéler dans MJ/04_Revelations avec « prevu » sur ce document (R23, R24). Rien chez les joueurs."
+     "Le document « … » est importé dans le coffre avec ses fiches. Propose-moi les cartes à révéler dans MJ/04_Revelations avec « prevu » sur ce document (R23). Rien chez les joueurs."
     ]
    },
    {
@@ -271,46 +303,27 @@ export const GUIDE = [
    },
    {
     "t": "p",
-    "x": "Deux niveaux, selon le temps que tu as. Le premier suffit pour jouer ; le second rend l'écran Séance vraiment confortable."
+    "x": "Tout se fait dans la fenêtre d'import : le lieu, et les fiches qu'il contient."
    },
    {
-    "t": "h3",
-    "x": "Niveau 1 : le lieu seul (rapide)"
+    "t": "ou",
+    "x": "Onglet **Parcours** → **Importer un document Word**"
    },
    {
     "t": "etapes",
     "items": [
-     "Onglet **Parcours** → **Importer un document Word** → choisis ton fichier (voir fiche 2).",
-     "Dans la fenêtre, choisis **Document de lieu**, vérifie le titre (c'est le nom du lieu), le type (ville, donjon…) et la région. **Importer dans le coffre**.",
-     "Le lieu apparaît dans le **Parcours** avec l'icône d'épingle, dans la colonne choisie.",
-     "Clique-le : tu le lis en entier. S'il est dans « Prochaine session », il s'ouvre dans l'écran **Séance** avec ses blocs colorés."
+     "Choisis ton fichier. Dans la fenêtre, choisis **Document de lieu**, vérifie le titre (c'est le nom du lieu), le type (ville, donjon…) et la région.",
+     "Regarde la liste **Fiches repérées** : les **personnages** et les **quêtes** nouveaux sont déjà cochés ; ceux qui existent au coffre sont marqués et ne seront pas recréés.",
+     "Les **lieux** (auberges, bâtiments, quartiers) sont proposés **décochés** : chaque lieu coché devient un document de ton Parcours. Ne coche que ceux qui méritent leur propre page.",
+     "Corrige un nom ou un type si besoin, puis **Importer le document et créer N fiches**.",
+     "Tu arrives dans l'écran **Séance** du lieu : l'outil **Tuiles** montre ses personnages et ses quêtes, un clic ouvre leur fiche."
     ]
    },
    {
     "t": "boite",
     "genre": "resultat",
     "lignes": [
-     "Tu peux jouer le lieu. Mais ses PNJ et ses quêtes ne sont que du texte dans le document : ils n'ont pas de tuile, pas de fiche à part."
-    ]
-   },
-   {
-    "t": "h3",
-    "x": "Niveau 2 : le lieu découpé (recommandé)"
-   },
-   {
-    "t": "etapes",
-    "items": [
-     "Demande à Claude de **découper** le fichier : le lieu dans `Lieux`, **une fiche par PNJ** dans `MJ / 01_Univers / PNJ`, **une fiche par quête** dans `MJ / 02_Campagne / Quetes`, une fiche par faction s'il y en a.",
-     "Demande-lui en même temps les **cartes à révéler** de ce lieu (rencontres, quêtes, savoirs), avec « prevu » sur le document du lieu.",
-     "Dans l'application : le lieu est dans le Parcours ; dans l'écran Séance, l'outil **Tuiles** montre tous les PNJ et quêtes cités, et l'outil **Révéler** montre les cartes qui attendent."
-    ]
-   },
-   {
-    "t": "boite",
-    "genre": "cowork",
-    "lignes": [
-     "Voici le document complet du lieu « … ». Découpe-le pour l'application selon R24 : la fiche du lieu, une fiche par PNJ, une fiche par quête et par faction.",
-     "Prépare aussi les cartes à révéler (rencontres, quêtes, savoirs) dans MJ/04_Revelations, avec « prevu » sur le fichier du lieu. Rien chez les joueurs."
+     "Le lieu est dans ton Parcours, ses personnages et ses quêtes ont leur fiche dans le coffre. Rien n'est chez les joueurs."
     ]
    },
    {
@@ -318,14 +331,16 @@ export const GUIDE = [
     "genre": "astuce",
     "lignes": [
      "Une tuile apparaît quand le nom de la fiche est écrit tel quel dans le document. Si ton PNJ s'appelle « Sir Bran » dans la fiche, écris « Sir Bran » (ou « Bran ») dans le texte.",
-     "Tu peux aussi créer une fiche de PNJ à la main : Menu ⋯ → Listes du coffre → PNJ → + Nouvelle fiche."
+     "Pour que tout soit repéré, écris tes personnages sous une partie « PNJ » (ou « Personnages »), chacun avec un sous-titre « Nom — rôle » : c'est déjà ta façon de faire dans tes wikis.",
+     "Tu peux aussi créer ou compléter une fiche à la main : Menu ⋯ → Listes du coffre."
     ]
    },
    {
     "t": "boite",
     "genre": "limite",
     "lignes": [
-     "L'application ne découpe pas elle-même un document en fiches : c'est un travail de Claude. Voir partie VIII, point 2."
+     "Une fiche créée par l'import contient le passage du document, pas un résumé : les rubriques « Apparence », « Personnalité », « Motivations » restent vides. Complète-les si tu veux, ou laisse : la fiche est lisible telle quelle.",
+     "Les cartes à révéler de ce lieu (rencontres, quêtes vues par les joueurs) restent à écrire : fiche 4, ou Claude."
     ]
    },
    {
@@ -1522,8 +1537,8 @@ export const GUIDE = [
       "FAIT depuis la version 0.23 (fiche 2).  →  Reste à prévoir : reprendre les images du document, et remplacer un document déjà importé au lieu d'en créer un second."
      ],
      [
-      "2. Découper un lieu en fiches",
-      "Aujourd'hui : découpage par Claude (fiche 3).  →  À prévoir : dans l'écran Séance, un bouton « Créer la fiche » sur un nom de PNJ ou de quête repéré dans le document."
+      "2. Découper un document en fiches",
+      "FAIT depuis la version 0.25 : l'import propose les personnages, quêtes, objets, lieux, factions et créatures du document (fiches 2 et 3).  →  Reste à prévoir : repérer un personnage décrit sans sous-titre, remplir les rubriques de la fiche, et préparer les cartes à révéler."
      ],
      [
       "3. Des notes aux cartes",
@@ -1617,8 +1632,12 @@ export const GUIDE = [
     ],
     "lignes": [
      [
-      "Importer un document Word",
+      "Importer un document Word et ses fiches",
       "Parcours → Importer un document Word"
+     ],
+     [
+      "Créer les fiches d'un document déjà au coffre",
+      "Séance → Tuiles → Créer les fiches de ce document"
      ],
      [
       "Choisir ce que je joue",

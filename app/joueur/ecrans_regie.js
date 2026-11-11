@@ -2,11 +2,11 @@
 // Une ligne par carte, une colonne par joueur : un clic sur une case révèle (ou retire, après confirmation) ; « À tous » révèle aux joueurs prévus.
 // Une carte s'ouvre sur ce que les joueurs liront et, à part, sur ce qui ne sort jamais du coffre.
 // RÈGLE du moteur : jamais de innerHTML ; tout est construit avec le DOM. Rien ne s'écrit si l'interrupteur `ecriture` du JDR est fermé.
-import { parseDoc } from "../../src/md/doc.js?v=0.24.1";
-import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.24.1";
-import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.24.1";
-import { executer, confirmer } from "./edition.js?v=0.24.1";
-import { cadreMJ } from "./ecrans_mj.js?v=0.24.1";
+import { parseDoc } from "../../src/md/doc.js?v=0.25.0";
+import { TYPES, typeDe, FILTRES, filtrerCatalogue, compterCatalogue } from "../../src/mj/revelations.js?v=0.25.0";
+import { h, icon, message, rendreMarkdown, feuille } from "./ui.js?v=0.25.0";
+import { executer, confirmer } from "./edition.js?v=0.25.0";
+import { cadreMJ } from "./ecrans_mj.js?v=0.25.0";
 
 const enc = encodeURIComponent;
 const nomJoueur = p => String(p).replace(/_/g, " ");

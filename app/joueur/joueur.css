@@ -713,3 +713,23 @@ body.joueur .jr-saisie.jg-zone{min-height:84px}
 .jg-carte{min-width:0;overflow:hidden}
 .jg-carte .se-jauge-pas{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-flow:row}
 .se-jauge .se-jauge-pas{grid-template-columns:repeat(5,minmax(0,1fr));grid-auto-flow:row}
+
+/* ---- Fiches proposées à la création (import d'un document, écran Séance) ---- */
+.fi-outils{display:flex;gap:8px}
+.fi-liste{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:44dvh;overflow:auto}
+.fi-ligne{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:12px;border:1px solid var(--trait);background:var(--creux)}
+.fi-ligne.off{opacity:.62}
+.fi-ligne > input[type=checkbox]{flex:none;width:22px;height:22px;margin-top:9px;accent-color:var(--rouge)}
+.fi-ic{flex:none;width:32px;height:32px;margin-top:4px;border-radius:9px;display:grid;place-items:center;background:var(--panneau);color:var(--c,var(--voile))}
+.fi-ic.g-pnj{--c:#8fc2e8}.fi-ic.g-lieu{--c:var(--vert-vif)}.fi-ic.g-quete{--c:var(--orange)}.fi-ic.g-faction{--c:#f08a78}.fi-ic.g-creature{--c:#cbb6e6}.fi-ic.g-objet{--c:#d9b84f}
+.fi-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.fi-champs{display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:6px}
+body.joueur .jr-saisie.fi-nom{min-height:40px;padding:6px 10px;font-size:15px;font-weight:600}
+.fi-genre{height:40px;font-size:14px}
+.fi-sous{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12.5px;color:var(--voile)}
+.fi-marque{padding:0 8px;border-radius:999px;border:1px solid var(--trait);font-weight:600;white-space:nowrap}
+.fi-marque.nouveau{border-color:var(--vert-vif);color:var(--vert-vif)}
+.fi-marque.existe{color:var(--voile)}
+.fi-marque.proche,.fi-marque.incertain{border-color:var(--orange);color:var(--orange);white-space:normal}
+.fi-role{overflow-wrap:anywhere}
+@media (max-width:600px){.fi-champs{grid-template-columns:minmax(0,1fr)}}

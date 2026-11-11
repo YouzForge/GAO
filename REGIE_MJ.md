@@ -1,4 +1,4 @@
-# La régie du MJ (version 0.24.1)
+# La régie du MJ (version 0.25.0)
 
 Ce document décrit les écrans du MJ ajoutés à l'application : ce qu'ils font, où ils écrivent, et ce qui reste à vérifier.
 Il ne contient aucun contenu de jeu.
@@ -40,6 +40,17 @@ Les **paliers** sont lus dans la fiche, section « 🔴 Paliers de la jauge » :
 *Parcours* → **Importer un document Word**. Le fichier `.docx` est converti **dans le navigateur** (il n'est envoyé nulle part), puis rangé dans le coffre : `MJ/02_Campagne/Sessions/NN_Titre.md` pour une session, `MJ/01_Univers/Lieux/Titre.md` pour un lieu, et placé dans la colonne choisie du parcours.
 
 Règles de conversion (`src/import/docx.js`, reprises du convertisseur du premier import) : un bloc est reconnu à son libellé (📖 🗣 🎲 🔒 🔴 ⚔ 📦 🆕 ✅ ✉) puis, à défaut, à la couleur de sa bordure gauche ; tout bloc rouge est un secret ; un titre de style « Titre 1 » (ou une ligne en gras soulignée d'un filet coloré) ouvre une scène, « Titre 2 » un sous-titre ; tableaux, listes, gras et italique sont gardés. La fenêtre d'import montre ce qui a été reconnu et un contrôle de fidélité (mots du Word contre mots de la conversion). Les images ne sont pas reprises.
+
+### Les fiches que le document permet de créer
+
+La fenêtre d'import propose aussi de créer les fiches que contient le document (`src/import/fiches.js`). Le repérage ne lit que la **structure** :
+
+- dans une partie dont le titre parle de PNJ, de personnages, d'alliés, d'antagonistes, d'informateurs, de lieux, de factions ou de bestiaire : chaque sous-titre « Nom — précision » (ou suivi d'un bloc de fiche) est une fiche ;
+- un bloc 🆕 « Quête débloquée » est une quête ; un bloc de fiche 📦 est un objet ou un personnage, selon son contenu (marqué « type à vérifier » quand rien ne tranche).
+
+Chaque proposition a une case à cocher, un nom et un type modifiables. Une fiche déjà au coffre n'est jamais recréée ; un nom voisin, un lieu ou un type incertain restent décochés. Les fiches sont écrites au format de leur collection, `visibilite: secret`. La même liste s'ouvre pour un document déjà au coffre : *Séance* → *Tuiles* → *Créer les fiches de ce document*.
+
+Limites : un personnage décrit sans sous-titre n'est pas repéré ; les rubriques de la fiche ne sont pas résumées ; les cartes à révéler ne sont pas créées.
 
 ## Le guide du MJ
 
