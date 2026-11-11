@@ -1,6 +1,6 @@
 // Contenu du guide du MJ (onglet « Guide »). FICHIER GÉNÉRÉ : ne pas le modifier à la main.
 // Source : le générateur du guide Word (guide_mj_generer.js), converti par guide_mj_donnees.js. Aucun contenu de jeu.
-export const VERSION_GUIDE = "0.26.2";
+export const VERSION_GUIDE = "0.26.3";
 export const GUIDE = [
  {
   "num": "",
@@ -1513,6 +1513,10 @@ export const GUIDE = [
      [
       "« Ce nom est déjà pris »",
       "Une carte ou une fiche porte déjà ce titre. Change un mot du titre."
+     ],
+     [
+      "Le journal d'un joueur ne montre pas toutes les sessions, ou en range une dans une autre",
+      "Défaut des versions 0.26.2 et antérieures quand le champ « session » d'un compte rendu est écrit en texte (« Saison 1 — Session 10 »). Corrigé en 0.26.3 : chaque compte rendu a son bloc, et la note du joueur qui porte le même titre le rejoint. Rien à faire de ton côté."
      ],
      [
       "J'ai cliqué et rien ne semble se passer",

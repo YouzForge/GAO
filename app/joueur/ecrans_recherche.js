@@ -1,7 +1,7 @@
 // Recherche globale : tout ce que le joueur peut lire (savoirs, quêtes, journal, rencontres, notes, sac), avec filtres.
 // L'index est construit sur les copies déjà lues (src/joueur/recherche.js) ; aucun appel supplémentaire au serveur par frappe.
-import { h, icon, message, pastille, choix, surbrillance, extrait, meta, puces } from "./ui.js?v=0.26.2";
-import { chercher, grouperParType, valeursDeFiltres, TYPES } from "../../src/joueur/recherche.js?v=0.26.2";
+import { h, icon, message, pastille, choix, surbrillance, extrait, meta, puces } from "./ui.js?v=0.26.3";
+import { chercher, grouperParType, valeursDeFiltres, TYPES } from "../../src/joueur/recherche.js?v=0.26.3";
 
 const PAR_GROUPE = 25;
 
@@ -13,7 +13,7 @@ function lien(r) {
     case "notes": return `#/notes/${f}`;
     case "rencontres": return `#/rencontres/${f}`;
     case "sac": return `#/sac/o/${f}`;
-    case "journal": return r.session != null ? `#/journal/${r.session}` : "#/journal";
+    case "journal": return r.ancre ? `#/journal/${encodeURIComponent(r.ancre)}` : r.session != null ? `#/journal/${r.session}` : "#/journal";
     default: return "#/";
   }
 }

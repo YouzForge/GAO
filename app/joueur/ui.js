@@ -1,7 +1,7 @@
 // Briques d'interface de l'application « joueur ». RÈGLE du moteur : jamais de innerHTML (un test le vérifie) ; tout est construit avec le DOM.
-import { icone } from "../icones.js?v=0.26.2";
-import { h, rendreMarkdown, enligne } from "../conteur/ui.js?v=0.26.2";
-import { surligner } from "../../src/joueur/recherche.js?v=0.26.2";
+import { icone } from "../icones.js?v=0.26.3";
+import { h, rendreMarkdown, enligne } from "../conteur/ui.js?v=0.26.3";
+import { surligner } from "../../src/joueur/recherche.js?v=0.26.3";
 
 export { h, rendreMarkdown, enligne };
 

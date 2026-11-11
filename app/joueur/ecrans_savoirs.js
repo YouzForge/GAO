@@ -1,9 +1,9 @@
 // Onglet « Savoirs » et ses six pastilles : Savoirs, Quêtes, Journal, Rencontres, Notes, Carte (la carte est dans ecrans_carte.js).
 // Le MJ écrit les récits et les présentations (lecture seule pour le joueur). Si le joueur peut écrire (tranche 2) : étiquettes, notes libres, notes de journal, « Ma note » des rencontres.
-import { h, icon, message, pastille, meta, puces, extrait, rendreMarkdown, boiteImage, surbrillance } from "./ui.js?v=0.26.2";
-import { ouvrirElement, etiquettesSeparees } from "./detail.js?v=0.26.2";
-import { peut, formulaireNote, modifierNote, blocEtiquettes } from "./edition.js?v=0.26.2";
-import { savoirsAppris } from "../../src/joueur/cartes.js?v=0.26.2";
+import { h, icon, message, pastille, meta, puces, extrait, rendreMarkdown, boiteImage, surbrillance } from "./ui.js?v=0.26.3";
+import { ouvrirElement, etiquettesSeparees } from "./detail.js?v=0.26.3";
+import { peut, formulaireNote, modifierNote, blocEtiquettes } from "./edition.js?v=0.26.3";
+import { savoirsAppris } from "../../src/joueur/cartes.js?v=0.26.3";
 
 export const PASTILLES = [
   ["savoirs", "Savoirs", "#/savoirs"], ["quetes", "Quêtes", "#/quetes"], ["journal", "Journal", "#/journal"],
@@ -77,24 +77,24 @@ export const ecranNotes = (ctx, f) => liste(ctx, { id: "notes", charger: () => c
 /* ---------------- Journal ---------------- */
 export async function ecranJournal(ctx, sessionOuverte = null) {
   const r = await ctx.donnees.journal();
-  const derniere = r.sessions.length ? r.sessions[0].session : 1;
+  const derniere = (r.sessions.find(s => s.session != null) || {}).session ?? 1;
   const nouvelle = (session = derniere) => formulaireNote(ctx, { zone: "journal", session, surFini: () => ctx.reafficher() });
-  const boutonNote = session => (peut(ctx) ? h("button", { class: "jr-bouton", type: "button", onclick: () => nouvelle(session) }, icon("plus", 18), "Ajouter une note") : null);
+  const boutonNote = session => (peut(ctx) ? h("button", { class: "jr-bouton", type: "button", onclick: () => nouvelle(session ?? derniere) }, icon("plus", 18), "Ajouter une note") : null);
   if (!r.sessions.length) return ecran(ctx, "journal", perime(r), message("Le journal est vide : les récits de session et tes notes de journal apparaîtront ici.", "info"), boutonNote(1));
-  const premiere = sessionOuverte != null ? sessionOuverte : r.sessions[0].session;
+  // bloc à ouvrir : celui demandé (clé « r-… » / « n-7 », ou ancien lien par numéro de session), sinon le plus récent
+  const ouvert = (typeof sessionOuverte === "string" ? r.sessions.find(s => s.cle === sessionOuverte) : sessionOuverte != null ? r.sessions.find(s => s.session === sessionOuverte) : null) || r.sessions[0];
   const blocs = r.sessions.map(s => {
-    const titre = s.session ? `Session ${s.session}` : "Hors session";
-    const d = h("details", { class: "jr-session", id: `jr-session-${s.session}` },
-      h("summary", null, h("span", { class: "jr-session-n" }, titre), h("span", { class: "jr-session-col" }, s.titre ? h("span", { class: "jr-session-t" }, s.titre) : null, s.date ? h("span", { class: "jr-meta" }, s.date) : null), icon("chev_d", 18)),
+    const d = h("details", { class: "jr-session", id: `jr-session-${s.cle}` },
+      h("summary", null, h("span", { class: "jr-session-n" }, s.etiquette), h("span", { class: "jr-session-col" }, s.titre ? h("span", { class: "jr-session-t" }, s.titre) : null, s.date ? h("span", { class: "jr-meta" }, s.date) : null), icon("chev_d", 18)),
       h("div", { class: "jr-session-corps" },
-        s.recit ? h("div", { class: "jr-md" }, rendreMarkdown(s.recit.corps)) : h("p", { class: "jr-vide" }, "Pas de récit pour cette session."),
+        s.recits.length ? s.recits.map(x => h("div", { class: "jr-md" }, rendreMarkdown(x.corps))) : h("p", { class: "jr-vide" }, "Pas de récit pour cette session."),
         s.notes.length ? h("div", null, h("div", { class: "jr-kicker" }, "Mes notes"), h("ul", { class: "jr-cartes" }, s.notes.map(n => carte(ctx, n, { tags: n.etiquettes, ouvrir: e => ouvrirElement(ctx, e) })))) : null,
         boutonNote(s.session)));
-    if (s.session === premiere) d.open = true;
+    if (s === ouvert) d.open = true;
     return d;
   });
   const n = ecran(ctx, "journal", perime(r), blocs);
-  if (sessionOuverte != null) setTimeout(() => { const d = document.getElementById(`jr-session-${sessionOuverte}`); if (d && d.scrollIntoView) d.scrollIntoView({ block: "start" }); }, 50);
+  if (sessionOuverte != null) setTimeout(() => { const d = document.getElementById(`jr-session-${ouvert.cle}`); if (d && d.scrollIntoView) d.scrollIntoView({ block: "start" }); }, 50);
   return n;
 }
 

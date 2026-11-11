@@ -1,5 +1,5 @@
 // Photos : réduction avant envoi, rangement dans le dossier des photos du JDR, vignette lue depuis OneDrive.
-import { h, icon } from "./ui.js?v=0.26.2";
+import { h, icon } from "./ui.js?v=0.26.3";
 
 export function reduire(fichier, max = 1600) {
   return new Promise((res, rej) => {

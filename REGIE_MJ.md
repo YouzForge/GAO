@@ -1,4 +1,4 @@
-# La régie du MJ (version 0.26.2)
+# La régie du MJ (version 0.26.3)
 
 Ce document décrit les écrans du MJ ajoutés à l'application : ce qu'ils font, où ils écrivent, et ce qui reste à vérifier.
 Il ne contient aucun contenu de jeu.
@@ -77,6 +77,8 @@ Onglet **Guide**, tout à droite : le mode d'emploi en fiches pratiques, avec un
 
 *Nouveau compte rendu* en écrit un (gardé masqué, ou montré tout de suite). *Corriger* modifie le texte ; si le compte rendu est visible, les joueurs voient la correction. Le formulaire montre tout ce que lisent les joueurs, autres parties comprises (leurs titres en gras) : rien n'est perdu à l'enregistrement (0.26.1). Les *Notes du MJ* d'un compte rendu ne quittent jamais le coffre.
 Il n'y a pas de visibilité par joueur : la table est commune, un compte rendu est visible pour tous ou pour personne.
+
+Côté joueur (onglet *Savoirs* → *Journal*, 0.26.3) : **un bloc par compte rendu**, jamais deux comptes rendus dans le même bloc. Le champ `session` est un texte court ; l'application y lit la saison et le numéro (« 7 », « Saison 1 — Session 10 », « Saison 1 — Sessions 5 et 6 », « Saison 1 — Entre les sessions 8 et 10 », « Saison 1 — Fin de la saison 1 ») pour ranger les blocs du plus récent au plus ancien. Une note de journal du joueur rejoint le compte rendu qui porte **le même titre** ; sinon celui du même numéro de session (la saison la plus récente s'il y en a plusieurs) ; sinon elle forme un bloc à part.
 ## Où tout est écrit (OneDrive du MJ)
 
 | Quoi | Où |

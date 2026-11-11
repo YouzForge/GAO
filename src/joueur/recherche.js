@@ -1,5 +1,5 @@
 // Recherche locale (D39) : index construit sur les copies DÉJÀ lues, aucun appel au serveur. Insensible à la casse et aux accents. Logique pure.
-import { norm } from "../md/doc.js?v=0.26.2";
+import { norm } from "../md/doc.js?v=0.26.3";
 
 /** Texte de recherche : minuscules, sans accents ni ligature, ponctuation → espaces (garde les espaces entre les mots). */
 export const aplatir = s => String(s ?? "").toLowerCase().replace(/œ/g, "oe").replace(/æ/g, "ae").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[’']/g, "'").replace(/[^a-z0-9']+/g, " ").trim();
@@ -13,7 +13,7 @@ export const TYPES = Object.freeze([
 export function entreeIndex(type, e, { etiquettes = [], texte = null } = {}) {
   const brut = texte ?? e.corps ?? "";
   return {
-    type, id: e.fichier, titre: e.titre, texte: brut, session: e.session ?? null, lieu: e.lieu || "", personnage: e.personnage || "",
+    type, id: e.fichier, titre: e.titre, texte: brut, session: e.session ?? null, ancre: e.ancre ?? null, lieu: e.lieu || "", personnage: e.personnage || "",
     etiquettes: [...new Set([...(e.etiquettes || []), ...etiquettes])],
     _t: aplatir(e.titre), _x: aplatir(brut), _e: aplatir([...(e.etiquettes || []), ...etiquettes].join(" ")), _l: aplatir(e.lieu), _p: aplatir(e.personnage)
   };

@@ -4,16 +4,17 @@
 // Deux façons d'ouvrir : un JOUEUR lit son dossier (racine « joueur ») et la table ; le MJ, pour « voir comme un joueur », lit
 // `Joueurs/<pseudo>` dans son propre OneDrive. Dans les deux cas l'application ne demande que des chemins relatifs au dossier du joueur.
 // Le MJ peut aussi ouvrir SANS joueur : il n'a alors que les écrans du MJ (lieux, sessions de jeu, documents du coffre), tous lus avec la même copie d'abord.
-import { pool } from "../graph/pool.js?v=0.26.2";
-import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.26.2";
-import { AccesRefuse, AccesRetire } from "../depot/depot.js?v=0.26.2";
-import { lireFiche } from "./fiche.js?v=0.26.2";
-import { masquerPourJoueur } from "../md/masque.js?v=0.26.2";
-import { lireElement, lireObjet, lireRencontre, lireEtiquettes, lireRecit, cleCible, clesDe } from "./cartes.js?v=0.26.2";
-import { entreeIndex } from "./recherche.js?v=0.26.2";
-import { poserEtiquettes, texteNote, modifierNote, noteRencontre, changerBourse, changerPV, nomDeFichierNote, ajouterCompetenceSpeciale, retirerCompetenceSpeciale } from "./ecriture.js?v=0.26.2";
-import { norm } from "../md/doc.js?v=0.26.2";
-import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions, sessionAVenir } from "../mj/accueil.js?v=0.26.2";
+import { pool } from "../graph/pool.js?v=0.26.3";
+import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.26.3";
+import { AccesRefuse, AccesRetire } from "../depot/depot.js?v=0.26.3";
+import { lireFiche } from "./fiche.js?v=0.26.3";
+import { masquerPourJoueur } from "../md/masque.js?v=0.26.3";
+import { lireElement, lireObjet, lireRencontre, lireEtiquettes, lireRecit, cleCible, clesDe } from "./cartes.js?v=0.26.3";
+import { entreeIndex } from "./recherche.js?v=0.26.3";
+import { regrouperJournal } from "./journal.js?v=0.26.3";
+import { poserEtiquettes, texteNote, modifierNote, noteRencontre, changerBourse, changerPV, nomDeFichierNote, ajouterCompetenceSpeciale, retirerCompetenceSpeciale } from "./ecriture.js?v=0.26.3";
+import { norm } from "../md/doc.js?v=0.26.3";
+import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions, sessionAVenir } from "../mj/accueil.js?v=0.26.3";
 
 const IMAGE = /\.(jpe?g|png|webp)$/i;
 const MARKDOWN = /^(?!00_|LISEZMOI).+\.md$/i;
@@ -293,11 +294,8 @@ export function creerDonneesJoueur({ profil, depot, role, pseudo, ecriture = fal
     /** Journal : un bloc par session, avec le récit du MJ (table, lecture seule) et les notes du joueur. → { sessions:[{session, titre, date, recit, notes:[]}], perime } */
     journal: () => memoiser("journal", async () => {
       const [r, n] = await Promise.all([api.recits(), api.notesDeJournal()]);
-      const m = new Map();
-      const bloc = s => { if (!m.has(s)) m.set(s, { session: s, titre: "", date: "", recit: null, notes: [] }); return m.get(s); };
-      for (const x of r.items) { const b = bloc(x.session ?? 0); b.recit = x; b.titre = x.titre; b.date = x.date; }
-      for (const x of n.items) { const b = bloc(x.session ?? 0); b.notes.push(x); if (!b.titre) b.titre = x.titre; }
-      return { sessions: [...m.values()].sort((a, b) => b.session - a.session), perime: r.perime || n.perime };
+      // un bloc par compte rendu (jamais deux comptes rendus dans un même bloc) ; les notes du joueur rejoignent le leur (voir src/joueur/journal.js)
+      return { sessions: regrouperJournal(r.items, n.items), perime: r.perime || n.perime };
     }),
 
     /** Sac : les fichiers de chaque sous-dossier d'« Inventaire » (un dossier du joueur) et ceux de la racine (non classés). → { objets, dossiers:[noms], perime } */
@@ -398,8 +396,8 @@ export function creerDonneesJoueur({ profil, depot, role, pseudo, ecriture = fal
       for (const e of no.items || []) index.push(entreeIndex("notes", e, tag(e)));
       for (const e of re.items || []) index.push(entreeIndex("rencontres", e, { ...tag(e), texte: [e.presentation, e.note].filter(Boolean).join("\n") || e.corps }));
       for (const s of jo.sessions || []) {
-        if (s.recit) index.push(entreeIndex("journal", { ...s.recit, fichier: `recit:${s.recit.fichier}` }));
-        for (const n of s.notes) index.push(entreeIndex("journal", { ...n, session: n.session ?? s.session }, tag(n)));
+        for (const r of s.recits) index.push(entreeIndex("journal", { ...r, session: s.session, ancre: s.cle, fichier: `recit:${r.fichier}` }));
+        for (const n of s.notes) index.push(entreeIndex("journal", { ...n, session: n.session ?? s.session, ancre: s.cle }, tag(n)));
       }
       for (const o of sa.objets || []) index.push(entreeIndex("sac", o, { ...tag(o), texte: [o.dossier, o.corps].filter(Boolean).join("\n") }));
       return index;

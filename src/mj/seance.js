@@ -3,7 +3,7 @@
 // Les documents du coffre viennent des documents Word du MJ : des scènes (« ### »), des sous-titres (« #### ») et des BLOCS annoncés par une marque en
 // début de ligne (📖 à lire, 🗣 dialogue, 🎲 note MJ, 🔴 secret, ⚔️ combat, 🆕 alerte, ✅ récompense, ✉️ lettre). Un bloc court jusqu'à la marque ou au titre suivant.
 // L'écran s'en sert pour colorer les blocs, tirer la « fiche MJ » (synopsis, compétences clés, tableau de bord…) et lister ce qu'il ne faut pas révéler.
-import { norm } from "../md/doc.js?v=0.26.2";
+import { norm } from "../md/doc.js?v=0.26.3";
 
 export const MARQUES = [
   { marque: "📖", cle: "lire", libelle: "À lire" },

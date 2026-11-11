@@ -1,7 +1,7 @@
 // Messages montrés au joueur quand une écriture échoue. Sans DOM : testé dans Node. Jamais de détail technique ni de chemin.
-import { ConflitEcriture, FicheExiste, FicheVerrouillee } from "../graph/client.js?v=0.26.2";
-import { AccesRefuse } from "../depot/depot.js?v=0.26.2";
-import { EcritureInvalide } from "../ecriture/fiche.js?v=0.26.2";
+import { ConflitEcriture, FicheExiste, FicheVerrouillee } from "../graph/client.js?v=0.26.3";
+import { AccesRefuse } from "../depot/depot.js?v=0.26.3";
+import { EcritureInvalide } from "../ecriture/fiche.js?v=0.26.3";
 
 const RAISONS = {
   lecture_seule_mj: "Tu regardes comme un joueur : rien ne se modifie dans ce mode.",
