@@ -1,6 +1,6 @@
 // Contenu du guide du MJ (onglet « Guide »). FICHIER GÉNÉRÉ : ne pas le modifier à la main.
 // Source : le générateur du guide Word (guide_mj_generer.js), converti par guide_mj_donnees.js. Aucun contenu de jeu.
-export const VERSION_GUIDE = "0.22.0";
+export const VERSION_GUIDE = "0.23.0";
 export const GUIDE = [
  {
   "num": "",
@@ -65,6 +65,10 @@ export const GUIDE = [
       "Le tableau de bord : points de vie, valeurs, bourse, et pour chacun « Notes MJ » et « Voir comme lui »."
      ]
     ]
+   },
+   {
+    "t": "p",
+    "x": "Tout à droite de la barre, l'onglet **Guide** : ce document, dans l'application, avec une recherche « que veux-tu faire ? »."
    },
    {
     "t": "p",
@@ -199,40 +203,61 @@ export const GUIDE = [
    },
    {
     "t": "p",
-    "x": "C'est le circuit normal pour une session préparée avec soin. L'application ne lit pas les fichiers Word : il faut un fichier Markdown, et c'est Claude qui fait la conversion."
+    "x": "C'est le circuit normal pour une session préparée avec soin. Depuis la version 0.23, l'application importe elle-même ton fichier Word : tu n'as plus besoin de Claude pour la conversion."
+   },
+   {
+    "t": "ou",
+    "x": "Onglet **Parcours** → bouton **Importer un document Word** (à droite du titre « Parcours de la campagne »)"
    },
    {
     "t": "etapes",
     "items": [
-     "Termine ton document Word comme d'habitude (tes compétences gao-doc, cleaner-gao…).",
-     "Ouvre une conversation Cowork du projet et donne-lui le fichier avec la phrase de l'encadré ci-dessous.",
-     "Claude dépose le résultat dans `MJ / 02_Campagne / Sessions`, sous un nom du type `19_Titre_court.md`.",
-     "Ouvre l'application, onglet **Parcours** : le document est là. Glisse-le dans **Prochaine session** (ou « À suivre »).",
-     "Onglet **Séance** : vérifie que les scènes, les blocs colorés et la Fiche MJ sont bien reconnus."
+     "Termine ton document Word comme d'habitude (tes compétences gao-doc, cleaner-gao…) et enregistre-le en **.docx**.",
+     "Onglet **Parcours** → **Importer un document Word** → choisis le fichier.",
+     "La fenêtre montre **ce qui a été reconnu** : nombre de mots, scènes, tableaux, blocs (à lire, dialogues, notes MJ, secrets…), la liste des scènes, et un contrôle de fidélité qui vérifie que tous les mots du Word sont dans la conversion.",
+     "Vérifie le **Titre**, laisse « Document de session », remplis si tu veux **Lieu joué** et **Saison**.",
+     "Choisis **Ranger dans** : Prochaine session, À suivre ou Lointain.",
+     "Clique **Importer dans le coffre**. Tu arrives directement dans l'écran **Séance** du document : vérifie les scènes, les couleurs et la Fiche MJ."
     ]
    },
    {
     "t": "boite",
-    "genre": "cowork",
+    "genre": "resultat",
     "lignes": [
-     "Convertis ce document Word en fichier de session pour l'application, selon la règle R24 et le §9.1 du contrat de format.",
-     "Dépose-le dans Documents/JDR/GAO - Application/MJ/02_Campagne/Sessions.",
-     "Crée aussi les fiches des PNJ, lieux et quêtes nouveaux qu'il cite, et propose-moi les cartes à révéler dans MJ/04_Revelations avec « prevu » sur ce document."
+     "Le document est dans ton coffre (`MJ / 02_Campagne / Sessions`, numéroté à la suite) et dans ton Parcours. Ton fichier Word n'est ni modifié ni envoyé ailleurs : la conversion se fait dans ton navigateur."
     ]
    },
    {
     "t": "boite",
     "genre": "astuce",
     "lignes": [
-     "Tes documents Word utilisent déjà les bons blocs (📖 🗣 🎲 🔒 🆕) : la conversion les garde.",
-     "Pour que la Fiche MJ se remplisse, garde dans ton document des titres contenant : Synopsis, Compétences clés, Moments pivots, Fins possibles, Tableau de bord."
+     "Tes documents Word utilisent déjà les bons blocs (📖 🗣 🎲 🔒 🆕) : l'import les reconnaît à leur libellé, ou à la couleur de leur bordure.",
+     "Une scène = un titre de style « Titre 1 » dans Word (ou, à défaut, une ligne en gras soulignée d'un filet coloré). Un sous-titre = « Titre 2 ».",
+     "Pour que la Fiche MJ se remplisse, garde des titres contenant : Synopsis, Compétences clés, Moments pivots, Fins possibles, Tableau de bord.",
+     "L'import a été essayé sur les 45 documents de ton atelier : aucun mot perdu."
     ]
    },
    {
     "t": "boite",
-    "genre": "limite",
+    "genre": "attention",
     "lignes": [
-     "Il n'y a pas de bouton « Importer un fichier Word » dans l'application : la conversion passe par une conversation Claude. Voir partie VIII, point 1."
+     "Les **images** du document Word ne sont pas reprises (la fenêtre d'import te le signale).",
+     "Réimporter un document corrigé crée un **second** fichier : supprime l'ancien (Menu ⋯ → Listes du coffre → Sessions → la fiche → Supprimer), ou corrige directement la fiche dans l'application."
+    ]
+   },
+   {
+    "t": "h3",
+    "x": "Et pour aller plus loin : les fiches et les cartes"
+   },
+   {
+    "t": "p",
+    "x": "L'import range le document. Il ne crée ni les fiches des PNJ (pour les tuiles) ni les cartes à révéler : tu peux les faire à la main (fiches 4 et 6) ou les demander à Claude."
+   },
+   {
+    "t": "boite",
+    "genre": "cowork",
+    "lignes": [
+     "Le document de session « … » est importé dans le coffre. Crée les fiches des PNJ, lieux et quêtes nouveaux qu'il cite, et propose-moi les cartes à révéler dans MJ/04_Revelations avec « prevu » sur ce document (R23, R24). Rien chez les joueurs."
     ]
    },
    {
@@ -251,8 +276,9 @@ export const GUIDE = [
    {
     "t": "etapes",
     "items": [
-     "Demande à Claude de convertir ton fichier Word en **un** document de lieu, déposé dans `MJ / 01_Univers / Lieux`.",
-     "Onglet **Parcours** : le lieu apparaît avec l'icône d'épingle. Range-le dans la bonne colonne.",
+     "Onglet **Parcours** → **Importer un document Word** → choisis ton fichier (voir fiche 2).",
+     "Dans la fenêtre, choisis **Document de lieu**, vérifie le titre (c'est le nom du lieu), le type (ville, donjon…) et la région. **Importer dans le coffre**.",
+     "Le lieu apparaît dans le **Parcours** avec l'icône d'épingle, dans la colonne choisie.",
      "Clique-le : tu le lis en entier. S'il est dans « Prochaine session », il s'ouvre dans l'écran **Séance** avec ses blocs colorés."
     ]
    },
@@ -1321,6 +1347,14 @@ export const GUIDE = [
       "Il doit recoller ses deux liens (nouvel appareil, ou partage retiré). Renvoie-les-lui."
      ],
      [
+      "« Import impossible »",
+      "Le fichier n'est pas un .docx (un .doc ancien ou un PDF ne passent pas : dans Word, « Enregistrer sous » → Document Word .docx), ou il est abîmé. Rien n'a été écrit."
+     ],
+     [
+      "L'import ne reconnaît aucune scène",
+      "Tes titres de scène n'ont pas le style « Titre 1 ». Applique-le dans Word et réimporte ; le document reste lisible d'un seul tenant en attendant."
+     ],
+     [
       "Mon nouveau document n'apparaît pas dans le Parcours",
       "Vérifie qu'il est bien dans `Documents/JDR/GAO - Application/MJ/02_Campagne/Sessions` (ou `01_Univers/Lieux`), que c'est un fichier .md, et que son nom ne commence pas par « 00_ ». Puis Menu ⋯ → Actualiser."
      ],
@@ -1369,7 +1403,7 @@ export const GUIDE = [
     "lignes": [
      [
       "1. Importer un document Word",
-      "Aujourd'hui : conversion par une conversation Claude (fiche 2).  →  À prévoir : un bouton « Importer un document » dans le Parcours, qui convertit le .docx en fichier de session dans le navigateur."
+      "FAIT depuis la version 0.23 (fiche 2).  →  Reste à prévoir : reprendre les images du document, et remplacer un document déjà importé au lieu d'en créer un second."
      ],
      [
       "2. Découper un lieu en fiches",
@@ -1467,8 +1501,16 @@ export const GUIDE = [
     ],
     "lignes": [
      [
+      "Importer un document Word",
+      "Parcours → Importer un document Word"
+     ],
+     [
       "Choisir ce que je joue",
       "Parcours → glisser dans « Prochaine session »"
+     ],
+     [
+      "Retrouver ce guide",
+      "Onglet Guide, tout à droite de la barre"
      ],
      [
       "Mener la partie",

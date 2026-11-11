@@ -7,8 +7,8 @@
 //
 // Un élément déjà présent chez des joueurs mais sans carte au coffre (tout ce qui a été publié avant la régie) reste révélable aux autres :
 // on recopie alors la version d'un joueur qui l'a, sans ses sections personnelles (« Ma note », « Ce que j'ai fait »).
-import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize } from "../md/doc.js?v=0.22.0";
-import { masquerPourJoueur } from "../md/masque.js?v=0.22.0";
+import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize } from "../md/doc.js?v=0.23.0";
+import { masquerPourJoueur } from "../md/masque.js?v=0.23.0";
 
 export const DOSSIER_REVELATIONS = "04_Revelations";
 

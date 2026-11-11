@@ -4,16 +4,17 @@
 //
 // RÈGLE DE SÉCURITÉ : le seul chemin par lequel un texte du coffre arrive dans le dossier d'un joueur est `texteJoueur` / `copiePourAutreJoueur` / `fusionner`
 // (src/mj/revelations.js), qui retirent les sections et les champs du coffre et refusent de publier si une marque de secret subsiste.
-import { parseDoc, humanize, norm } from "../md/doc.js?v=0.22.0";
-import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.22.0";
-import { AccesRefuse } from "../depot/depot.js?v=0.22.0";
-import { EcritureInvalide } from "../ecriture/fiche.js?v=0.22.0";
-import { pool } from "../graph/pool.js?v=0.22.0";
+import { parseDoc, humanize, norm } from "../md/doc.js?v=0.23.0";
+import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.23.0";
+import { AccesRefuse } from "../depot/depot.js?v=0.23.0";
+import { EcritureInvalide } from "../ecriture/fiche.js?v=0.23.0";
+import { pool } from "../graph/pool.js?v=0.23.0";
 import { TYPES, typeDe, DOSSIER_REVELATIONS, lireCarte, texteJoueur, copiePourAutreJoueur, fusionner, texteCarte, modifierCarte, poserChamp, nomPublie, nomDepuisTitre,
-  construireCatalogue, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal } from "./revelations.js?v=0.22.0";
-import { lireParcours, ecrireParcours } from "./parcours.js?v=0.22.0";
-import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.22.0";
-import { jaugeDe } from "./seance.js?v=0.22.0";
+  construireCatalogue, plusGrandNumero, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal } from "./revelations.js?v=0.23.0";
+import { texteDocumentImporte } from "../import/docx.js?v=0.23.0";
+import { lireParcours, ecrireParcours } from "./parcours.js?v=0.23.0";
+import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.23.0";
+import { jaugeDe } from "./seance.js?v=0.23.0";
 
 const MARKDOWN = /^(?!00_|LISEZMOI).+\.md$/i;
 const NOM_DOSSIER = /^(?![._])[^/\\:?*"<>|\u0000-\u001f]{1,80}$/;
@@ -379,6 +380,26 @@ export function creerRegie({ profil, depot, maintenant = () => new Date() }) {
       const l = await api.enregistrerCompteRendu(null, { titre, session, texte });
       await api.montrerCompteRendu(l);
       return { fichier: l.fichier };
+    },
+    /**
+     * Range dans le coffre un document converti depuis Word (session ou lieu). Jamais d'écrasement : un nom pris reçoit un suffixe.
+     * Une session reçoit le numéro d'ordre suivant (« 19_Titre.md ») ; un lieu porte son nom. → { genre, fichier }
+     */
+    async importerDocument({ genre, titre, saison = "", lieu = "", type = "", region = "", markdown, source = "" }) {
+      const d = dossierCol(genre);
+      if (!d || !["session", "lieu"].includes(genre)) refus("Ce type de document ne s'importe pas", "zone_refusee");
+      if (!String(titre || "").trim()) throw new EcritureInvalide("Donne un titre au document", "titre_vide");
+      if (!String(markdown || "").trim()) throw new EcritureInvalide("Le document est vide", "revelation_vide");
+      const texte = texteDocumentImporte({ genre, titre, saison, lieu, type, region, markdown, source, date: jourDe(maintenant()) });
+      for (let essai = 0; ; essai++) {
+        const existants = nomsMd(await lister(d));
+        const pris = new Set(existants.map(cleFichier));
+        const base = (genre === "session" ? `${String(plusGrandNumero(existants) + 1).padStart(2, "0")}_` : "") + nomDepuisTitre(titre);
+        let nom = `${base}.md`;
+        for (let i = 2; pris.has(cleFichier(nom)); i++) nom = `${base}_${i}.md`;
+        try { await depot.creer(`${d}/${nom}`, texte); return { genre, fichier: nom }; }
+        catch (e) { if (essai === 0 && e instanceof FicheExiste) continue; throw e; }
+      }
     },
     /** Écrit le statut d'une session de jeu (« jouée », « prête », « idée ») dans sa fiche. */
     async changerStatutSession(fichier, statut) {

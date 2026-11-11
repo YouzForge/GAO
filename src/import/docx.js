@@ -238,3 +238,28 @@ export function convertirDocx(xmlDocument, xmlNumerotation = null) {
 export function titreDepuisNom(nom) {
   return String(nom).replace(/\.docx$/i, "").replace(/^\s*\d+[a-z]?\s*[-_ ]*\s*/i, "").replace(/_/g, " ").replace(/\b(GAO|cleaned|final)\b/gi, " ").replace(/\bv\d+(\.\d+)?\b/gi, " ").replace(/\s+/g, " ").trim() || "Document importé";
 }
+
+const uneLigne = v => String(v ?? "").replace(/\s*\n\s*/g, " ").trim();
+
+/**
+ * Le fichier du coffre d'un document importé, au format de sa collection (contrat de format) : en-tête, sections attendues, et le texte converti
+ * rangé là où l'écran « Séance » le lit (« Déroulé des scènes » pour une session, « Document source complet (MJ) » pour un lieu).
+ * Toujours `visibilite: secret` et, pour une session, `statut: idée` : un document importé est du matériel du MJ, jamais publié.
+ * @param {{genre:"session"|"lieu", titre:string, saison?:string, lieu?:string, type?:string, region?:string, markdown:string, source?:string, date?:string}} o
+ */
+export function texteDocumentImporte({ genre, titre, saison = "", lieu = "", type = "", region = "", markdown, source = "", date = "" }) {
+  const t = uneLigne(titre);
+  if (!t) throw new Error("Titre manquant");
+  const meta = [];
+  const champ = (k, v) => { if (uneLigne(v)) meta.push(`${k}: ${uneLigne(v)}`); };
+  const corps = String(markdown || "").trim();
+  if (genre === "session") {
+    champ("titre", t); champ("saison", saison); champ("lieu", lieu); meta.push("statut: idée", "visibilite: secret"); champ("source_word", source); champ("importe_le", date);
+    return `---\n${meta.join("\n")}\n---\n\n# ${t}\n\n## Résumé joueurs\n\nPas encore joué.\n\n## Déroulé des scènes\n\n${corps}\n\n## Moments pivots\n\n## Fins possibles\n\n## Ce qui s'est passé\n\n## 🔴 Notes MJ\n`;
+  }
+  if (genre === "lieu") {
+    champ("nom", t); champ("type", type || "lieu"); champ("region", region); meta.push("etat: à venir", "visibilite: secret"); champ("source_word", source); champ("importe_le", date);
+    return `---\n${meta.join("\n")}\n---\n\n# ${t}\n\n## Description\n\n## Ambiance\n\n## Points d'intérêt\n\n## PNJ présents\n\n## Quêtes liées\n\n## 🔴 Secret MJ\n\n## Document source complet (MJ)\n\n${corps}\n`;
+  }
+  throw new TypeError("Genre de document inconnu : " + genre);
+}

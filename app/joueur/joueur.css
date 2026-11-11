@@ -664,3 +664,8 @@ body.joueur .jr-saisie.se-notes{min-height:220px}
 .gd-trouvee svg{flex:none;margin-left:auto;color:var(--voile)}
 @media (max-width:900px){.gd{grid-template-columns:minmax(0,1fr)}.gd-sommaire{position:static}.gd-nav{flex-direction:row;flex-wrap:wrap}.gd-nav li{flex:1 1 150px}}
 @media (max-width:700px){.mj-onglet.droite{margin-left:0}}
+/* ---- Parcours : import d'un document Word ---- */
+.pc-importer-zone{margin-left:auto}
+.pc-importer-zone + .pc-etat,.mj-lieux-tete .pc-etat{margin-left:0}
+.pc-import-scenes{margin:0;padding-left:1.6em;font-size:14px;color:var(--voile);display:flex;flex-direction:column;gap:2px}
+.rv-grille[hidden]{display:none}

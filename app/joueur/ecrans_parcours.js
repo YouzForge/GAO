@@ -2,10 +2,10 @@
 // (Prochaine session, À suivre, Lointain, Joué) qu'il réordonne en glissant les cartes, selon là où vont les personnages.
 // Le rangement est un fichier du coffre (`Parcours.md`) : il suit le MJ d'un appareil à l'autre. Sur téléphone ou au clavier, le bouton « déplacer » remplace le glisser.
 // RÈGLE du moteur : jamais de innerHTML.
-import { COLONNES, rangerParcours, parcoursDepuisRangement, deplacer, decaler } from "../../src/mj/parcours.js?v=0.22.0";
-import { h, icon, message, feuille } from "./ui.js?v=0.22.0";
-import { executer } from "./edition.js?v=0.22.0";
-import { cadreMJ } from "./ecrans_mj.js?v=0.22.0";
+import { COLONNES, rangerParcours, parcoursDepuisRangement, deplacer, decaler } from "../../src/mj/parcours.js?v=0.23.0";
+import { h, icon, message, feuille } from "./ui.js?v=0.23.0";
+import { executer } from "./edition.js?v=0.23.0";
+import { cadreMJ } from "./ecrans_mj.js?v=0.23.0";
 
 const enc = encodeURIComponent;
 const lienDoc = d => `#/mj/${d.genre}/${enc(d.fichier)}`;
@@ -88,11 +88,92 @@ export async function ecranParcoursMJ(ctx) {
   const total = docs.sessions.length + docs.lieux.length;
   const page = cadreMJ(ctx, { actif: "accueil" },
     hero,
-    h("div", { class: "mj-lieux-tete" }, h("h2", null, "Parcours de la campagne"), h("span", { class: "jr-meta mj-compte" }, `${total} document${total > 1 ? "s" : ""}`), etat),
+    h("div", { class: "mj-lieux-tete" }, h("h2", null, "Parcours de la campagne"), h("span", { class: "jr-meta mj-compte" }, `${total} document${total > 1 ? "s" : ""}`), etat,
+      ecrire ? boutonImporter(ctx, () => parcoursDepuisRangement(range)) : null),
     h("p", { class: "jr-meta" }, icon("moon", 15), "document de session", h("span", { class: "pc-sep" }, "·"), icon("pin", 15), "document de lieu",
       ecrire ? h("span", { class: "pc-sep" }, "· glisse une carte pour la ranger ; clique-la pour l'ouvrir") : null),
     !ecrire ? message("Lecture seule : l'écriture est fermée pour ce JDR, le rangement ne peut pas être modifié.", "alerte") : null,
     zone,
     total ? tableau : message("Aucun document de session ni de lieu dans le coffre pour l'instant.", "info"));
   return { page };
+}
+
+/* ------------------------------------------------------------------ Importer un document Word (.docx) */
+const NOMS_BLOCS = { lire: "à lire", dialogue: "dialogues", note: "notes MJ", secret: "secrets", fiche: "fiches / combats", alerte: "alertes / quêtes", recompense: "récompenses", lettre: "lettres", inconnu: "à examiner" };
+
+/** Bouton « Importer un document Word » : choisit un .docx, le convertit dans le navigateur, montre ce qui a été reconnu, puis le range dans le coffre. */
+function boutonImporter(ctx, parcoursActuel) {
+  const champFichier = h("input", { type: "file", accept: ".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document", hidden: true });
+  const bouton = h("button", { class: "jr-bouton pc-importer", type: "button", onclick: () => champFichier.click() }, icon("plus", 18), "Importer un document Word");
+  champFichier.addEventListener("change", async () => {
+    const f = champFichier.files && champFichier.files[0];
+    champFichier.value = "";
+    if (!f) return;
+    bouton.disabled = true;
+    try {
+      // Les modules de conversion ne sont téléchargés qu'ici : ni les joueurs ni l'ouverture de l'application ne les chargent.
+      const [{ ouvrirZip }, { convertirDocx, titreDepuisNom }] = await Promise.all([import("../../src/import/zip.js?v=0.23.0"), import("../../src/import/docx.js?v=0.23.0")]);
+      if (!/\.docx$/i.test(f.name)) throw new Error("Choisis un fichier Word au format .docx (pas .doc ni .pdf).");
+      const zip = await ouvrirZip(await f.arrayBuffer());
+      const xml = await zip.texte("word/document.xml");
+      if (xml == null) throw new Error("Ce fichier n'est pas un document Word (.docx).");
+      const conv = convertirDocx(xml, await zip.texte("word/numbering.xml"));
+      fenetreImport(ctx, { nom: f.name, titre: titreDepuisNom(f.name), conv, parcoursActuel });
+    } catch (e) {
+      feuille("Import impossible", [message(String((e && e.message) || e), "erreur"), h("p", { class: "jr-meta" }, "Rien n'a été écrit.")]);
+    } finally { bouton.disabled = false; }
+  });
+  return h("span", { class: "pc-importer-zone" }, bouton, champFichier);
+}
+
+function fenetreImport(ctx, { nom, titre, conv, parcoursActuel }) {
+  const r = conv.rapport;
+  const lieuProbable = /wiki|lieu|ville|temple|for[eê]t|lac|grotte/i.test(nom) && !/session|module|sc[eè]ne/i.test(nom);
+  const champ = (libelle, controle, aide) => h("label", { class: "jr-champ" }, h("span", null, libelle), controle, aide ? h("small", { class: "jr-aide" }, aide) : null);
+  const saisie = (props = {}) => h("input", { class: "jr-saisie", type: "text", autocomplete: "off", ...props });
+  const choix = (etiquette, options, valeur) => h("select", { class: "jr-select", "aria-label": etiquette }, options.map(([v, l]) => h("option", { value: v, selected: v === valeur }, l)));
+  const genre = choix("Type de document", [["session", "Document de session"], ["lieu", "Document de lieu"]], lieuProbable ? "lieu" : "session");
+  const champTitre = saisie({ maxlength: "120", value: titre, "aria-label": "Titre" });
+  const saison = saisie({ inputmode: "numeric", maxlength: "3", "aria-label": "Saison" });
+  const lieu = saisie({ maxlength: "80", "aria-label": "Lieu joué" });
+  const type = choix("Type de lieu", [["ville", "Ville"], ["lieu", "Lieu"], ["donjon", "Donjon"], ["région", "Région"], ["route", "Route"], ["autre", "Autre"]], "lieu");
+  const region = saisie({ maxlength: "80", "aria-label": "Région" });
+  const colonne = choix("Ranger dans", COLONNES.filter(c => c.cle !== "joue").map(c => [c.cle, c.libelle]), "suivre");
+  const pourSession = h("div", { class: "rv-grille deux" }, champ("Lieu joué", lieu, "Facultatif."), champ("Saison", saison, "Facultatif."));
+  const pourLieu = h("div", { class: "rv-grille deux" }, champ("Région", region, "Facultatif."), champ("Type de lieu", type));
+  const basculer = () => { pourSession.hidden = genre.value !== "session"; pourLieu.hidden = genre.value !== "lieu"; };
+  genre.addEventListener("change", basculer); basculer();
+
+  const blocs = Object.entries(r.blocs).map(([k, n]) => `${n} ${NOMS_BLOCS[k] || k}`);
+  const perte = r.fidelite.pertePct;
+  const msg = h("div", { class: "jr-retour-action" });
+  const ok = h("button", { class: "jr-bouton gros rv-reveler", type: "button" }, icon("check", 20), "Importer dans le coffre");
+  const fermer = feuille("Importer un document Word", [
+    h("p", { class: "jr-meta" }, icon("scroll", 15), nom),
+    h("section", { class: "rv-bloc" }, h("h3", null, icon("search", 16), "Ce qui a été reconnu"),
+      h("div", { class: "jr-puces" }, [`${r.fidelite.motsSource} mots`, `${r.scenes} scène${r.scenes > 1 ? "s" : ""}`, `${r.tableaux} tableau${r.tableaux > 1 ? "x" : ""}`, ...blocs].map(x => h("span", { class: "jr-puce" }, x))),
+      conv.titres.length ? h("ol", { class: "pc-import-scenes" }, conv.titres.slice(0, 14).map(x => h("li", null, x)), conv.titres.length > 14 ? h("li", { class: "jr-meta" }, `… et ${conv.titres.length - 14} autres`) : null)
+        : message("Aucun titre de scène reconnu : le document sera lu d'un seul tenant. Dans Word, donne à tes titres de scène le style « Titre 1 ».", "alerte"),
+      perte > 0.5 ? message(`Contrôle de fidélité : ${r.fidelite.perdus} mots du Word (${perte} %) ne se retrouvent pas dans la conversion. Relis le document après l'import.`, "alerte")
+        : h("p", { class: "jr-meta" }, icon("check", 15), perte === 0 ? "Contrôle de fidélité : tous les mots du Word sont dans la conversion." : `Contrôle de fidélité : ${perte} % d'écart.`),
+      r.avertissements.map(a => message(`Non repris : ${a}.`, "alerte")),
+      r.cellulesSecretes ? h("p", { class: "jr-meta" }, icon("lock", 15), `${r.cellulesSecretes} cellule${r.cellulesSecretes > 1 ? "s" : ""} de tableau marquée${r.cellulesSecretes > 1 ? "s" : ""} secrète${r.cellulesSecretes > 1 ? "s" : ""}.`) : null),
+    champ("Titre", champTitre),
+    h("div", { class: "rv-grille deux" }, champ("Type de document", genre), champ("Ranger dans", colonne)),
+    pourSession, pourLieu,
+    h("p", { class: "jr-aide" }, "Le document va dans ton coffre (jamais chez les joueurs). Le fichier Word n'est ni modifié ni envoyé ailleurs : la conversion se fait dans ce navigateur."),
+    msg, ok].flat(Infinity).filter(Boolean), { large: true });
+  ok.addEventListener("click", async () => {
+    const res = await executer(ctx, async () => {
+      const doc = await ctx.regie.importerDocument({ genre: genre.value, titre: champTitre.value, saison: saison.value, lieu: lieu.value, type: type.value, region: region.value, markdown: conv.markdown, source: nom });
+      const p = parcoursActuel();
+      for (const c of COLONNES) p[c.cle] = p[c.cle].filter(d => !(d.genre === doc.genre && d.fichier === doc.fichier));
+      p[colonne.value].push({ genre: doc.genre, fichier: doc.fichier });
+      await ctx.regie.enregistrerParcours(p);
+      return doc;
+    }, { zone: msg, boutons: [ok] });
+    if (!res.ok) return;
+    fermer();
+    location.hash = `#/mj/seance/${res.r.genre}/${enc(res.r.fichier)}`;   // on arrive dans le document : c'est là qu'on voit si les scènes et les blocs sont bons
+  });
 }
