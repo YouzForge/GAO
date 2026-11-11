@@ -706,3 +706,10 @@ body.joueur .jr-saisie.se-notes{min-height:220px}
 .jg-palier-seuil{flex:none;min-width:58px;font-family:"Cinzel",serif;font-weight:700;color:var(--orange);font-variant-numeric:tabular-nums}
 .jg-palier-effets{margin-top:4px;font-size:14px;color:var(--voile)}
 body.joueur .jr-saisie.jg-zone{min-height:84px}
+
+/* Boutons de pas des jauges : la feuille générale donne à tout bouton une marge intérieure large ; ici ils doivent tenir à six dans une carte étroite. */
+.se-jauge-pas{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));grid-auto-flow:column;gap:6px}
+.se-pas{min-width:0;padding:0 2px;font-size:14px;white-space:nowrap}
+.jg-carte{min-width:0;overflow:hidden}
+.jg-carte .se-jauge-pas{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-flow:row}
+.se-jauge .se-jauge-pas{grid-template-columns:repeat(5,minmax(0,1fr));grid-auto-flow:row}
