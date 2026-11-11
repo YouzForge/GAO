@@ -1,14 +1,16 @@
 // Écran « Séance » du MJ : la table de jeu. Le document de la prochaine session au centre (scènes, blocs colorés : à lire, dialogue, note MJ, secret, combat),
 // le sommaire des scènes à gauche, et à droite un panneau d'outils : fiche MJ, secrets, cartes à révéler, tuiles (PNJ, lieux, quêtes cités), joueurs et jauges, notes.
 // Pensé pour l'ordinateur (trois colonnes) ; sur téléphone tout s'empile. RÈGLE du moteur : jamais de innerHTML.
-import { parseDoc } from "../../src/md/doc.js?v=0.23.0";
-import { rangerParcours, deplacer, parcoursDepuisRangement } from "../../src/mj/parcours.js?v=0.23.0";
-import { decouper, ficheMJ, blocsDe, entitesCitees } from "../../src/mj/seance.js?v=0.23.0";
-import { TYPES, typeDe } from "../../src/mj/revelations.js?v=0.23.0";
-import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.23.0";
-import { executer, confirmer } from "./edition.js?v=0.23.0";
-import { cadreMJ } from "./ecrans_mj.js?v=0.23.0";
-import { formulaireCarte, ouvrirCarte, annoncer } from "./ecrans_regie.js?v=0.23.0";
+import { parseDoc } from "../../src/md/doc.js?v=0.24.0";
+import { rangerParcours, deplacer, parcoursDepuisRangement } from "../../src/mj/parcours.js?v=0.24.0";
+import { decouper, ficheMJ, blocsDe, entitesCitees } from "../../src/mj/seance.js?v=0.24.0";
+import { TYPES, typeDe } from "../../src/mj/revelations.js?v=0.24.0";
+import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.24.0";
+import { executer, confirmer } from "./edition.js?v=0.24.0";
+import { cadreMJ } from "./ecrans_mj.js?v=0.24.0";
+import { formulaireCarte, ouvrirCarte, annoncer } from "./ecrans_regie.js?v=0.24.0";
+import { annoncerPalier } from "./ecrans_jauges.js?v=0.24.0";
+import { palierDe } from "../../src/mj/jauges.js?v=0.24.0";
 
 const enc = encodeURIComponent;
 const estAuth = e => e && (e.status === 401 || e.auth);
@@ -154,23 +156,27 @@ export async function ecranSeanceMJ(ctx, genre = null, fichier = null) {
       };
       const ligneJauge = j => {
         const valeur = h("strong", null, `${j.actuelle}`), barre = h("div", { style: `width:${Math.round(j.actuelle / j.max * 100)}%` });
+        const palier = h("span", { class: "jg-palier-nom" }, j.palier ? j.palier.nom : "");
         const boutons = [];
         const changer = async delta => {
           const r = await executer(ctx, () => ctx.regie.changerJauge(j.fichier, j.actuelle + delta), { zone, boutons });
           if (!r.ok) return;
           j.actuelle = r.r.actuelle; valeur.textContent = String(j.actuelle); barre.style.width = `${Math.round(j.actuelle / j.max * 100)}%`;
+          const p = palierDe(j.paliers || [], j.actuelle); palier.textContent = p ? p.nom : "";
+          if (r.r.franchi) annoncerPalier(j, r.r.franchi);   // la valeur entre dans un nouveau palier : ses effets s'affichent
         };
         const b = (delta, txt) => { const x = h("button", { class: "se-pas", type: "button", "aria-label": `${j.nom} ${txt}`, onclick: () => changer(delta) }, txt); boutons.push(x); return x; };
         return h("li", { class: "se-jauge" },
           h("div", { class: "se-jauge-tete" }, h("span", { class: "se-jauge-nom" }, j.nom), j.porteur ? h("span", { class: "jr-puce" }, nomJoueur(j.porteur)) : null, h("span", { class: "se-jauge-val" }, valeur, ` / ${j.max}`)),
-          h("div", { class: "se-jauge-barre" }, barre),
+          h("div", { class: "se-jauge-barre" }, barre), palier,
           ecrire ? h("div", { class: "se-jauge-pas" }, b(-5, "−5"), b(-1, "−1"), b(1, "+1"), b(5, "+5"), b(10, "+10")) : null);
       };
       return [
         r.joueurs.length ? h("ul", { class: "se-joueurs" }, r.joueurs.map(ligneJoueur)) : message("Aucun dossier de joueur.", "info"),
         h("h4", { class: "se-titre-outil secret" }, icon("lock", 15), "Jauges cachées des objets"),
         jauges.length ? h("ul", { class: "se-jauges" }, jauges.map(ligneJauge)) : h("p", { class: "jr-vide" }, "Aucun objet du coffre n'a de jauge (champs « jauge_max » et « jauge_actuelle »)."),
-        zone, h("p", { class: "jr-aide" }, "Les jauges restent au coffre : aucun joueur ne les voit.")];
+        zone, h("p", { class: "jr-aide" }, "Les jauges restent au coffre : aucun joueur ne les voit."),
+        h("a", { class: "jr-retour", href: "#/mj/jauges" }, "Toutes les jauges (temples, quêtes…)", icon("next", 16))];
     },
     async notes() {
       const n = await ctx.regie.notes();

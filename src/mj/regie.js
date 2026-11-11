@@ -4,17 +4,17 @@
 //
 // RÈGLE DE SÉCURITÉ : le seul chemin par lequel un texte du coffre arrive dans le dossier d'un joueur est `texteJoueur` / `copiePourAutreJoueur` / `fusionner`
 // (src/mj/revelations.js), qui retirent les sections et les champs du coffre et refusent de publier si une marque de secret subsiste.
-import { parseDoc, humanize, norm } from "../md/doc.js?v=0.23.0";
-import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.23.0";
-import { AccesRefuse } from "../depot/depot.js?v=0.23.0";
-import { EcritureInvalide } from "../ecriture/fiche.js?v=0.23.0";
-import { pool } from "../graph/pool.js?v=0.23.0";
+import { parseDoc, humanize, norm } from "../md/doc.js?v=0.24.0";
+import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.24.0";
+import { AccesRefuse } from "../depot/depot.js?v=0.24.0";
+import { EcritureInvalide } from "../ecriture/fiche.js?v=0.24.0";
+import { pool } from "../graph/pool.js?v=0.24.0";
 import { TYPES, typeDe, DOSSIER_REVELATIONS, lireCarte, texteJoueur, copiePourAutreJoueur, fusionner, texteCarte, modifierCarte, poserChamp, nomPublie, nomDepuisTitre,
-  construireCatalogue, plusGrandNumero, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal } from "./revelations.js?v=0.23.0";
-import { texteDocumentImporte } from "../import/docx.js?v=0.23.0";
-import { lireParcours, ecrireParcours } from "./parcours.js?v=0.23.0";
-import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.23.0";
-import { jaugeDe } from "./seance.js?v=0.23.0";
+  construireCatalogue, plusGrandNumero, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal } from "./revelations.js?v=0.24.0";
+import { texteDocumentImporte } from "../import/docx.js?v=0.24.0";
+import { lireParcours, ecrireParcours } from "./parcours.js?v=0.24.0";
+import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.24.0";
+import { DOSSIER_JAUGES, FICHIER_RANGEMENT, lireJauge, texteJauge, modifierJauge, changerValeur, palierDe, franchissement, lireRangement, ecrireRangement, rangerJauges, rangementDepuis } from "./jauges.js?v=0.24.0";
 
 const MARKDOWN = /^(?!00_|LISEZMOI).+\.md$/i;
 const NOM_DOSSIER = /^(?![._])[^/\\:?*"<>|\u0000-\u001f]{1,80}$/;
@@ -36,6 +36,7 @@ export function creerRegie({ profil, depot, maintenant = () => new Date() }) {
   const zones = Object.fromEntries(((profil.joueur_modele || {}).dossiers || []).map(d => [d.id, d.dossier]));
   const racineCartes = `${coffre}/${DOSSIER_REVELATIONS}`;
   const cheminJournal = `${racineCartes}/Journal_des_revelations.md`;
+  const dossierJauges = `${(dossierCol("session") || `${coffre}/02_Campagne/Sessions`).split("/").slice(0, -1).join("/")}/${DOSSIER_JAUGES}`;
   const dossierResumes = `${racineCartes}/${DOSSIER_RESUMES}`;
   const dossierTable = () => { const c = (profil.collections || []).find(x => x.id === "resume"); if (!c) throw new AccesRefuse("Ce JDR n'a pas de résumés de session", "zone_absente"); return c.dossier; };
   /** Version d'un compte rendu pour la table : sans notes du MJ, visible, datée ; refusée si une marque de secret subsiste. */
@@ -268,33 +269,74 @@ export function creerRegie({ profil, depot, maintenant = () => new Date() }) {
       if (!GENRES_TUILES.includes(genre) || !NOM_SIMPLE.test(String(fichier))) refus("Fiche inconnue", "nom_invalide");
       return lire(`${dossierCol(genre)}/${fichier}`);
     },
-    /** Les objets du coffre qui ont une jauge. → [{ fichier, nom, porteur, actuelle, max }] */
+    // ------------------------------------------------------------ Jauges (onglet « Jauges » et outil « Joueurs » de la séance)
+    /** Toutes les jauges, rangées en sections : celles des objets de l'univers et les jauges libres du MJ. → [{ titre, jauges:[lireJauge…] }] */
+    async toutesLesJauges() {
+      const dO = dossierCol("objet");
+      const lireDossier = async (d, genre) => (d ? (await pool(nomsMd(await lister(d)).filter(n => n !== FICHIER_RANGEMENT), async n => { const t = await lire(`${d}/${n}`); return t == null ? null : lireJauge(t, n, genre); }, 6)).filter(Boolean) : []);
+      const [objets, libres, rangement] = await Promise.all([lireDossier(dO, "objet"), lireDossier(dossierJauges, "jauge"),
+        lire(`${dossierJauges}/${FICHIER_RANGEMENT}`).catch(e => { if (estAuth(e)) throw e; return null; })]);
+      return rangerJauges(lireRangement(rangement), [...objets, ...libres]);
+    },
+    /** Les jauges des objets seulement (outil « Joueurs » de la séance). → [lireJauge…] */
     async jauges() {
       const d = dossierCol("objet");
       if (!d) return [];
-      const out = await pool(nomsMd(await lister(d)), async n => {
-        const t = await lire(`${d}/${n}`);
-        if (t == null) return null;
-        const doc = parseDoc(t), j = jaugeDe(doc.meta);
-        return j ? { fichier: n, nom: String(doc.meta.nom || doc.meta.titre || doc.title || humanize(n)), porteur: String(doc.meta.porteur || ""), ...j } : null;
-      }, 4);
-      return out.filter(Boolean);
+      return (await pool(nomsMd(await lister(d)), async n => { const t = await lire(`${d}/${n}`); return t == null ? null : lireJauge(t, n, "objet"); }, 4)).filter(Boolean);
     },
-    /** Écrit la valeur d'une jauge dans la fiche de l'objet (coffre seulement : une jauge cachée n'est jamais chez un joueur). → { actuelle, max } */
-    async changerJauge(fichier, valeur) {
-      const d = dossierCol("objet");
-      if (!d || !NOM_SIMPLE.test(String(fichier))) refus("Objet inconnu", "nom_invalide");
+    /**
+     * Change la valeur d'une jauge (bornée entre 0 et son maximum) et l'inscrit à son suivi. `j` : { genre, fichier }.
+     * → { actuelle, max, palier, franchi } ; `franchi` : null, ou { palier, ancien, sens } quand la valeur change de palier (l'écran l'annonce au MJ).
+     */
+    async changerValeurJauge(j, valeur, note = "") {
+      const d = j.genre === "objet" ? dossierCol("objet") : j.genre === "jauge" ? dossierJauges : null;
+      if (!d || !NOM_SIMPLE.test(String(j.fichier)) || j.fichier === FICHIER_RANGEMENT) refus("Jauge inconnue", "nom_invalide");
       let res = null;
-      await surFichier(`${d}/${fichier}`, t => {
-        const j = jaugeDe(parseDoc(t).meta);
-        if (!j) throw new EcritureInvalide("Cet objet n'a pas de jauge", "sans_jauge");
-        const v = Math.max(0, Math.min(j.max, Math.trunc(Number(valeur))));
-        if (!Number.isFinite(v)) throw new EcritureInvalide("Valeur de jauge invalide", "jauge_invalide");
-        res = { actuelle: v, max: j.max };
-        return v === j.actuelle ? null : poserChamp(t, "jauge_actuelle", v);
+      await surFichier(`${d}/${j.fichier}`, t => {
+        const avant = lireJauge(t, j.fichier, j.genre);
+        if (!avant) throw new EcritureInvalide("Cette fiche n'a pas de jauge", "sans_jauge");
+        let c;
+        try { c = changerValeur(t, j.genre, valeur, { date: instantDe(maintenant()), note }); } catch (e) { throw new EcritureInvalide(e.message, "jauge_invalide"); }
+        res = { actuelle: c.apres, max: c.max, palier: palierDe(avant.paliers, c.apres), franchi: franchissement(avant.paliers, c.avant, c.apres),
+          suivi: c.texte == null ? avant.suivi : lireJauge(c.texte, j.fichier, j.genre).suivi };
+        return c.texte;
       });
       return res;
     },
+    /** Ancienne forme (jauge d'un objet par son fichier), gardée pour l'écran « Séance ». */
+    async changerJauge(fichier, valeur) { return api.changerValeurJauge({ genre: "objet", fichier }, valeur); },
+    /** Crée une jauge libre et la range à la fin de la section d'indice `section`. → la jauge lue */
+    async creerJauge(champs, rangees, section = 0) {
+      if (!String(champs.nom || "").trim()) throw new EcritureInvalide("Donne un nom à la jauge", "titre_vide");
+      const texte = texteJauge(champs);
+      for (let essai = 0; ; essai++) {
+        const pris = new Set(nomsMd(await lister(dossierJauges)).map(cleFichier));
+        const base = nomDepuisTitre(champs.nom);
+        let nom = `${base}.md`;
+        for (let i = 2; pris.has(cleFichier(nom)) || nom === FICHIER_RANGEMENT; i++) nom = `${base}_${i}.md`;
+        try {
+          await depot.creer(`${dossierJauges}/${nom}`, texte);
+          const j = lireJauge(texte, nom, "jauge");
+          const r = rangees.map((s, i) => (i === section ? { ...s, jauges: [...s.jauges, j] } : s));
+          await api.enregistrerRangementJauges(r);
+          return j;
+        } catch (e) { if (essai === 0 && e instanceof FicheExiste) continue; throw e; }
+      }
+    },
+    /** Modifie les réglages d'une jauge libre (nom, maximum, unité, porteur, description, paliers). Les jauges d'objet se règlent dans la fiche de l'objet. */
+    async modifierJauge(j, champs) {
+      if (j.genre !== "jauge" || !NOM_SIMPLE.test(String(j.fichier))) refus("Cette jauge se règle dans la fiche de son objet", "zone_refusee");
+      let neuf = null;
+      await surFichier(`${dossierJauges}/${j.fichier}`, t => (neuf = modifierJauge(t, champs)));
+      return lireJauge(neuf, j.fichier, "jauge");
+    },
+    /** Supprime une jauge libre (corbeille OneDrive). L'écran demande confirmation AVANT. */
+    async supprimerJauge(j) {
+      if (j.genre !== "jauge" || !NOM_SIMPLE.test(String(j.fichier)) || j.fichier === FICHIER_RANGEMENT) refus("Cette jauge ne se supprime pas ici", "zone_refusee");
+      const f = await depot.lireFiche(`${dossierJauges}/${j.fichier}`);
+      if (f) await depot.supprimer(`${dossierJauges}/${j.fichier}`, f.etag);
+    },
+    async enregistrerRangementJauges(rangees) { return surFichier(`${dossierJauges}/${FICHIER_RANGEMENT}`, () => ecrireRangement(rangementDepuis(rangees)), { creerSiAbsent: true }); },
 
     // ------------------------------------------------------------ Fin de séance
     /** Notes de séance du jour (coffre : `05_Fin_de_seance/A_traiter`). → { chemin, texte } ; texte « » si rien n'est encore écrit. */

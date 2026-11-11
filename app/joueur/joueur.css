@@ -669,3 +669,40 @@ body.joueur .jr-saisie.se-notes{min-height:220px}
 .pc-importer-zone + .pc-etat,.mj-lieux-tete .pc-etat{margin-left:0}
 .pc-import-scenes{margin:0;padding-left:1.6em;font-size:14px;color:var(--voile);display:flex;flex-direction:column;gap:2px}
 .rv-grille[hidden]{display:none}
+
+/* ---- Jauges du MJ ---- */
+.jg{display:flex;flex-direction:column;gap:16px}
+.jg-section{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:16px;border:1px solid var(--trait);background:var(--creux)}
+.jg-section.cible{outline:2px dashed var(--orange);outline-offset:-4px}
+.jg-section-tete{display:flex;align-items:center;gap:10px}
+.jg-section-tete h3{font-family:"Cinzel",serif;font-size:18px;color:var(--texte);text-transform:none;letter-spacing:.01em}
+.jg-rond{width:36px;height:36px;margin-left:auto}
+.jg-ajout{background:var(--sol)}
+.jg-cartes{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:10px}
+.jg-cartes .pc-vide{grid-column:1/-1}
+.jg-carte{display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px;border-radius:14px;border:1px solid var(--trait);border-left:4px solid var(--orange);background:var(--sol)}
+.jg-carte.objet{border-left-color:var(--rouge)}
+.jg-carte[draggable=true]{cursor:grab}
+.jg-carte.glisse{opacity:.4}
+.jg-carte.dessus{box-shadow:0 -3px 0 var(--orange)}
+.jg-carte-tete{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:2px 0;border:0;background:none;color:var(--texte);text-align:left}
+.jg-carte-tete:hover .jg-carte-nom span{text-decoration:underline}
+.jg-carte-nom{display:flex;align-items:center;gap:7px;min-width:0;font-family:"Cinzel",serif;font-weight:600;font-size:15.5px;overflow-wrap:anywhere}
+.jg-carte-nom svg{flex:none;color:var(--voile)}
+.jg-carte-val{flex:none;font-family:"Cinzel",serif;font-size:13.5px;color:var(--voile);font-variant-numeric:tabular-nums;white-space:nowrap}
+.jg-carte-val strong{font-size:22px;color:var(--texte)}
+.jg-barre{position:relative;height:10px;border-radius:5px;background:var(--creux);overflow:hidden}
+.jg-barre-plein{height:100%;background:linear-gradient(90deg,var(--orange),var(--rouge));transition:width .25s}
+.jg-repere{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--voile);opacity:.55}
+.jg-repere.passe{background:var(--creux);opacity:.9}
+.jg-carte-bas{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-height:24px}
+.jg-palier-nom{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--orange)}
+.jg-palier-nom:empty{display:none}
+.jg-paliers{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.jg-palier{padding:8px 10px;border-radius:10px;border:1px solid var(--trait);background:var(--creux);opacity:.75}
+.jg-palier.passe{opacity:1}
+.jg-palier.actif{opacity:1;border-color:var(--orange);background:rgba(239,138,62,.1)}
+.jg-palier-tete{display:flex;align-items:baseline;gap:10px}
+.jg-palier-seuil{flex:none;min-width:58px;font-family:"Cinzel",serif;font-weight:700;color:var(--orange);font-variant-numeric:tabular-nums}
+.jg-palier-effets{margin-top:4px;font-size:14px;color:var(--voile)}
+body.joueur .jr-saisie.jg-zone{min-height:84px}

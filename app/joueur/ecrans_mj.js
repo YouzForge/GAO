@@ -1,13 +1,13 @@
 // Écrans du MJ (D47, lecture seule) : l'accueil avec la liste des lieux et la session de jeu à venir, la lecture d'un document du coffre, le tableau de bord des joueurs et leurs notes MJ, la matrice « qui sait quoi ».
 // Même charte que les écrans du joueur : bandeau dégradé, panneau qui monte, onglets rouges (orange = écran actif), cartes sombres à bord arrondi, titres en Cinzel.
 // Pensés pour l'ordinateur (deux colonnes, large) et lisibles sur téléphone (une colonne). Seule exception : les compétences spéciales d'un joueur (écran « Joueur », si l'écriture est ouverte).
-import { parseDoc, norm } from "../../src/md/doc.js?v=0.23.0";
-import { ETATS_LIEU, STATUTS_SESSION, filtrerLieux, compterEtats } from "../../src/mj/accueil.js?v=0.23.0";
-import { construireMatrice, filtrerSavoirs, compterFiltres, FILTRES_SAVOIRS } from "../../src/mj/matrice.js?v=0.23.0";
-import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.23.0";
-import { executer, confirmer } from "./edition.js?v=0.23.0";
-import { EcritureInvalide } from "../../src/ecriture/fiche.js?v=0.23.0";
-import { MAX_COMPETENCE_NOM, MAX_COMPETENCE_LIENS, MAX_COMPETENCE_NOTE, MAX_COMPETENCE_TOTAL } from "../../src/joueur/ecriture.js?v=0.23.0";
+import { parseDoc, norm } from "../../src/md/doc.js?v=0.24.0";
+import { ETATS_LIEU, STATUTS_SESSION, filtrerLieux, compterEtats } from "../../src/mj/accueil.js?v=0.24.0";
+import { construireMatrice, filtrerSavoirs, compterFiltres, FILTRES_SAVOIRS } from "../../src/mj/matrice.js?v=0.24.0";
+import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.24.0";
+import { executer, confirmer } from "./edition.js?v=0.24.0";
+import { EcritureInvalide } from "../../src/ecriture/fiche.js?v=0.24.0";
+import { MAX_COMPETENCE_NOM, MAX_COMPETENCE_LIENS, MAX_COMPETENCE_NOTE, MAX_COMPETENCE_TOTAL } from "../../src/joueur/ecriture.js?v=0.24.0";
 
 const enc = encodeURIComponent;
 const COPIE_ANCIENNE = "Copie enregistrée sur cet appareil : la connexion ne répond pas.";
@@ -57,6 +57,7 @@ export function cadreMJ(ctx, { actif = "accueil", titre, large = false } = {}, .
         onglet("seance", "dice", "Séance", { href: "#/mj/seance" }),
         onglet("revelations", "eye", "Révélations", { href: "#/mj/revelations" }),
         onglet("joueurs", "friends", "Joueurs", { href: "#/mj/joueurs" }),
+        onglet("jauges", "sliders", "Jauges", { href: "#/mj/jauges" }),
         onglet("guide", "question", "Guide", { href: "#/mj/guide", classe: "droite" })),   // le mode d'emploi, toujours accessible, tout à droite
       h("div", { class: "mj-contenu" }, contenu)));
 }

@@ -1,4 +1,4 @@
-# La régie du MJ (version 0.23.0)
+# La régie du MJ (version 0.24.0)
 
 Ce document décrit les écrans du MJ ajoutés à l'application : ce qu'ils font, où ils écrivent, et ce qui reste à vérifier.
 Il ne contient aucun contenu de jeu.
@@ -23,6 +23,17 @@ Il ne contient aucun contenu de jeu.
 Une carte destinée à un seul joueur (quête personnelle, objet clé, part de butin) se prépare en ne cochant que lui dans *Destinataires prévus*.
 
 Ce qui a été publié avant la régie n'a pas de carte au coffre : ces lignes restent visibles et révélables case par case, mais l'application ne propose jamais de les donner « à tous » d'un clic (un savoir personnel partirait chez toute la table). *Modifier* crée leur carte.
+
+## Les jauges
+
+Onglet **Jauges** : toutes les jauges de la campagne, rangées en sections (au départ Joueurs, Univers, Quêtes ; le MJ en crée, les renomme, les ordonne). Deux sortes de jauges, affichées de la même façon :
+
+- **jauge d'objet** : celle d'un objet de l'univers, écrite dans sa fiche (`jauge_actuelle`, `jauge_max`, `porteur`) ; c'est la même que dans l'outil *Joueurs* de l'écran *Séance* ;
+- **jauge libre** : créée par le MJ, un fichier par jauge dans `MJ/02_Campagne/Jauges` (`nom`, `actuelle`, `max`, `unite`, `porteur`).
+
+Les **paliers** sont lus dans la fiche, section « 🔴 Paliers de la jauge » : une ligne `**10–29 : Nom**` (ou `10-29 : Nom`, ou `100 : Nom`) par palier, ses effets sur les lignes suivantes. Chaque changement de valeur est daté dans le suivi de la fiche (section « Suivi MJ » d'un objet, « Suivi » d'une jauge libre). Le rangement (sections et ordre) est dans `MJ/02_Campagne/Jauges/Rangement.md`.
+
+**Déclenchements.** Quand une valeur entre dans un nouveau palier, l'écran ouvre « Palier atteint » avec ses effets. Les effets ne sont pas encore appliqués aux fiches des joueurs. Le principe est posé dans `src/mj/jauges.js` : une ligne d'effet `⚙ Cible | Ce qui change | +10` dans un palier est lue par `effetsDe` ; il reste à écrire l'application de ces effets à la fiche du joueur (et leur retrait quand la jauge redescend).
 
 ## Importer un document Word
 
@@ -50,7 +61,8 @@ Il n'y a pas de visibilité par joueur : la table est commune, un compte rendu e
 | Cartes à révéler | `MJ/04_Revelations/Savoirs`, `Quetes`, `Rencontres`, `Objets` (un fichier Markdown par carte) |
 | Journal des révélations | `MJ/04_Revelations/Journal_des_revelations.md` |
 | Rangement du parcours | `MJ/02_Campagne/Parcours.md` |
-| Jauges cachées des objets | champ `jauge_actuelle` de la fiche de l'objet, dans `MJ/01_Univers/Objets` |
+| Jauges des objets | champs `jauge_actuelle`, `jauge_max`, `porteur` de la fiche de l'objet, dans `MJ/01_Univers/Objets` |
+| Jauges libres et leur rangement | `MJ/02_Campagne/Jauges` (un fichier par jauge, et `Rangement.md`) |
 | Notes de séance | `MJ/05_Fin_de_seance/A_traiter/AAAA-MM-JJ_Notes_de_seance.md` |
 | Ce qu'un joueur reçoit | `Joueurs/<Pseudo>/Savoirs`, `Quetes`, `Rencontres`, `Inventaire` |
 | Compte rendu visible (journal des joueurs) | `Table/Resumes_de_session` |

@@ -1,6 +1,6 @@
 // Contenu du guide du MJ (onglet « Guide »). FICHIER GÉNÉRÉ : ne pas le modifier à la main.
 // Source : le générateur du guide Word (guide_mj_generer.js), converti par guide_mj_donnees.js. Aucun contenu de jeu.
-export const VERSION_GUIDE = "0.23.0";
+export const VERSION_GUIDE = "0.24.0";
 export const GUIDE = [
  {
   "num": "",
@@ -39,7 +39,7 @@ export const GUIDE = [
    },
    {
     "t": "h2",
-    "x": "Les quatre onglets du MJ"
+    "x": "Les onglets du MJ"
    },
    {
     "t": "table",
@@ -63,6 +63,10 @@ export const GUIDE = [
      [
       "Joueurs",
       "Le tableau de bord : points de vie, valeurs, bourse, et pour chacun « Notes MJ » et « Voir comme lui »."
+     ],
+     [
+      "Jauges",
+      "Toutes tes jauges, rangées en sections : objets magiques des joueurs, avancement des temples, et celles que tu crées. Paliers et suivi de chaque jauge."
      ]
     ]
    },
@@ -645,20 +649,21 @@ export const GUIDE = [
    },
    {
     "t": "ou",
-    "x": "**Séance** → outil **Joueurs** → « Jauges cachées des objets »"
+    "x": "**Séance** → outil **Joueurs** → « Jauges cachées des objets »   ou   onglet **Jauges** → section Joueurs"
    },
    {
     "t": "etapes",
     "items": [
      "Lance tes dés à la table.",
-     "Clique **+1**, **+5** ou **+10** (ou **−1**, **−5**) autant de fois qu'il faut pour atteindre la nouvelle valeur."
+     "Clique **+1**, **+5** ou **+10** (ou **−1**, **−5**) autant de fois qu'il faut pour atteindre la nouvelle valeur.",
+     "Si la valeur entre dans un nouveau palier, une fenêtre s'ouvre : **Palier atteint**, avec ses effets tels qu'ils sont écrits dans la fiche de l'objet. Applique-les à la table."
     ]
    },
    {
     "t": "boite",
     "genre": "resultat",
     "lignes": [
-     "La valeur est enregistrée dans la fiche de l'objet, dans ton coffre. Aucun joueur ne la voit, jamais."
+     "La valeur est enregistrée dans la fiche de l'objet, dans ton coffre, avec la date dans son suivi. Le nom du palier en cours s'affiche sous la barre. Aucun joueur ne voit la jauge, jamais. Les deux écrans montrent la même jauge : changer l'une met l'autre à jour."
     ]
    },
    {
@@ -1109,7 +1114,7 @@ export const GUIDE = [
  },
  {
   "num": "V",
-  "titre": "Les joueurs",
+  "titre": "Les joueurs et les jauges",
   "blocs": [
    {
     "t": "fiche",
@@ -1241,6 +1246,117 @@ export const GUIDE = [
    {
     "t": "p",
     "x": "Ce qu'il **ne peut pas** faire : modifier le texte d'un savoir, d'une quête ou d'une présentation de rencontre (c'est toi qui les écris), ni voir quoi que ce soit du coffre ou du dossier d'un autre joueur."
+   },
+   {
+    "t": "fiche",
+    "n": 27,
+    "q": "Je veux voir et tenir à jour toutes mes jauges"
+   },
+   {
+    "t": "ou",
+    "x": "Onglet **Jauges**"
+   },
+   {
+    "t": "p",
+    "x": "Toutes tes jauges sont ici, rangées en sections. Au départ : **Joueurs** (les objets magiques à jauge de chaque joueur), **Univers** (l'avancement de la construction des temples, repris de ta trame) et **Quêtes** (vide)."
+   },
+   {
+    "t": "etapes",
+    "items": [
+     "Chaque carte montre la valeur, la barre (avec un petit trait à chaque palier), le joueur ou le lieu concerné, et le nom du **palier en cours**.",
+     "Les boutons **−10 −5 −1 +1 +5 +10** changent la valeur tout de suite.",
+     "Clique le **nom** de la jauge pour l'ouvrir : fixer une valeur exacte (avec une note : « trois gorgées », « rituel interrompu »), lire tous ses paliers, et son **suivi** daté.",
+     "Pour ranger : **glisse** une carte dans une autre section, ou devant une autre carte. Le message « Rangement enregistré » confirme."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "resultat",
+    "lignes": [
+     "Chaque changement est écrit dans ton coffre avec sa date. Rien n'est jamais visible par un joueur."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "astuce",
+    "lignes": [
+     "Les jauges des objets sont les mêmes que celles de l'écran Séance (outil Joueurs) : tu peux les changer d'un côté ou de l'autre.",
+     "Sur téléphone, pas de glisser : ouvre la jauge, puis **Déplacer**."
+    ]
+   },
+   {
+    "t": "fiche",
+    "n": 28,
+    "q": "Je veux créer une nouvelle jauge, ou une nouvelle section"
+   },
+   {
+    "t": "ou",
+    "x": "Onglet **Jauges** → **Nouvelle jauge**   ·   **Nouvelle section**"
+   },
+   {
+    "t": "h3",
+    "x": "Une jauge"
+   },
+   {
+    "t": "etapes",
+    "items": [
+     "**Nouvelle jauge** (en haut), ou le bouton **+ Jauge** d'une section.",
+     "Donne un **Nom**, un **Maximum** (100 par défaut), une **Valeur de départ**, une **Unité** si tu veux (%, jours, points).",
+     "**Concerne** : le joueur, le lieu ou la faction que la jauge suit (facultatif, c'est une étiquette).",
+     "**Paliers** (facultatif) : un par ligne, « 25-49 : Les murs montent » ou « 100 : Temple activé » ; ses effets sur les lignes suivantes, avec un tiret.",
+     "Choisis la **Section**, puis **Créer la jauge**."
+    ]
+   },
+   {
+    "t": "h3",
+    "x": "Une section"
+   },
+   {
+    "t": "etapes",
+    "items": [
+     "**Nouvelle section**, donne-lui un nom : Culte, Factions, Compte à rebours…",
+     "Le bouton **⋯** à droite du titre d'une section permet de la renommer, de la monter ou de la descendre, et de la supprimer quand elle est vide."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "astuce",
+    "lignes": [
+     "Pour changer le nom, le maximum ou les paliers d'une jauge que tu as créée : ouvre-la, puis **Régler**. Sa valeur et son suivi sont gardés.",
+     "Pour une jauge d'**objet** (celle d'un item d'un joueur), ces réglages se font dans la fiche de l'objet : Menu ⋯ → Listes du coffre → Objets. Un objet apparaît dans les jauges dès que sa fiche a une « Jauge maximale »."
+    ]
+   },
+   {
+    "t": "fiche",
+    "n": 29,
+    "q": "Une jauge atteint un palier : que se passe-t-il ?"
+   },
+   {
+    "t": "p",
+    "x": "Quand une valeur **entre dans un nouveau palier** (en montant ou en descendant), l'application ouvre une fenêtre « Palier atteint » avec le nom du palier et ses effets, tels que tu les as écrits. Elle le fait depuis l'onglet Jauges comme depuis l'écran Séance."
+   },
+   {
+    "t": "etapes",
+    "items": [
+     "Lis les effets et applique-les à la table : bonus, malus, narration.",
+     "Si le palier change une compétence d'un joueur, **préviens-le** : c'est lui qui tient ses valeurs. Tu peux aussi lui ajouter une compétence spéciale pour le rappeler (fiche 25).",
+     "Ferme la fenêtre. Le nom du palier reste affiché sous la barre de la jauge."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "astuce",
+    "lignes": [
+     "Les paliers de tes quatre objets sont lus directement dans leur fiche (section « Paliers de la jauge », une ligne « 10–29 : Nom » par palier). Si tu les corriges dans la fiche, l'onglet suit."
+    ]
+   },
+   {
+    "t": "boite",
+    "genre": "limite",
+    "lignes": [
+     "L'application **annonce** le palier, elle n'**applique** pas encore ses effets toute seule : les compétences d'un joueur ne sont pas recalculées automatiquement. C'est prévu (partie VIII, point 12).",
+     "Le principe est déjà posé : une ligne d'effet écrite « ⚙ Joueur | Compétence | +10 » dans un palier est reconnue par l'application, qui te la signale ; il reste à lui faire modifier la fiche du joueur."
+    ]
    }
   ]
  },
@@ -1459,8 +1575,8 @@ export const GUIDE = [
       "Aujourd'hui : Menu ⋯ → Listes du coffre → Sessions → Modifier (non essayé sur un gros document), ou modifier le fichier d'origine.  →  À prévoir : un bouton « Corriger » sur chaque bloc."
      ],
      [
-      "12. Jauges : pas d'historique",
-      "Aujourd'hui : seule la valeur actuelle est gardée.  →  À prévoir : noter chaque variation dans le journal des révélations."
+      "12. Paliers : effets automatiques",
+      "Aujourd'hui : quand une jauge entre dans un palier, l'application l'annonce et affiche ses effets ; c'est toi qui les appliques (fiche 29). Chaque variation est datée dans le suivi de la jauge.  →  À prévoir : appliquer toute seule l'effet d'un palier à la fiche du joueur (par exemple +10 % en combat rapproché), et le retirer quand la jauge redescend."
      ],
      [
       "13. Plusieurs tables",
@@ -1550,7 +1666,11 @@ export const GUIDE = [
      ],
      [
       "Faire monter une jauge cachée",
-      "Séance → Joueurs"
+      "Séance → Joueurs, ou onglet Jauges"
+     ],
+     [
+      "Suivre un temple, une menace, un compte à rebours",
+      "Onglet Jauges → Nouvelle jauge"
      ],
      [
       "Prendre des notes",
