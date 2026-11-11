@@ -70,6 +70,9 @@ body.joueur > header, body.joueur > main, body.joueur > footer{display:none}
 .jr-attente{display:flex;flex-direction:column;align-items:center;gap:10px;padding:60px 20px;color:var(--voile)}
 .jr-spin{animation:jr-tourne 2.4s linear infinite}
 @keyframes jr-tourne{to{transform:rotate(360deg)}}
+/* bouton dont l'écriture est en cours : son contenu s'efface derrière un cercle qui tourne, et il ne répond plus */
+button.jr-occupe{position:relative;color:transparent!important;pointer-events:none;cursor:progress}
+button.jr-occupe::after{content:"";position:absolute;inset:0;margin:auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--texte);border-right-color:transparent;animation:jr-tourne .8s linear infinite}
 .jr-msg{margin:0;padding:10px 12px;border-radius:12px;border:1px solid var(--trait);background:var(--sol);font-size:14px;color:var(--voile)}
 .jr-msg.alerte{border-color:var(--orange);color:var(--texte)}
 .jr-msg.erreur{border-color:var(--rouge);color:var(--texte)}

@@ -4,19 +4,19 @@
 //
 // RÈGLE DE SÉCURITÉ : le seul chemin par lequel un texte du coffre arrive dans le dossier d'un joueur est `texteJoueur` / `copiePourAutreJoueur` / `fusionner`
 // (src/mj/revelations.js), qui retirent les sections et les champs du coffre et refusent de publier si une marque de secret subsiste.
-import { parseDoc, humanize, norm } from "../md/doc.js?v=0.26.1";
-import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.26.1";
-import { AccesRefuse } from "../depot/depot.js?v=0.26.1";
-import { EcritureInvalide } from "../ecriture/fiche.js?v=0.26.1";
-import { pool } from "../graph/pool.js?v=0.26.1";
+import { parseDoc, humanize, norm } from "../md/doc.js?v=0.26.2";
+import { FicheExiste, ConflitEcriture } from "../graph/client.js?v=0.26.2";
+import { AccesRefuse } from "../depot/depot.js?v=0.26.2";
+import { EcritureInvalide } from "../ecriture/fiche.js?v=0.26.2";
+import { pool } from "../graph/pool.js?v=0.26.2";
 import { TYPES, typeDe, DOSSIER_REVELATIONS, lireCarte, texteJoueur, copiePourAutreJoueur, fusionner, texteCarte, modifierCarte, poserChamp, nomPublie, nomDepuisTitre,
   construireCatalogue, plusGrandNumero, cleFichier, ligneJournal, ajouterAuJournal, DOSSIER_RESUMES, texteResume, lireResume, construireJournal,
-  TYPE_DE_GENRE, carteDepuisFiche, ligneDeFiche } from "./revelations.js?v=0.26.1";
-import { texteDocumentImporte } from "../import/docx.js?v=0.26.1";
-import { texteFiche } from "../import/fiches.js?v=0.26.1";
-import { lireParcours, ecrireParcours } from "./parcours.js?v=0.26.1";
-import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.26.1";
-import { DOSSIER_JAUGES, FICHIER_RANGEMENT, lireJauge, texteJauge, modifierJauge, changerValeur, palierDe, franchissement, lireRangement, ecrireRangement, rangerJauges, rangementDepuis } from "./jauges.js?v=0.26.1";
+  TYPE_DE_GENRE, carteDepuisFiche, ligneDeFiche } from "./revelations.js?v=0.26.2";
+import { texteDocumentImporte } from "../import/docx.js?v=0.26.2";
+import { texteFiche } from "../import/fiches.js?v=0.26.2";
+import { lireParcours, ecrireParcours } from "./parcours.js?v=0.26.2";
+import { lireLieuMJ, lireSessionMJ, trierParNumero, trierSessions } from "./accueil.js?v=0.26.2";
+import { DOSSIER_JAUGES, FICHIER_RANGEMENT, lireJauge, texteJauge, modifierJauge, changerValeur, palierDe, franchissement, lireRangement, ecrireRangement, rangerJauges, rangementDepuis } from "./jauges.js?v=0.26.2";
 
 const MARKDOWN = /^(?!00_|LISEZMOI).+\.md$/i;
 const NOM_DOSSIER = /^(?![._])[^/\\:?*"<>|\u0000-\u001f]{1,80}$/;
@@ -87,6 +87,49 @@ export function creerRegie({ profil, depot, maintenant = () => new Date() }) {
   }
   const nomSeul = rel => String(rel).split("/").pop();
 
+  const revelationsEnCours = new Map();
+  /** Révèle une ligne (voir `api.reveler`, qui empêche deux révélations simultanées de la même ligne). */
+  async function revelerUneFois(ligne, liste) {
+    const ty = exigerType(ligne.type);
+    const cibles = [...new Set(liste || [])].map(exigerPseudo);
+    if (!cibles.length) return { fichier: ligne.fichier, faits: [], deja: [] };
+    const date = jourDe(maintenant());
+    let texte, fichier = ligne.fichier;
+    if (ligne.carte) {
+      // la carte est RELUE : la ligne affichée peut dater d'avant une révélation précédente (son nom publié n'y figure pas encore)
+      const cheminCarte = `${dossierCartes(ligne.type)}/${ligne.carte.fichier}`;
+      const frais = await lire(cheminCarte);
+      if (frais == null) throw new ConflitEcriture(cheminCarte, "disparue");
+      texte = texteJoueur(frais, { date });
+      const publie = String(parseDoc(frais).meta.publie_sous ?? "").trim();
+      if (publie) fichier = publie;
+      else if (!fichier) {
+        const tous = (await pool(await pseudos(), p => fichiersDe(p, ligne.type), 4)).flatMap(x => x || []).map(nomSeul);
+        const propose = nomPublie(ligne.type, ligne.carte.titre, tous);
+        // le nom est RÉSERVÉ dans la carte avant toute écriture chez un joueur (écriture protégée par la version du fichier) : deux révélations
+        // lancées ensemble retombent sur le même nom, et la seconde trouve le fichier déjà là au lieu d'en créer une copie numérotée de plus
+        let retenu = propose;
+        await surFichier(cheminCarte, t => { const deja = String(parseDoc(t).meta.publie_sous ?? "").trim(); if (deja) { retenu = deja; return null; } retenu = propose; return poserChamp(t, "publie_sous", propose); });
+        fichier = retenu;
+      }
+    } else {
+      const source = Object.keys(ligne.chez)[0];
+      if (!source) throw new EcritureInvalide("Cette ligne n'a ni carte ni exemplaire chez un joueur", "revelation_vide");
+      const t = await lire(`${dossierJoueur(source, ligne.type)}/${ligne.chez[source]}`);
+      texte = t == null ? null : copiePourAutreJoueur(t, ligne.type, { date });
+    }
+    if (texte == null) throw new EcritureInvalide("Ce texte contient encore une marque de secret (🔴, 🔒, 🎲, ⚔️, 🆕) : il n'est pas publié. Corrige la carte.", "marque_secrete");
+    if (!NOM_SIMPLE.test(fichier)) throw new EcritureInvalide("Nom de fichier impossible pour cette carte", "nom_invalide");
+    const faits = [], deja = [];
+    for (const p of cibles) {
+      if (p in ligne.chez) { deja.push(p); continue; }
+      try { await depot.creer(`${dossierJoueur(p, ligne.type)}/${fichier}`, texte); faits.push(p); }
+      catch (e) { if (e instanceof FicheExiste) deja.push(p); else throw e; }
+    }
+    if (faits.length) await journal("révélé", ligne.type, ligne.titre, faits);
+    return { fichier, faits, deja, type: ty.id };
+  }
+
   const api = {
     types: TYPES, cheminParcours, racineCartes,
 
@@ -117,34 +160,16 @@ export function creerRegie({ profil, depot, maintenant = () => new Date() }) {
      * → { fichier, faits:[pseudos], deja:[pseudos] }
      */
     async reveler(ligne, liste) {
-      const ty = exigerType(ligne.type);
-      const cibles = [...new Set(liste || [])].map(exigerPseudo);
-      if (!cibles.length) return { fichier: ligne.fichier, faits: [], deja: [] };
-      const date = jourDe(maintenant());
-      let texte, fichier = ligne.fichier;
-      if (ligne.carte) {
-        texte = texteJoueur(ligne.carte.texte, { date });
-        if (!fichier) {
-          const tous = (await pool(await pseudos(), p => fichiersDe(p, ligne.type), 4)).flatMap(x => x || []).map(nomSeul);
-          fichier = nomPublie(ligne.type, ligne.carte.titre, tous);
-        }
-      } else {
-        const source = Object.keys(ligne.chez)[0];
-        if (!source) throw new EcritureInvalide("Cette ligne n'a ni carte ni exemplaire chez un joueur", "revelation_vide");
-        const t = await lire(`${dossierJoueur(source, ligne.type)}/${ligne.chez[source]}`);
-        texte = t == null ? null : copiePourAutreJoueur(t, ligne.type, { date });
+      // Une même ligne ne se révèle qu'une fois à la fois : un second appel pendant le premier (double clic, clic répété faute de voir l'envoi)
+      // attend sa fin et n'écrit rien de plus.
+      const cle = `${ligne.type}:${ligne.carte ? "carte:" + ligne.carte.fichier : ligne.fichier}`;
+      if (revelationsEnCours.has(cle)) {
+        const r = await revelationsEnCours.get(cle).catch(() => null);
+        return { fichier: r ? r.fichier : ligne.fichier, faits: [], deja: [...new Set(liste || [])], type: ligne.type };
       }
-      if (texte == null) throw new EcritureInvalide("Ce texte contient encore une marque de secret (🔴, 🔒, 🎲, ⚔️, 🆕) : il n'est pas publié. Corrige la carte.", "marque_secrete");
-      if (!NOM_SIMPLE.test(fichier)) throw new EcritureInvalide("Nom de fichier impossible pour cette carte", "nom_invalide");
-      const faits = [], deja = [];
-      for (const p of cibles) {
-        if (p in ligne.chez) { deja.push(p); continue; }
-        try { await depot.creer(`${dossierJoueur(p, ligne.type)}/${fichier}`, texte); faits.push(p); }
-        catch (e) { if (e instanceof FicheExiste) deja.push(p); else throw e; }
-      }
-      if (ligne.carte && !ligne.carte.publieSous && (faits.length || deja.length)) await surFichier(`${dossierCartes(ligne.type)}/${ligne.carte.fichier}`, t => poserChamp(t, "publie_sous", fichier));
-      if (faits.length) await journal("révélé", ligne.type, ligne.titre, faits);
-      return { fichier, faits, deja, type: ty.id };
+      const p = revelerUneFois(ligne, liste);
+      revelationsEnCours.set(cle, p);
+      try { return await p; } finally { revelationsEnCours.delete(cle); }
     },
 
     /** Retire à un joueur un élément révélé (corbeille OneDrive). L'écran demande confirmation AVANT. → true si retiré, false s'il n'y était déjà plus. */

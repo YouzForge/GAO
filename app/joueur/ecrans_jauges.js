@@ -2,11 +2,11 @@
 // Les jauges des objets des joueurs y sont à côté des jauges libres (avancement d'un temple, menace…). On change une valeur d'un clic, on glisse une
 // jauge d'une section à l'autre, et l'écran annonce quand une valeur entre dans un nouveau palier. Tout reste au coffre : aucun joueur ne voit une jauge.
 // RÈGLE du moteur : jamais de innerHTML.
-import { deplacerJauge, ajouterSection, renommerSection, supprimerSection, decalerSection, palierDe, effetsDe } from "../../src/mj/jauges.js?v=0.26.1";
-import { h, icon, message, feuille, rendreMarkdown } from "./ui.js?v=0.26.1";
-import { executer, confirmer } from "./edition.js?v=0.26.1";
-import { cadreMJ } from "./ecrans_mj.js?v=0.26.1";
-import { annoncer } from "./ecrans_regie.js?v=0.26.1";
+import { deplacerJauge, ajouterSection, renommerSection, supprimerSection, decalerSection, palierDe, effetsDe } from "../../src/mj/jauges.js?v=0.26.2";
+import { h, icon, message, feuille, rendreMarkdown } from "./ui.js?v=0.26.2";
+import { executer, confirmer } from "./edition.js?v=0.26.2";
+import { cadreMJ } from "./ecrans_mj.js?v=0.26.2";
+import { annoncer } from "./ecrans_regie.js?v=0.26.2";
 
 const estAuth = e => e && (e.status === 401 || e.auth);
 const champ = (libelle, controle, aide) => h("label", { class: "jr-champ" }, h("span", null, libelle), controle, aide ? h("small", { class: "jr-aide" }, aide) : null);
@@ -77,7 +77,7 @@ export async function ecranJaugesMJ(ctx) {
     if (!ecrire) return;
     etat.textContent = "Enregistrement…";
     const r = sections;
-    enCours = enCours.then(async () => { const res = await executer(ctx, () => ctx.regie.enregistrerRangementJauges(r), { zone }); etat.textContent = res.ok ? "Rangement enregistré" : ""; });
+    enCours = enCours.then(async () => { const res = await executer(ctx, () => ctx.regie.enregistrerRangementJauges(r), { zone, auto: false }); etat.textContent = res.ok ? "Rangement enregistré" : ""; });
   };
 
   /** Change la valeur d'une jauge : la carte se met à jour sur place, le palier franchi est annoncé. */

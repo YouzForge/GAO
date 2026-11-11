@@ -1,4 +1,4 @@
-# La régie du MJ (version 0.26.1)
+# La régie du MJ (version 0.26.2)
 
 Ce document décrit les écrans du MJ ajoutés à l'application : ce qu'ils font, où ils écrivent, et ce qui reste à vérifier.
 Il ne contient aucun contenu de jeu.
@@ -19,6 +19,7 @@ Il ne contient aucun contenu de jeu.
 3. **Improviser** : *Séance* → *Révéler* → *Nouvelle révélation* → *Enregistrer et révéler maintenant*.
 4. **Corriger** : ouvrir la carte → *Modifier*, puis *Mettre à jour chez eux*. Ce que le joueur a écrit lui-même (sa note sur une rencontre, « Ce que j'ai fait » d'une quête) est gardé.
    *Modifier* ne touche que la partie principale de la carte (« Ce que je sais », « Présentation »…) et sa vérité. Les autres parties lues par les joueurs (« Savoirs liés »…) sont signalées dans le formulaire et ne changent pas. Un titre # ou ## tapé dans un texte est mis en gras : il n'ouvre jamais une nouvelle partie. Avant la 0.26.1, une carte dont la partie principale était vide recopiait à chaque *Modifier* tout ce que lisent les joueurs. Le premier enregistrement en 0.26.1 retire les parties répétées (deux textes différents sous le même titre restent tous les deux).
+   **Jamais deux fois** (0.26.2) : un bouton qui écrit montre un cercle qui tourne et ne répond plus pendant l'envoi. Côté régie, le nom du fichier publié est réservé dans la carte (`publie_sous`, écriture protégée par sa version) *avant* toute écriture chez un joueur, et une même ligne ne se révèle qu'une fois à la fois : un clic répété, un écran pas encore relu ou un second onglet retombent sur le même fichier, déjà présent, et n'écrivent rien de plus. Avant la 0.26.2, chaque clic sur *Révéler* d'une carte jamais publiée créait une copie numérotée de plus chez chaque joueur ; les copies en trop se retirent case par case dans *Révélations*.
 5. **Annuler** : le bandeau qui suit une révélation propose *Annuler* ; plus tard, un clic sur la case cochée retire la carte à ce joueur.
 
 Une carte destinée à un seul joueur (quête personnelle, objet clé, part de butin) se prépare en ne cochant que lui dans *Destinataires prévus*.

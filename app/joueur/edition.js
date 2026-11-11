@@ -1,11 +1,11 @@
 // Briques d'écriture de l'application « joueur » (tranche 2) : confirmation, exécution d'une écriture avec message d'erreur, formulaires de note
 // et de dossier, étiquettes modifiables. Aucune commande d'écriture n'est dessinée si `ctx.donnees.peutEcrire` est faux (interrupteur fermé, ou MJ qui voit comme un joueur).
 // RÈGLE du moteur : jamais de innerHTML ; tout est construit avec le DOM.
-import { h, icon, feuille, message, fermerFeuilles } from "./ui.js?v=0.26.1";
-import { messageErreur } from "../../src/joueur/erreurs.js?v=0.26.1";
-import { verifierEtiquette, etiquettesUtilisees, MAX_TITRE, MAX_CORPS_NOTE, MAX_NOTE_RENCONTRE, MAX_BOURSE, MAX_ETIQUETTE } from "../../src/joueur/ecriture.js?v=0.26.1";
-import { verifierNomDossier } from "../../src/depot/depot.js?v=0.26.1";
-import { EcritureInvalide } from "../../src/ecriture/fiche.js?v=0.26.1";
+import { h, icon, feuille, message, fermerFeuilles } from "./ui.js?v=0.26.2";
+import { messageErreur } from "../../src/joueur/erreurs.js?v=0.26.2";
+import { verifierEtiquette, etiquettesUtilisees, MAX_TITRE, MAX_CORPS_NOTE, MAX_NOTE_RENCONTRE, MAX_BOURSE, MAX_ETIQUETTE } from "../../src/joueur/ecriture.js?v=0.26.2";
+import { verifierNomDossier } from "../../src/depot/depot.js?v=0.26.2";
+import { EcritureInvalide } from "../../src/ecriture/fiche.js?v=0.26.2";
 
 /** « Recharger » : ferme les fenêtres (leur texte non enregistré est gardé comme brouillon) et relit l'écran. */
 const boutonRecharger = ctx => h("button", { class: "jr-bouton", type: "button", onclick: () => { fermerFeuilles(); ctx.reafficher(); } }, icon("clock", 18), "Recharger");
@@ -16,9 +16,26 @@ export const peut = ctx => !!(ctx.donnees && ctx.donnees.peutEcrire);
  * Exécute une écriture. Les boutons sont bloqués pendant l'envoi (un double appui n'écrit pas deux fois) ; l'échec est dit dans `zone`, avec « Recharger » si le fichier a changé.
  * → { ok:true, r } ou { ok:false, m }. Une session expirée est confiée à l'application (reconnexion).
  */
-export async function executer(ctx, action, { zone = null, boutons = [] } = {}) {
+// Le dernier bouton cliqué : une écriture lancée sans bouton désigné bloque quand même celui qui l'a déclenchée (écouteur en phase de capture,
+// donc avant le gestionnaire du bouton). Un bouton occupé ne relance jamais l'action, même si un clic passe avant qu'il soit désactivé.
+let dernierClic = null, instantClic = 0;
+if (typeof document !== "undefined") document.addEventListener("click", e => {
+  const b = e.target && e.target.closest ? e.target.closest("button") : null;
+  if (b) { dernierClic = b; instantClic = Date.now(); }
+}, true);
+const occupes = new WeakMap();   // bouton → était-il déjà désactivé avant l'envoi (il le redevient après)
+const occuper = (b, oui) => {
+  if (oui) { occupes.set(b, b.disabled); b.disabled = true; b.setAttribute("aria-busy", "true"); }
+  else { b.disabled = !!occupes.get(b); occupes.delete(b); b.removeAttribute("aria-busy"); }
+  b.classList.toggle("jr-occupe", oui);
+};
+
+/** `auto: false` : ne pas bloquer le dernier bouton cliqué (enregistrement différé, comme les points de vie, où l'on continue d'appuyer). */
+export async function executer(ctx, action, { zone = null, boutons = [], auto = true } = {}) {
   boutons = boutons.filter(Boolean);
-  boutons.forEach(b => { b.disabled = true; });
+  if (!boutons.length && auto && dernierClic && dernierClic.isConnected && Date.now() - instantClic < 1500) boutons = [dernierClic];
+  if (boutons.some(b => occupes.has(b))) return { ok: false, occupe: true, m: { genre: "occupe", texte: "" } };
+  boutons.forEach(b => occuper(b, true));
   if (zone) zone.replaceChildren();
   try { return { ok: true, r: await action() }; }
   catch (e) {
@@ -26,14 +43,16 @@ export async function executer(ctx, action, { zone = null, boutons = [] } = {}) 
     if (m.genre === "auth") { ctx.surErreur(e); return { ok: false, m }; }
     if (zone) zone.replaceChildren(message(m.texte, "erreur"), m.recharger ? boutonRecharger(ctx) : null);
     return { ok: false, m };
-  } finally { boutons.forEach(b => { b.disabled = false; }); }
+  } finally { boutons.forEach(b => occuper(b, false)); }
 }
 
 /** Demande confirmation avant une suppression ou un retrait. → Promise<boolean> (fermer la fenêtre = non). */
 export function confirmer(titre, texte, libelle = "Supprimer") {
+  // le bouton qui a ouvert la confirmation : c'est lui qui montrera l'envoi en cours (celui de la fenêtre disparaît avec elle)
+  const declencheur = dernierClic && dernierClic.isConnected && Date.now() - instantClic < 1500 ? dernierClic : null;
   return new Promise(resolve => {
     let rep = false;
-    const oui = h("button", { class: "jr-bouton danger", type: "button", onclick: () => { rep = true; fermer(); } }, icon("trash", 18), libelle);
+    const oui = h("button", { class: "jr-bouton danger", type: "button", onclick: () => { rep = true; fermer(); if (declencheur && declencheur.isConnected) { dernierClic = declencheur; instantClic = Date.now(); } } }, icon("trash", 18), libelle);
     const non = h("button", { class: "jr-bouton", type: "button", onclick: () => fermer() }, "Annuler");
     const fermer = feuille(titre, [h("p", { class: "jr-texte" }, texte), h("div", { class: "jr-actions" }, non, oui)], { surFermeture: () => resolve(rep) });
   });

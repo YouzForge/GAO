@@ -1,4 +1,4 @@
-import { validerProfil } from "./valider.js?v=0.26.1";
+import { validerProfil } from "./valider.js?v=0.26.2";
 
 export class ProfilInvalide extends Error {
   constructor(erreurs, avertissements = []) {

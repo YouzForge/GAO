@@ -1,6 +1,6 @@
 // Contenu du guide du MJ (onglet « Guide »). FICHIER GÉNÉRÉ : ne pas le modifier à la main.
 // Source : le générateur du guide Word (guide_mj_generer.js), converti par guide_mj_donnees.js. Aucun contenu de jeu.
-export const VERSION_GUIDE = "0.26.1";
+export const VERSION_GUIDE = "0.26.2";
 export const GUIDE = [
  {
   "num": "",
@@ -1513,6 +1513,14 @@ export const GUIDE = [
      [
       "« Ce nom est déjà pris »",
       "Une carte ou une fiche porte déjà ce titre. Change un mot du titre."
+     ],
+     [
+      "J'ai cliqué et rien ne semble se passer",
+      "Depuis la 0.26.2, un bouton qui écrit montre un **cercle qui tourne** et ne répond plus tant que l'envoi n'est pas fini : attends qu'il revienne. Recliquer ne fait rien de plus : une carte n'est jamais révélée deux fois au même joueur."
+     ],
+     [
+      "Une quête (ou une autre carte) apparaît plusieurs fois chez les joueurs",
+      "Défaut des versions 0.26.1 et antérieures, quand on cliquait plusieurs fois sur Révéler. Dans **Révélations**, sur chaque ligne en trop (sans la pastille « vérité MJ »), clique la case cochée de chaque joueur → **Retirer** : la copie part dans la corbeille OneDrive. Garde la ligne qui porte la carte."
      ],
      [
       "Le texte d'une carte apparaît en double",

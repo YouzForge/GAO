@@ -1,8 +1,8 @@
 // Écrans « Fiche » et « Compétences ». Un appui sur une valeur ouvre la fenêtre de jet. Si le joueur peut écrire (tranche 2) : les points de vie se règlent avec − et +.
-import { h, icon, message, NOMBRE } from "./ui.js?v=0.26.1";
-import { peut, executer } from "./edition.js?v=0.26.1";
-import { ouvrirJet } from "./jet.js?v=0.26.1";
-import { aplatir } from "../../src/joueur/recherche.js?v=0.26.1";
+import { h, icon, message, NOMBRE } from "./ui.js?v=0.26.2";
+import { peut, executer } from "./edition.js?v=0.26.2";
+import { ouvrirJet } from "./jet.js?v=0.26.2";
+import { aplatir } from "../../src/joueur/recherche.js?v=0.26.2";
 
 const vide = texte => ({ node: h("div", { class: "jr-page" }, message(texte, "info")) });
 
@@ -46,7 +46,7 @@ function tuilePV(ctx, f) {
       if (souhait === enregistre) return;
       const cible = souhait;
       etat.textContent = "Enregistrement…";
-      const r = await executer(ctx, () => ctx.donnees.changerPV(cible));
+      const r = await executer(ctx, () => ctx.donnees.changerPV(cible), { auto: false });   // enregistrement différé : + et − restent libres
       if (r.ok) { enregistre = cible; ctx.vider(); etat.textContent = souhait === cible ? "Enregistré" : ""; }
       else { if (souhait === cible) { souhait = enregistre; dessiner(); } etat.replaceChildren(h("span", { class: "jr-pv-erreur" }, r.m.texte)); }
     });

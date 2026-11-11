@@ -1,11 +1,11 @@
 // Accès aux données d'un JDR conteur : collections, fiche du héros, journal. Tout passe par le dépôt du moteur (copie hors ligne,
 // garde-fous d'écriture) ; aucun navigateur ici, donc tout se teste dans Node avec un dépôt de test.
-import { pool } from "../graph/pool.js?v=0.26.1";
-import { modifierFiche } from "../ecriture/fiche.js?v=0.26.1";
-import { versElement, lireEtatHeros, estFicheHeros } from "./heros.js?v=0.26.1";
-import { preparerCatalogue } from "./objets.js?v=0.26.1";
-import { POTIONS_PAR_DEFAUT } from "./potions.js?v=0.26.1";
-import { MAX_VOIES } from "./voies.js?v=0.26.1";
+import { pool } from "../graph/pool.js?v=0.26.2";
+import { modifierFiche } from "../ecriture/fiche.js?v=0.26.2";
+import { versElement, lireEtatHeros, estFicheHeros } from "./heros.js?v=0.26.2";
+import { preparerCatalogue } from "./objets.js?v=0.26.2";
+import { POTIONS_PAR_DEFAUT } from "./potions.js?v=0.26.2";
+import { MAX_VOIES } from "./voies.js?v=0.26.2";
 
 /** Fichiers qu'une collection n'affiche jamais : modèles « 00_… », LISEZMOI, et selon la collection les fichiers de service. */
 const EXCLUS = {
