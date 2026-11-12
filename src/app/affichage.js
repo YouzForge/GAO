@@ -7,9 +7,9 @@
 //  - une fiche sans visibilité claire est SECRÈTE (appliqué par `lireVisibilite`), donc cachée à un joueur dans la table ;
 //  - pour un joueur, le corps du texte est masqué (src/md/masque.js : blocs de citation et lignes de tableau marqués) ; échec fermé : fiche non montrée ;
 //  - rien n'est rendu comme du HTML : on produit des blocs de texte (voir markdown.js).
-import { sections } from "../md/doc.js?v=0.27.0";
-import { blocsMarkdown } from "./markdown.js?v=0.27.0";
-import { masquerPourJoueur } from "../md/masque.js?v=0.27.0";
+import { sections } from "../md/doc.js?v=0.27.1";
+import { blocsMarkdown } from "./markdown.js?v=0.27.1";
+import { masquerPourJoueur } from "../md/masque.js?v=0.27.1";
 
 /** Champs techniques du tampon de récap (D18) : jamais affichés. */
 export const CHAMPS_TECHNIQUES = Object.freeze(["source", "source_octets", "traite_le", "traitement"]);

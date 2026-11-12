@@ -2,12 +2,12 @@
 // (Prochaine session, À suivre, Lointain, Joué) qu'il réordonne en glissant les cartes, selon là où vont les personnages.
 // Le rangement est un fichier du coffre (`Parcours.md`) : il suit le MJ d'un appareil à l'autre. Sur téléphone ou au clavier, le bouton « déplacer » remplace le glisser.
 // RÈGLE du moteur : jamais de innerHTML.
-import { COLONNES, rangerParcours, parcoursDepuisRangement, deplacer, decaler } from "../../src/mj/parcours.js?v=0.27.0";
-import { h, icon, message, feuille } from "./ui.js?v=0.27.0";
-import { executer } from "./edition.js?v=0.27.0";
-import { cadreMJ } from "./ecrans_mj.js?v=0.27.0";
-import { zoneFiches, resumeCreation, caseCartes, libelleCreation } from "./ecrans_fiches.js?v=0.27.0";
-import { annoncer } from "./ecrans_regie.js?v=0.27.0";
+import { COLONNES, rangerParcours, parcoursDepuisRangement, deplacer, decaler } from "../../src/mj/parcours.js?v=0.27.1";
+import { h, icon, message, feuille } from "./ui.js?v=0.27.1";
+import { executer } from "./edition.js?v=0.27.1";
+import { cadreMJ } from "./ecrans_mj.js?v=0.27.1";
+import { zoneFiches, resumeCreation, caseCartes, libelleCreation } from "./ecrans_fiches.js?v=0.27.1";
+import { annoncer } from "./ecrans_regie.js?v=0.27.1";
 
 const enc = encodeURIComponent;
 const lienDoc = d => `#/mj/${d.genre}/${enc(d.fichier)}`;
@@ -114,14 +114,14 @@ function boutonImporter(ctx, parcoursActuel) {
     bouton.disabled = true;
     try {
       // Les modules de conversion ne sont téléchargés qu'ici : ni les joueurs ni l'ouverture de l'application ne les chargent.
-      const [{ ouvrirZip }, { convertirDocx, titreDepuisNom }] = await Promise.all([import("../../src/import/zip.js?v=0.27.0"), import("../../src/import/docx.js?v=0.27.0")]);
+      const [{ ouvrirZip }, { convertirDocx, titreDepuisNom }] = await Promise.all([import("../../src/import/zip.js?v=0.27.1"), import("../../src/import/docx.js?v=0.27.1")]);
       if (!/\.docx$/i.test(f.name)) throw new Error("Choisis un fichier Word au format .docx (pas .doc ni .pdf).");
       const zip = await ouvrirZip(await f.arrayBuffer());
       const xml = await zip.texte("word/document.xml");
       if (xml == null) throw new Error("Ce fichier n'est pas un document Word (.docx).");
       const conv = convertirDocx(xml, await zip.texte("word/numbering.xml"));
       // Les fiches que le document permet de créer (personnages, quêtes, objets…) et ce que le coffre a déjà : proposées dans la même fenêtre.
-      const { detecterFiches } = await import("../../src/import/fiches.js?v=0.27.0");
+      const { detecterFiches } = await import("../../src/import/fiches.js?v=0.27.1");
       const existants = await ctx.regie.fichesExistantes().catch(e => { if (e && (e.status === 401 || e.auth)) throw e; return {}; });
       fenetreImport(ctx, { nom: f.name, titre: titreDepuisNom(f.name), conv, parcoursActuel, fiches: detecterFiches(conv.markdown), existants });
     } catch (e) {

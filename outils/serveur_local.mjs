@@ -1,21 +1,32 @@
 // Banc d'essai local : sert l'application et imite la petite partie de Microsoft Graph (OneDrive) dont le moteur se sert,
 // au-dessus d'un dossier de données sur le disque. Aucune connexion Microsoft, aucun contenu de jeu dans ce fichier.
 //
-//   node outils/serveur_local.mjs "<dossier de données>" [port]
+//   node outils/serveur_local.mjs "<dossier de données>" [port] [profil.json]
 //
+// Profil servi à l'application : celui donné en troisième argument ; sinon app/profil.json du dépôt (dépôt d'un JDR) ; sinon le profil.json
+// du dossier « 07_Application » des données (dépôt du moteur, qui n'a pas de profil à lui).
 // Le dossier de données est une COPIE d'un JDR (MJ/, Table/, Joueurs/) : ne jamais pointer sur le vrai dossier OneDrive.
 // Ouvrir ensuite http://localhost:<port>/app/ (MJ) ou http://localhost:<port>/app/?comme=<Pseudo> (joueur).
 import http from "node:http";
 import fs from "node:fs/promises";
-import { createReadStream, existsSync, statSync } from "node:fs";
+import { createReadStream, existsSync, statSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DEPOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DONNEES = path.resolve(process.argv[2] || "");
 const PORT = Number(process.argv[3] || process.env.PORT || 8765);
-const RACINE_MJ = "Documents/JDR/GAO - Application";   // même valeur que `racineMJ` de la configuration : le serveur la retire des chemins
+const RACINE_MJ = "Documents/JDR/Banc d'essai";   // même valeur que `racineMJ` de la configuration : le serveur la retire des chemins
 if (!process.argv[2] || !existsSync(DONNEES) || !statSync(DONNEES).isDirectory()) { console.error("Dossier de données introuvable : " + DONNEES); process.exit(1); }
+
+function trouverProfil() {
+  if (process.argv[4]) return path.resolve(process.argv[4]);
+  if (existsSync(path.join(DEPOT, "app", "profil.json"))) return null;                       // le dépôt a le sien : servi comme n'importe quel fichier
+  const pistes = [path.join(DONNEES, "07_Application", "profil.json"), ...readdirSync(DONNEES).map(n => path.join(DONNEES, n, "07_Application", "profil.json"))];
+  return pistes.find(p => existsSync(p)) || null;
+}
+const PROFIL = trouverProfil();
+if (PROFIL && !existsSync(PROFIL)) { console.error("Profil introuvable : " + PROFIL); process.exit(1); }
 
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8", ".woff2": "font/woff2", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".svg": "image/svg+xml", ".md": "text/markdown; charset=utf-8" };
@@ -30,7 +41,7 @@ const etagDe = st => `"${Math.round(st.mtimeMs)}-${st.size}"`;
 const element = (nom, st) => ({ id: "L" + Buffer.from(nom + "|" + st.ino).toString("hex").slice(0, 24), name: nom, size: st.size, eTag: etagDe(st),
   lastModifiedDateTime: new Date(st.mtimeMs).toISOString(), parentReference: { driveId: "local" }, ...(st.isDirectory() ? { folder: {} } : { file: {} }) });
 
-/** Chemin Graph (« Documents/JDR/GAO - Application/MJ/… ») → chemin sur le disque, sans jamais sortir du dossier de données. */
+/** Chemin Graph (« Documents/JDR/Banc d'essai/MJ/… ») → chemin sur le disque, sans jamais sortir du dossier de données. */
 function surDisque(rel) {
   let r = String(rel || "").replace(/^\/+|\/+$/g, "");
   if (r === RACINE_MJ) r = ""; else if (r.startsWith(RACINE_MJ + "/")) r = r.slice(RACINE_MJ.length + 1);
@@ -109,6 +120,7 @@ async function statique(req, res, url) {
   if (rel === "/") { res.writeHead(302, { Location: "/app/" }); return res.end(); }
   if (rel.endsWith("/")) rel += "index.html";
   if (rel === "/app/config.js") { res.writeHead(200, { "Content-Type": TYPES[".js"], "Cache-Control": "no-store" }); return res.end(CONFIG_DEV); }
+  if (rel === "/app/profil.json" && PROFIL) { res.writeHead(200, { "Content-Type": TYPES[".json"], "Cache-Control": "no-store" }); return createReadStream(PROFIL).pipe(res); }
   const p = path.resolve(DEPOT, "." + rel);
   if (!p.startsWith(DEPOT + path.sep) || rel.includes("/.git")) { res.writeHead(403); return res.end(); }
   const st = await stat(p);
@@ -121,4 +133,4 @@ http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
   try { if (url.pathname.startsWith("/__graph/")) await graph(req, res, url); else await statique(req, res, url); }
   catch (e) { console.error(e); if (!res.headersSent) erreur(res, 500, "erreur"); else res.end(); }
-}).listen(PORT, "127.0.0.1", () => console.log(`Banc d'essai : http://localhost:${PORT}/app/  (données : ${DONNEES})`));
+}).listen(PORT, "127.0.0.1", () => console.log(`Banc d'essai : http://localhost:${PORT}/app/  (données : ${DONNEES}${PROFIL ? " ; profil : " + PROFIL : ""})`));
