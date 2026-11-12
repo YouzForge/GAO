@@ -916,7 +916,7 @@
           "effet",
           "narration"
         ],
-        "exemple": "Codex Magicae Signum (Merlin) : jauge « Arcane Magique » 0 à 100, 7 paliers, montée 1d6 à la réussite et 2d6 à l'échec, 5 méthodes de purification"
+        "exemple": "Grimoire ancien (objet d'un personnage) : jauge « Arcane » 0 à 100, 7 paliers, montée 1d6 à la réussite et 2d6 à l'échec, 5 méthodes de purification"
       },
       "compteurs": [
         {

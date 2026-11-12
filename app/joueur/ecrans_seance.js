@@ -1,17 +1,17 @@
 // Écran « Séance » du MJ : la table de jeu. Le document de la prochaine session au centre (scènes, blocs colorés : à lire, dialogue, note MJ, secret, combat),
 // le sommaire des scènes à gauche, et à droite un panneau d'outils : fiche MJ, secrets, cartes à révéler, tuiles (PNJ, lieux, quêtes cités), joueurs et jauges, notes.
 // Pensé pour l'ordinateur (trois colonnes) ; sur téléphone tout s'empile. RÈGLE du moteur : jamais de innerHTML.
-import { parseDoc } from "../../src/md/doc.js?v=0.26.4";
-import { rangerParcours, deplacer, parcoursDepuisRangement } from "../../src/mj/parcours.js?v=0.26.4";
-import { decouper, ficheMJ, blocsDe, entitesCitees } from "../../src/mj/seance.js?v=0.26.4";
-import { TYPES, typeDe, TYPE_DE_GENRE, carteDepuisFiche, ligneDeFiche } from "../../src/mj/revelations.js?v=0.26.4";
-import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.26.4";
-import { executer, confirmer } from "./edition.js?v=0.26.4";
-import { cadreMJ } from "./ecrans_mj.js?v=0.26.4";
-import { formulaireCarte, ouvrirCarte, annoncer } from "./ecrans_regie.js?v=0.26.4";
-import { annoncerPalier } from "./ecrans_jauges.js?v=0.26.4";
-import { fenetreFiches } from "./ecrans_fiches.js?v=0.26.4";
-import { palierDe } from "../../src/mj/jauges.js?v=0.26.4";
+import { parseDoc } from "../../src/md/doc.js?v=0.27.0";
+import { rangerParcours, deplacer, parcoursDepuisRangement } from "../../src/mj/parcours.js?v=0.27.0";
+import { decouper, ficheMJ, blocsDe, entitesCitees } from "../../src/mj/seance.js?v=0.27.0";
+import { TYPES, typeDe, TYPE_DE_GENRE, carteDepuisFiche, ligneDeFiche } from "../../src/mj/revelations.js?v=0.27.0";
+import { h, icon, message, rendreMarkdown, feuille, boiteImage } from "./ui.js?v=0.27.0";
+import { executer, confirmer } from "./edition.js?v=0.27.0";
+import { cadreMJ } from "./ecrans_mj.js?v=0.27.0";
+import { formulaireCarte, ouvrirCarte, annoncer } from "./ecrans_regie.js?v=0.27.0";
+import { annoncerPalier } from "./ecrans_jauges.js?v=0.27.0";
+import { fenetreFiches } from "./ecrans_fiches.js?v=0.27.0";
+import { palierDe } from "../../src/mj/jauges.js?v=0.27.0";
 
 const enc = encodeURIComponent;
 const estAuth = e => e && (e.status === 401 || e.auth);

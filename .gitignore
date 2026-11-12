@@ -1,0 +1,4 @@
+# Liste locale de mots interdits : jamais versionnée
+.controle_local.txt
+node_modules/
+*.log

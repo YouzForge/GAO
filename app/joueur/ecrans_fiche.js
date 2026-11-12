@@ -1,8 +1,8 @@
 // Écrans « Fiche » et « Compétences ». Un appui sur une valeur ouvre la fenêtre de jet. Si le joueur peut écrire (tranche 2) : les points de vie se règlent avec − et +.
-import { h, icon, message, NOMBRE } from "./ui.js?v=0.26.4";
-import { peut, executer } from "./edition.js?v=0.26.4";
-import { ouvrirJet } from "./jet.js?v=0.26.4";
-import { aplatir } from "../../src/joueur/recherche.js?v=0.26.4";
+import { h, icon, message, NOMBRE } from "./ui.js?v=0.27.0";
+import { peut, executer } from "./edition.js?v=0.27.0";
+import { ouvrirJet } from "./jet.js?v=0.27.0";
+import { aplatir } from "../../src/joueur/recherche.js?v=0.27.0";
 
 const vide = texte => ({ node: h("div", { class: "jr-page" }, message(texte, "info")) });
 

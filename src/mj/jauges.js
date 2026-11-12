@@ -9,7 +9,7 @@
 //
 // Principe des DÉCLENCHEMENTS (posé ici, appliqué plus tard) : quand une valeur entre dans un nouveau palier, `franchissement` le dit ; l'écran l'annonce au MJ.
 // Un palier pourra porter des effets lisibles par la machine (lignes « ⚙ … », voir `effetsDe`) que la régie proposera d'appliquer à la fiche d'un joueur.
-import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize, sansGrandsTitres } from "../md/doc.js?v=0.26.4";
+import { parseDoc, serializeDoc, sections, setSection, getSection, norm, humanize, sansGrandsTitres } from "../md/doc.js?v=0.27.0";
 
 export const DOSSIER_JAUGES = "Jauges";
 export const FICHIER_RANGEMENT = "Rangement.md";
@@ -51,7 +51,7 @@ export function franchissement(paliers, avant, apres) {
   return { palier: b, ancien: a, sens: apres >= avant ? "monte" : "descend" };
 }
 /**
- * Effets d'un palier lisibles par la machine : lignes « ⚙ Cible | Ce qui change | Valeur » (par exemple « ⚙ Jeanne_Lenoir | Combat Rapproché | +10 »).
+ * Effets d'un palier lisibles par la machine : lignes « ⚙ Cible | Ce qui change | Valeur » (par exemple « ⚙ Mira_Ardent | Combat Rapproché | +10 »).
  * PRÉVU, pas encore appliqué : la régie s'en servira pour proposer la mise à jour de la fiche du joueur quand le palier est atteint.
  */
 export function effetsDe(palier) {
